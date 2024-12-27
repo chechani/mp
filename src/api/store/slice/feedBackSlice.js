@@ -9,7 +9,7 @@ export const feedBackSlice = createApi({
     // Fetch all Complains
     SendComments: builder.mutation({
       query: ({hd_ticket_name, message}) => ({
-        url: `api/method/mla.helpdesk.send_text_message`,
+        url: `api/method/mla.MlaHelpDesk.send_text_message`,
         method: 'POST',
         body: {
           hd_ticket_name,
@@ -21,7 +21,7 @@ export const feedBackSlice = createApi({
     // check message received more than 24 hours ago or not
     CheckSeesionForSendComment: builder.query({
       query: ({hd_ticket_name}) => ({
-        url: `api/method/mla.helpdesk.send_whatsapp_message_check?hd_ticket_name=${hd_ticket_name}`,
+        url: `api/method/mla.MlaHelpDesk.send_whatsapp_message_check?hd_ticket_name=${hd_ticket_name}`,
         method: 'GET',
       }),
     }),
@@ -29,7 +29,7 @@ export const feedBackSlice = createApi({
     // Get all village
     GetAllVillages: builder.query({
       query: ({panchayat}) => ({
-        url: `api/method/mla.helpdesk.get_villages?panchayat=${panchayat}`,
+        url: `api/method/mla.MlaHelpDesk.get_villages?panchayat=${panchayat}`,
         method: 'GET',
       }),
     }),
@@ -37,7 +37,7 @@ export const feedBackSlice = createApi({
     // Get all Panchayat
     GetAllPanchayat: builder.query({
       query: ({tehsil}) => ({
-        url: `api/method/mla.helpdesk.get_panchayat?tehsil=${tehsil}`,
+        url: `api/method/mla.MlaHelpDesk.get_panchayat?tehsil=${tehsil}`,
         method: 'GET',
       }),
     }),
@@ -45,7 +45,7 @@ export const feedBackSlice = createApi({
     // Get all Tehsil
     GetAllTehsil: builder.query({
       query: () => ({
-        url: `api/method/mla.helpdesk.get_tehsil`,
+        url: `api/method/mla.MlaHelpDesk.get_tehsil`,
         method: 'GET',
       }),
     }),
@@ -53,7 +53,7 @@ export const feedBackSlice = createApi({
     // Get all Profession
     GetAllProfession: builder.query({
       query: () => ({
-        url: `api/method/mla.helpdesk.get_profession`,
+        url: `api/method/mla.MlaHelpDesk.get_profession`,
         method: 'GET',
       }),
     }),
@@ -61,7 +61,7 @@ export const feedBackSlice = createApi({
     // Get all Status
     GetAllStatus: builder.query({
       query: () => ({
-        url: `api/method/mla.helpdesk.get_status`,
+        url: `api/method/mla.MlaHelpDesk.get_status`,
         method: 'GET',
       }),
     }),
@@ -90,7 +90,7 @@ export const feedBackSlice = createApi({
         });
 
         return {
-          url: `api/method/mla.helpdesk.get_feedback_tickets_filtered?${params.toString()}`,
+          url: `api/method/mla.MlaHelpDesk.get_feedback_tickets_filtered?${params.toString()}`,
           method: 'GET',
         };
       },
@@ -99,7 +99,7 @@ export const feedBackSlice = createApi({
       // update status 
       UpdateStatus: builder.mutation({
         query: ({ticket_name, status}) => ({
-          url: `api/method/mla.helpdesk.update_ticket`,
+          url: `api/method/mla.MlaHelpDesk.update_ticket`,
           method: 'PUT',
           body: {
             ticket_name,

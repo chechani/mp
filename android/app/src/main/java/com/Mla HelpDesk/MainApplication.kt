@@ -1,4 +1,4 @@
-package com.HelpDesk
+package com.MlaMlaHelpDesk
 
 import android.app.Application
 import com.facebook.react.PackageList

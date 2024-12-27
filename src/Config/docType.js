@@ -9,4 +9,4 @@ export const whatsapp_chat_task_docType ='/api/method/frappe_whatsapp.task.'
 export const whatsapp_broadCast_docType ='/api/method/frappe_whatsapp.broadcasting.'
 
 
-export const MLA_docType =  '/api/method/mla.helpdesk.'
+export const MLA_docType =  '/api/method/mla.MlaHelpDesk.'
