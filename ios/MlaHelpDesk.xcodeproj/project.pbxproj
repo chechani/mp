@@ -9,26 +9,11 @@
 /* Begin PBXBuildFile section */
 		00E356F31AD99517003FC87E /* MlaHelpDeskTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* MlaHelpDeskTests.m */; };
 		0C80B921A6F3F58F76C31292 /* libPods-MlaHelpDesk.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DCACB8F33CDC322A6C60F78 /* libPods-MlaHelpDesk.a */; };
-		12C859D126128BFD50E3E7D2 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = FCF776880B5F9F8260DA98BB /* PrivacyInfo.xcprivacy */; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
-		1BE88AED4A1E4B139AD97A6C /* Poppins-ExtraLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 92521D5A759D47C2B8B5D7E8 /* Poppins-ExtraLight.ttf */; };
-		24BF604861BB44CB96BFAA22 /* Poppins-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5C11B2335CA149A48D3E80AA /* Poppins-ExtraBold.ttf */; };
-		2AADC55C4E1B4463AFEBB939 /* Roboto-Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 185C494A2EBF4D7D8B7126F4 /* Roboto-Black.ttf */; };
-		601052B7AA334852B5CB83FD /* Roboto-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5A1D9F4F8DC040EB858BDE58 /* Roboto-Medium.ttf */; };
-		6B94D1C762F345A18DF9B6B6 /* Roboto-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3659944F9C8E4938B91B8812 /* Roboto-Bold.ttf */; };
 		7699B88040F8A987B510C191 /* libPods-MlaHelpDesk-MlaHelpDeskTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 19F6CBCC0A4E27FBF8BF4A61 /* libPods-MlaHelpDesk-MlaHelpDeskTests.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
-		8862BEFE3011412592FEF297 /* Poppins-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5F335EDB2AA14D9F98727639 /* Poppins-Regular.ttf */; };
-		930E63B06CAC422D8D63F059 /* Poppins-Thin.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 863FCEA589DC473CABFA0E1B /* Poppins-Thin.ttf */; };
-		9B3EF45C3370470BA609BB56 /* Poppins-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F8B8583291CE41B28B1B3EC8 /* Poppins-Medium.ttf */; };
-		9B691C7917B04A0191EEAA03 /* Poppins-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 99CF75A9303645C4B0570316 /* Poppins-Light.ttf */; };
-		9DA0BF5123ED4D1394E3F912 /* Poppins-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 225AABAB3AE044F2AE242E28 /* Poppins-Bold.ttf */; };
-		B5DE434A31E24E0C8601153B /* Roboto-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 17A18FDDE9384F8ABA33A7E3 /* Roboto-Light.ttf */; };
-		E5151B711C764DFE981F0D1A /* Poppins-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 22296259CF724FF7B569D57E /* Poppins-SemiBold.ttf */; };
-		F094F9F543AF4A0BB1CCD723 /* Poppins-Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 593FB08175054FCF84FAA12C /* Poppins-Black.ttf */; };
-		FDA486794EC54F0DA1458C8A /* Roboto-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 04B83B90E7CD4809B6281333 /* Roboto-Regular.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,7 +30,6 @@
 		00E356EE1AD99517003FC87E /* MlaHelpDeskTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MlaHelpDeskTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00E356F21AD99517003FC87E /* MlaHelpDeskTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MlaHelpDeskTests.m; sourceTree = "<group>"; };
-		04B83B90E7CD4809B6281333 /* Roboto-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Roboto-Regular.ttf"; path = "../src/assets/fonts/Roboto-Regular.ttf"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* MlaHelpDesk.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MlaHelpDesk.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = MlaHelpDesk/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = MlaHelpDesk/AppDelegate.mm; sourceTree = "<group>"; };
@@ -53,28 +37,14 @@
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = MlaHelpDesk/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = MlaHelpDesk/main.m; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = MlaHelpDesk/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		17A18FDDE9384F8ABA33A7E3 /* Roboto-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Roboto-Light.ttf"; path = "../src/assets/fonts/Roboto-Light.ttf"; sourceTree = "<group>"; };
-		185C494A2EBF4D7D8B7126F4 /* Roboto-Black.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Roboto-Black.ttf"; path = "../src/assets/fonts/Roboto-Black.ttf"; sourceTree = "<group>"; };
 		19F6CBCC0A4E27FBF8BF4A61 /* libPods-MlaHelpDesk-MlaHelpDeskTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-MlaHelpDesk-MlaHelpDeskTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		22296259CF724FF7B569D57E /* Poppins-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Poppins-SemiBold.ttf"; path = "../src/assets/fonts/Poppins-SemiBold.ttf"; sourceTree = "<group>"; };
-		225AABAB3AE044F2AE242E28 /* Poppins-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Poppins-Bold.ttf"; path = "../src/assets/fonts/Poppins-Bold.ttf"; sourceTree = "<group>"; };
-		3659944F9C8E4938B91B8812 /* Roboto-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Roboto-Bold.ttf"; path = "../src/assets/fonts/Roboto-Bold.ttf"; sourceTree = "<group>"; };
 		3B4392A12AC88292D35C810B /* Pods-MlaHelpDesk.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MlaHelpDesk.debug.xcconfig"; path = "Target Support Files/Pods-MlaHelpDesk/Pods-MlaHelpDesk.debug.xcconfig"; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-MlaHelpDesk.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MlaHelpDesk.release.xcconfig"; path = "Target Support Files/Pods-MlaHelpDesk/Pods-MlaHelpDesk.release.xcconfig"; sourceTree = "<group>"; };
-		593FB08175054FCF84FAA12C /* Poppins-Black.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Poppins-Black.ttf"; path = "../src/assets/fonts/Poppins-Black.ttf"; sourceTree = "<group>"; };
-		5A1D9F4F8DC040EB858BDE58 /* Roboto-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Roboto-Medium.ttf"; path = "../src/assets/fonts/Roboto-Medium.ttf"; sourceTree = "<group>"; };
 		5B7EB9410499542E8C5724F5 /* Pods-MlaHelpDesk-MlaHelpDeskTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MlaHelpDesk-MlaHelpDeskTests.debug.xcconfig"; path = "Target Support Files/Pods-MlaHelpDesk-MlaHelpDeskTests/Pods-MlaHelpDesk-MlaHelpDeskTests.debug.xcconfig"; sourceTree = "<group>"; };
-		5C11B2335CA149A48D3E80AA /* Poppins-ExtraBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Poppins-ExtraBold.ttf"; path = "../src/assets/fonts/Poppins-ExtraBold.ttf"; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-MlaHelpDesk.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-MlaHelpDesk.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		5F335EDB2AA14D9F98727639 /* Poppins-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Poppins-Regular.ttf"; path = "../src/assets/fonts/Poppins-Regular.ttf"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = MlaHelpDesk/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		863FCEA589DC473CABFA0E1B /* Poppins-Thin.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Poppins-Thin.ttf"; path = "../src/assets/fonts/Poppins-Thin.ttf"; sourceTree = "<group>"; };
 		89C6BE57DB24E9ADA2F236DE /* Pods-MlaHelpDesk-MlaHelpDeskTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MlaHelpDesk-MlaHelpDeskTests.release.xcconfig"; path = "Target Support Files/Pods-MlaHelpDesk-MlaHelpDeskTests/Pods-MlaHelpDesk-MlaHelpDeskTests.release.xcconfig"; sourceTree = "<group>"; };
-		92521D5A759D47C2B8B5D7E8 /* Poppins-ExtraLight.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Poppins-ExtraLight.ttf"; path = "../src/assets/fonts/Poppins-ExtraLight.ttf"; sourceTree = "<group>"; };
-		99CF75A9303645C4B0570316 /* Poppins-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Poppins-Light.ttf"; path = "../src/assets/fonts/Poppins-Light.ttf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		F8B8583291CE41B28B1B3EC8 /* Poppins-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Poppins-Medium.ttf"; path = "../src/assets/fonts/Poppins-Medium.ttf"; sourceTree = "<group>"; };
-		FCF776880B5F9F8260DA98BB /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = MlaHelpDesk/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -124,7 +94,6 @@
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB71A68108700A75B9A /* main.m */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
-				FCF776880B5F9F8260DA98BB /* PrivacyInfo.xcprivacy */,
 			);
 			name = MlaHelpDesk;
 			sourceTree = "<group>";
@@ -155,7 +124,6 @@
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
-				9A4CB8D32F1C42E3B01DA940 /* Resources */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -169,27 +137,6 @@
 				00E356EE1AD99517003FC87E /* MlaHelpDeskTests.xctest */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		9A4CB8D32F1C42E3B01DA940 /* Resources */ = {
-			isa = PBXGroup;
-			children = (
-				593FB08175054FCF84FAA12C /* Poppins-Black.ttf */,
-				225AABAB3AE044F2AE242E28 /* Poppins-Bold.ttf */,
-				5C11B2335CA149A48D3E80AA /* Poppins-ExtraBold.ttf */,
-				92521D5A759D47C2B8B5D7E8 /* Poppins-ExtraLight.ttf */,
-				99CF75A9303645C4B0570316 /* Poppins-Light.ttf */,
-				F8B8583291CE41B28B1B3EC8 /* Poppins-Medium.ttf */,
-				5F335EDB2AA14D9F98727639 /* Poppins-Regular.ttf */,
-				22296259CF724FF7B569D57E /* Poppins-SemiBold.ttf */,
-				863FCEA589DC473CABFA0E1B /* Poppins-Thin.ttf */,
-				185C494A2EBF4D7D8B7126F4 /* Roboto-Black.ttf */,
-				3659944F9C8E4938B91B8812 /* Roboto-Bold.ttf */,
-				17A18FDDE9384F8ABA33A7E3 /* Roboto-Light.ttf */,
-				5A1D9F4F8DC040EB858BDE58 /* Roboto-Medium.ttf */,
-				04B83B90E7CD4809B6281333 /* Roboto-Regular.ttf */,
-			);
-			name = Resources;
 			sourceTree = "<group>";
 		};
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
@@ -254,8 +201,7 @@
 		83CBB9F71A601CBA00E9B192 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1610;
+				LastUpgradeCheck = 1210;
 				TargetAttributes = {
 					00E356ED1AD99517003FC87E = {
 						CreatedOnToolsVersion = 6.2;
@@ -299,21 +245,6 @@
 			files = (
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
-				F094F9F543AF4A0BB1CCD723 /* Poppins-Black.ttf in Resources */,
-				9DA0BF5123ED4D1394E3F912 /* Poppins-Bold.ttf in Resources */,
-				24BF604861BB44CB96BFAA22 /* Poppins-ExtraBold.ttf in Resources */,
-				1BE88AED4A1E4B139AD97A6C /* Poppins-ExtraLight.ttf in Resources */,
-				9B691C7917B04A0191EEAA03 /* Poppins-Light.ttf in Resources */,
-				9B3EF45C3370470BA609BB56 /* Poppins-Medium.ttf in Resources */,
-				8862BEFE3011412592FEF297 /* Poppins-Regular.ttf in Resources */,
-				E5151B711C764DFE981F0D1A /* Poppins-SemiBold.ttf in Resources */,
-				930E63B06CAC422D8D63F059 /* Poppins-Thin.ttf in Resources */,
-				2AADC55C4E1B4463AFEBB939 /* Roboto-Black.ttf in Resources */,
-				6B94D1C762F345A18DF9B6B6 /* Roboto-Bold.ttf in Resources */,
-				B5DE434A31E24E0C8601153B /* Roboto-Light.ttf in Resources */,
-				601052B7AA334852B5CB83FD /* Roboto-Medium.ttf in Resources */,
-				FDA486794EC54F0DA1458C8A /* Roboto-Regular.ttf in Resources */,
-				12C859D126128BFD50E3E7D2 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -489,7 +420,7 @@
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = MlaHelpDeskTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -513,7 +444,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COPY_PHASE_STRIP = NO;
 				INFOPLIST_FILE = MlaHelpDeskTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -539,6 +470,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = MlaHelpDesk/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -565,6 +497,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				INFOPLIST_FILE = MlaHelpDesk/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -586,7 +519,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CC = "";
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -614,10 +546,8 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
-				CXX = "";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -634,9 +564,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
-				LD = "";
-				LDPLUSPLUS = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
 					"$(inherited)",
@@ -656,11 +584,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = "$(inherited)  ";
-				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
-				USE_HERMES = true;
 			};
 			name = Debug;
 		};
@@ -668,7 +592,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CC = "";
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -696,10 +619,8 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
-				CXX = "";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -709,9 +630,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
-				LD = "";
-				LDPLUSPLUS = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
 					"$(inherited)",
@@ -730,10 +649,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = "$(inherited)  ";
-				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
-				USE_HERMES = true;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
