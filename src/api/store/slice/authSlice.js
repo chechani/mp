@@ -30,6 +30,8 @@ export const loginUser = createAsyncThunk(
     try {
 
         const {selectedDomain} = getState().domains;
+        console.log(selectedDomain);
+        
 
         
       if (!selectedDomain || !selectedDomain.domain) {

@@ -1,8 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {StyleSheet, TouchableOpacity, View} from 'react-native';
 import Toast from 'react-native-toast-message';
-import { loginUser } from '../../api/store/slice/authSlice';
+import {loginUser} from '../../api/store/slice/authSlice';
 import {
   selectUrl,
   setDomain,
@@ -13,21 +13,21 @@ import ContainerComponent from '../../Components/Common/ContainerComponent';
 import CustomButton from '../../Components/Common/CustomButton';
 import CustomInput from '../../Components/Common/CustomInput';
 import TextComponent from '../../Components/Common/TextComponent';
-import { useAppDispatch, useAppSelector, useTheme } from '../../Components/hooks';
+import {useAppDispatch, useAppSelector, useTheme} from '../../Components/hooks';
 import NavigationString from '../../Navigations/NavigationString';
 
-import { textScale } from '../../styles/responsiveStyles';
-import { spacing } from '../../styles/spacing';
+import {textScale} from '../../styles/responsiveStyles';
+import {spacing} from '../../styles/spacing';
 import Colors from '../../theme/colors';
 
 import THEME_COLOR from '../../Utils/Constant';
-import { replace } from '../../Utils/helperFunctions';
+import {replace} from '../../Utils/helperFunctions';
 
 const LoginScreen = () => {
   const {theme} = useTheme();
   const dispatch = useAppDispatch();
   const domainState = useAppSelector(state => state.domains);
-  
+
   const isDarkMode = theme === THEME_COLOR;
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -109,7 +109,7 @@ const LoginScreen = () => {
         )
           .unwrap()
           .then(async res => {
-            await dispatch(selectUrl(res?.key)).unwrap();
+            await dispatch(selectUrl(res[0]?.key)).unwrap();
           })
           .catch(error => {
             console.error('Error setting domain:', error);
@@ -117,7 +117,7 @@ const LoginScreen = () => {
       } else {
         await dispatch(setDomain(trimmedDomain))
           .unwrap()
-          .then(async (newDomain) => {
+          .then(async newDomain => {
             await dispatch(selectUrl(newDomain?.key)).unwrap();
           })
           .catch(error => {

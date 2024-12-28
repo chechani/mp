@@ -73,6 +73,8 @@ export const removeDomain = createAsyncThunk(
 export const selectUrl = createAsyncThunk(
   'domain/selectUrl',
   async (key, {rejectWithValue}) => {
+    console.log(key);
+    
     try {
       const existingDomains =
         JSON.parse(await AsyncStorage.getItem('domains')) || [];
