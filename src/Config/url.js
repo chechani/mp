@@ -230,6 +230,40 @@ export const GET_CONTACTS_BY_BROADCAST_STATUS = `${whatsapp_broadCast_docType}ge
 export const CREATE_NEW_BROADCAST_MESSAGE = `${whatsapp_broadCast_docType}create_new_broadcast`;
 export const GET_BROADCAST_MESSAGE_TEMPLATE = `${whatsapp_broadCast_docType}get_whatsapp_templates`;
 
-
 // project APIs
 export const Update_PROJECT_Details = `${MLA_docType}update_project_details`;
+export const GET_PROJECT = `${MLA_docType}get_projects`;
+export const GET_PROJECT_VILLAGES = `${MLA_docType}get_project_villages`;
+export const GET_PROJECT_PANCHAYAT = `${MLA_docType}get_project_panchayat`;
+export const GET_PROJECT_TEHSIL = `${MLA_docType}get_project_tehsil`;
+export const GET_PROJECT_STATUS = `${MLA_docType}get_project_status`;
+export const CREATE_PROJECT = `${MLA_docType}create_project`;
+export const GET_PROJECT_TYPE = `${MLA_docType}get_project_type`;
+export const GET_PROJECT_SCHEME = `${MLA_docType}get_project_scheme`;
+export const GET_PROJECT_ALL_PANCHAYAT = `${MLA_docType}get_all_panchayat`;
+export const GET_PROJECT_ALL_VILLAAGES = `${MLA_docType}get_all_villages`;
+export const CREATE_PROJECT_SCHEME = `${MLA_docType}create_project_scheme`;
+export const UPDATE_PROJECT_STATUS = `${MLA_docType}update_project_status`;
+
+//complaints APIs
+export const GET_COMPLAIN_TICKETS = `${MLA_docType}get_complain_tickets`;
+export const SEND_TEXT_COMPLAINT_MESSAGE = `${MLA_docType}send_text_message`;
+export const SEND_WHATSAPP_COMPLAINT_MESSAGE_CHECK = `${MLA_docType}send_whatsapp_message_check`;
+export const GET_COMPLAINTS_VILLAGES = `${MLA_docType}get_villages`;
+export const GET_COMPLAINTS_PANCHAYAT = `${MLA_docType}get_panchayat`;
+export const GET_COMPLAINTS_TEHSIL = `${MLA_docType}get_tehsil`;
+export const GET_COMPLAINTS_PROFESSION = `${MLA_docType}get_profession`;
+export const GET_COMPLAINTS_STATUS = `${MLA_docType}get_status`;
+export const GET_COMPLAIN_TICKETS_FILTERED = `${MLA_docType}get_complain_tickets_filtered`;
+export const UPDATE_COMPLAINTS_TICKET = `${MLA_docType}update_ticket`;
+
+// feedBack APIs
+export const SEND_TEXT_FEEDBACK_MESSAGE = `${MLA_docType}send_text_message`;
+export const SEND_WHATSAPP_FEEDBACK_MESSAGE_CHECK= `${MLA_docType}send_whatsapp_message_check`;
+export const GET_FEEDBACK_VILLAGES= `${MLA_docType}get_villages`;
+export const GET_FEEDBACK_PANCHAYAT= `${MLA_docType}get_panchayat`;
+export const GET_FEEDBACK_TEHSIL= `${MLA_docType}get_tehsil`;
+export const GET_FEEDBACK_PROFESSION= `${MLA_docType}get_profession`;
+export const GET_FEEDBACK_STATUS= `${MLA_docType}get_status`;
+export const GET_FEEDBACK_TICKETS_FILTERED= `${MLA_docType}get_feedback_tickets_filtered`;
+export const UPDATE_FEEDBACK_TICKETS= `${MLA_docType}update_ticket`;

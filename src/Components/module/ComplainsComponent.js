@@ -164,6 +164,7 @@ const ComplainsComponent = () => {
     fetchComplaintsData(1, true);
   };
 
+
   // Render footer for loading indicator
   const RenderFooter = () => {
     if (isFetching && !isRefreshing) {

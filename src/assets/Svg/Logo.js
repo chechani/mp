@@ -1,12 +1,12 @@
 import * as React from "react"
 import Svg, { Defs, ClipPath, Path, Mask, G, Image } from "react-native-svg"
 /* SVGR has dropped some elements not supported by react-native-svg: filter */ import { memo } from "react"
-const Logo = (props) => (
+const Logo = ({width = 24, height = 24, color='#000',...props}) => (
   <Svg
     xmlns="http://www.w3.org/2000/svg"
     xmlnsXlink="http://www.w3.org/1999/xlink"
-    width={24}
-    height={24}
+    width={width}
+    height={height}
     viewBox="0 0 694.5 686.25"
     {...props}
   >

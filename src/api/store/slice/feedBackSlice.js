@@ -1,5 +1,6 @@
-import {createApi} from '@reduxjs/toolkit/query/react';
-import {customBaseQuery} from '../utils';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { GET_FEEDBACK_PANCHAYAT, GET_FEEDBACK_PROFESSION, GET_FEEDBACK_STATUS, GET_FEEDBACK_TEHSIL, GET_FEEDBACK_TICKETS_FILTERED, GET_FEEDBACK_VILLAGES, SEND_TEXT_FEEDBACK_MESSAGE, SEND_WHATSAPP_FEEDBACK_MESSAGE_CHECK, UPDATE_FEEDBACK_TICKETS } from '../../../Config/url';
+import { customBaseQuery } from '../utils';
 
 export const feedBackSlice = createApi({
   reducerPath: 'feedBackSlice',
@@ -9,7 +10,7 @@ export const feedBackSlice = createApi({
     // Fetch all Complains
     SendComments: builder.mutation({
       query: ({hd_ticket_name, message}) => ({
-        url: `api/method/mla.MlaHelpDesk.send_text_message`,
+        url: `${SEND_TEXT_FEEDBACK_MESSAGE}`,
         method: 'POST',
         body: {
           hd_ticket_name,
@@ -21,7 +22,7 @@ export const feedBackSlice = createApi({
     // check message received more than 24 hours ago or not
     CheckSeesionForSendComment: builder.query({
       query: ({hd_ticket_name}) => ({
-        url: `api/method/mla.MlaHelpDesk.send_whatsapp_message_check?hd_ticket_name=${hd_ticket_name}`,
+        url: `${SEND_WHATSAPP_FEEDBACK_MESSAGE_CHECK}?hd_ticket_name=${hd_ticket_name}`,
         method: 'GET',
       }),
     }),
@@ -29,7 +30,7 @@ export const feedBackSlice = createApi({
     // Get all village
     GetAllVillages: builder.query({
       query: ({panchayat}) => ({
-        url: `api/method/mla.MlaHelpDesk.get_villages?panchayat=${panchayat}`,
+        url: `${GET_FEEDBACK_VILLAGES}?panchayat=${panchayat}`,
         method: 'GET',
       }),
     }),
@@ -37,7 +38,7 @@ export const feedBackSlice = createApi({
     // Get all Panchayat
     GetAllPanchayat: builder.query({
       query: ({tehsil}) => ({
-        url: `api/method/mla.MlaHelpDesk.get_panchayat?tehsil=${tehsil}`,
+        url: `${GET_FEEDBACK_PANCHAYAT}?tehsil=${tehsil}`,
         method: 'GET',
       }),
     }),
@@ -45,7 +46,7 @@ export const feedBackSlice = createApi({
     // Get all Tehsil
     GetAllTehsil: builder.query({
       query: () => ({
-        url: `api/method/mla.MlaHelpDesk.get_tehsil`,
+        url: `${GET_FEEDBACK_TEHSIL}`,
         method: 'GET',
       }),
     }),
@@ -53,7 +54,7 @@ export const feedBackSlice = createApi({
     // Get all Profession
     GetAllProfession: builder.query({
       query: () => ({
-        url: `api/method/mla.MlaHelpDesk.get_profession`,
+        url: `${GET_FEEDBACK_PROFESSION}`,
         method: 'GET',
       }),
     }),
@@ -61,7 +62,7 @@ export const feedBackSlice = createApi({
     // Get all Status
     GetAllStatus: builder.query({
       query: () => ({
-        url: `api/method/mla.MlaHelpDesk.get_status`,
+        url: `${GET_FEEDBACK_STATUS}`,
         method: 'GET',
       }),
     }),
@@ -90,7 +91,7 @@ export const feedBackSlice = createApi({
         });
 
         return {
-          url: `api/method/mla.MlaHelpDesk.get_feedback_tickets_filtered?${params.toString()}`,
+          url: `${GET_FEEDBACK_TICKETS_FILTERED}?${params.toString()}`,
           method: 'GET',
         };
       },
@@ -99,7 +100,7 @@ export const feedBackSlice = createApi({
       // update status 
       UpdateStatus: builder.mutation({
         query: ({ticket_name, status}) => ({
-          url: `api/method/mla.MlaHelpDesk.update_ticket`,
+          url: `${UPDATE_FEEDBACK_TICKETS}`,
           method: 'PUT',
           body: {
             ticket_name,

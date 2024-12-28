@@ -1,23 +1,35 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
+import {
+  GET_COMPLAIN_TICKETS,
+  GET_COMPLAIN_TICKETS_FILTERED,
+  GET_COMPLAINTS_PANCHAYAT,
+  GET_COMPLAINTS_PROFESSION,
+  GET_COMPLAINTS_STATUS,
+  GET_COMPLAINTS_TEHSIL,
+  GET_COMPLAINTS_VILLAGES,
+  SEND_TEXT_COMPLAINT_MESSAGE,
+  SEND_WHATSAPP_COMPLAINT_MESSAGE_CHECK,
+  UPDATE_COMPLAINTS_TICKET
+} from '../../../Config/url';
 import { customBaseQuery } from '../utils';
 
 export const ComplainsSlice = createApi({
   reducerPath: 'ComplainsSlice',
   baseQuery: customBaseQuery,
   tagTypes: ['ComplainsSlice'],
-  endpoints: (builder) => ({
+  endpoints: builder => ({
     // Fetch all Complains
     fetchAllComplains: builder.query({
       query: () => ({
-        url: 'api/method/mla.MlaHelpDesk.get_complain_tickets',
+        url: `${GET_COMPLAIN_TICKETS}`,
         method: 'GET',
       }),
     }),
 
     // Fetch all Complains
     SendComments: builder.mutation({
-      query: ({ hd_ticket_name, message }) => ({
-        url: `api/method/mla.MlaHelpDesk.send_text_message`,
+      query: ({hd_ticket_name, message}) => ({
+        url: `${SEND_TEXT_COMPLAINT_MESSAGE}`,
         method: 'POST',
         body: {
           hd_ticket_name,
@@ -28,24 +40,24 @@ export const ComplainsSlice = createApi({
 
     // check message received more than 24 hours ago or not
     CheckSeesionForSendComment: builder.query({
-      query: ({ hd_ticket_name }) => ({
-        url: `api/method/mla.MlaHelpDesk.send_whatsapp_message_check?hd_ticket_name=${hd_ticket_name}`,
+      query: ({hd_ticket_name}) => ({
+        url: `${SEND_WHATSAPP_COMPLAINT_MESSAGE_CHECK}?hd_ticket_name=${hd_ticket_name}`,
         method: 'GET',
       }),
     }),
 
     // Get all village
     GetAllVillages: builder.query({
-      query: ({ panchayat }) => ({
-        url: `api/method/mla.MlaHelpDesk.get_villages?panchayat=${panchayat}`,
+      query: ({panchayat}) => ({
+        url: `${GET_COMPLAINTS_VILLAGES}?panchayat=${panchayat}`,
         method: 'GET',
       }),
     }),
 
     // Get all Panchayat
     GetAllPanchayat: builder.query({
-      query: ({ tehsil }) => ({
-        url: `api/method/mla.MlaHelpDesk.get_panchayat?tehsil=${tehsil}`,
+      query: ({tehsil}) => ({
+        url: `${GET_COMPLAINTS_PANCHAYAT}?tehsil=${tehsil}`,
         method: 'GET',
       }),
     }),
@@ -53,7 +65,7 @@ export const ComplainsSlice = createApi({
     // Get all Tehsil
     GetAllTehsil: builder.query({
       query: () => ({
-        url: `api/method/mla.MlaHelpDesk.get_tehsil`,
+        url: `${GET_COMPLAINTS_TEHSIL}`,
         method: 'GET',
       }),
     }),
@@ -61,7 +73,7 @@ export const ComplainsSlice = createApi({
     // Get all Profession
     GetAllProfession: builder.query({
       query: () => ({
-        url: `api/method/mla.MlaHelpDesk.get_profession`,
+        url: `${GET_COMPLAINTS_PROFESSION}`,
         method: 'GET',
       }),
     }),
@@ -69,7 +81,7 @@ export const ComplainsSlice = createApi({
     // Get all Status
     GetAllStatus: builder.query({
       query: () => ({
-        url: `api/method/mla.MlaHelpDesk.get_status`,
+        url: `${GET_COMPLAINTS_STATUS}`,
         method: 'GET',
       }),
     }),
@@ -98,16 +110,16 @@ export const ComplainsSlice = createApi({
         });
 
         return {
-          url: `api/method/mla.MlaHelpDesk.get_complain_tickets_filtered?${params.toString()}`,
+          url: `${GET_COMPLAIN_TICKETS_FILTERED}?${params.toString()}`,
           method: 'GET',
         };
       },
     }),
 
-    // update status 
+    // update status
     UpdateStatus: builder.mutation({
       query: ({ticket_name, status}) => ({
-        url: `api/method/mla.MlaHelpDesk.update_ticket`,
+        url: `${UPDATE_COMPLAINTS_TICKET}`,
         method: 'POST',
         body: {
           ticket_name,
@@ -130,6 +142,6 @@ export const {
   useLazyGetAllVillagesQuery,
   useGetAllFilteredComplaintsDataQuery,
   useLazyGetAllFilteredComplaintsDataQuery,
-  
-  useUpdateStatusMutation
+
+  useUpdateStatusMutation,
 } = ComplainsSlice;

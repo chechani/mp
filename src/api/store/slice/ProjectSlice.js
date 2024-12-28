@@ -1,6 +1,6 @@
 import {createApi} from '@reduxjs/toolkit/query/react';
 import {customBaseQuery} from '../utils';
-import {Update_PROJECT_Details} from '../../../Config/url';
+import {CREATE_PROJECT, CREATE_PROJECT_SCHEME, GET_PROJECT, GET_PROJECT_ALL_PANCHAYAT, GET_PROJECT_ALL_VILLAAGES, GET_PROJECT_PANCHAYAT, GET_PROJECT_SCHEME, GET_PROJECT_STATUS, GET_PROJECT_TEHSIL, GET_PROJECT_TYPE, GET_PROJECT_VILLAGES, Update_PROJECT_Details, UPDATE_PROJECT_STATUS} from '../../../Config/url';
 
 export const ProjectSlice = createApi({
   reducerPath: 'ProjectSlice',
@@ -20,7 +20,7 @@ export const ProjectSlice = createApi({
         });
 
         return {
-          url: `api/method/mla.MlaHelpDesk.get_projects?${params.toString()}`,
+          url: `${GET_PROJECT}?${params.toString()}`,
           method: 'GET',
         };
       },
@@ -28,7 +28,7 @@ export const ProjectSlice = createApi({
     // Get Villages
     GetProjectVillages: builder.query({
       query: ({panchayat}) => ({
-        url: `api/method/mla.MlaHelpDesk.get_project_villages?panchayat=${panchayat}`,
+        url: `${GET_PROJECT_VILLAGES}?panchayat=${panchayat}`,
         method: 'GET',
       }),
     }),
@@ -36,7 +36,7 @@ export const ProjectSlice = createApi({
     // Get Panchayat
     GetProjectPanchayat: builder.query({
       query: ({tehsil}) => ({
-        url: `api/method/mla.MlaHelpDesk.get_project_panchayat?tehsil=${tehsil}`,
+        url: `${GET_PROJECT_PANCHAYAT}?tehsil=${tehsil}`,
         method: 'GET',
       }),
     }),
@@ -44,21 +44,21 @@ export const ProjectSlice = createApi({
     // Get all Tehsil
     GetProjectTehsil: builder.query({
       query: () => ({
-        url: `api/method/mla.MlaHelpDesk.get_project_tehsil`,
+        url: `${GET_PROJECT_TEHSIL}`,
         method: 'GET',
       }),
     }),
     // Get all Status
     GetProjectStatus: builder.query({
       query: () => ({
-        url: `api/method/mla.MlaHelpDesk.get_project_status`,
+        url: `${GET_PROJECT_STATUS}`,
         method: 'GET',
       }),
     }),
     // Create Project
     CreateProject: builder.mutation({
       query: payload => ({
-        url: `api/method/mla.MlaHelpDesk.create_project`,
+        url: `${CREATE_PROJECT}`,
         method: 'POST',
         body: payload,
       }),
@@ -67,7 +67,7 @@ export const ProjectSlice = createApi({
     // Get Project type
     GetProjectType: builder.query({
       query: () => ({
-        url: `api/method/mla.MlaHelpDesk.get_project_type`,
+        url: `${GET_PROJECT_TYPE}`,
         method: 'GET',
       }),
     }),
@@ -75,14 +75,14 @@ export const ProjectSlice = createApi({
     // Get Project Scheme
     GetProjectScheme: builder.query({
       query: () => ({
-        url: `api/method/mla.MlaHelpDesk.get_project_scheme`,
+        url: `${GET_PROJECT_SCHEME}`,
         method: 'GET',
       }),
     }),
     // Get all Panchayat
     GetProjectAllPanchayat: builder.query({
       query: ({tehsil}) => ({
-        url: `api/method/mla.MlaHelpDesk.get_all_panchayat?tehsil=${tehsil}`,
+        url: `${GET_PROJECT_ALL_PANCHAYAT}?tehsil=${tehsil}`,
         method: 'GET',
       }),
     }),
@@ -90,21 +90,21 @@ export const ProjectSlice = createApi({
     // Get All Villages
     GetProjectAllVillages: builder.query({
       query: ({panchayat}) => ({
-        url: `api/method/mla.MlaHelpDesk.get_all_villages?panchayat=${panchayat}`,
+        url: `${GET_PROJECT_ALL_VILLAAGES}?panchayat=${panchayat}`,
         method: 'GET',
       }),
     }),
     // create project scheme
     CreateProjectScheme: builder.mutation({
       query: ({scheme_name}) => ({
-        url: `api/method/mla.MlaHelpDesk.create_project_scheme?scheme_name=${scheme_name}`,
+        url: `${CREATE_PROJECT_SCHEME}?scheme_name=${scheme_name}`,
         method: 'POST',
       }),
     }),
     // update project status
     updateProjectStatus: builder.mutation({
       query: ({project_name, project_status}) => ({
-        url: `api/method/mla.MlaHelpDesk.update_project_status`,
+        url: `${UPDATE_PROJECT_STATUS}`,
         method: 'PUT',
         body: {
           project_name,

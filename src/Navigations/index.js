@@ -30,7 +30,7 @@ function AppStack() {
     const splashTimeout = setTimeout(() => {
       setShowSplash(false);
       initialize();
-    }, 6000);
+    }, 3000);
 
     // Cleanup timeout on component unmount
     return () => clearTimeout(splashTimeout);
