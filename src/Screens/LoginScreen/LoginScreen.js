@@ -1,8 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, {useEffect, useState} from 'react';
-import {StyleSheet, TouchableOpacity, View} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import Toast from 'react-native-toast-message';
-import {loginUser} from '../../api/store/slice/authSlice';
+import { loginUser } from '../../api/store/slice/authSlice';
 import {
   selectUrl,
   setDomain,
@@ -13,20 +13,21 @@ import ContainerComponent from '../../Components/Common/ContainerComponent';
 import CustomButton from '../../Components/Common/CustomButton';
 import CustomInput from '../../Components/Common/CustomInput';
 import TextComponent from '../../Components/Common/TextComponent';
-import {useAppDispatch, useAppSelector, useTheme} from '../../Components/hooks';
+import { useAppDispatch, useAppSelector, useTheme } from '../../Components/hooks';
 import NavigationString from '../../Navigations/NavigationString';
 
-import {textScale} from '../../styles/responsiveStyles';
-import {spacing} from '../../styles/spacing';
+import { textScale } from '../../styles/responsiveStyles';
+import { spacing } from '../../styles/spacing';
 import Colors from '../../theme/colors';
 
 import THEME_COLOR from '../../Utils/Constant';
-import {replace} from '../../Utils/helperFunctions';
+import { replace } from '../../Utils/helperFunctions';
 
 const LoginScreen = () => {
   const {theme} = useTheme();
   const dispatch = useAppDispatch();
   const domainState = useAppSelector(state => state.domains);
+  
   const isDarkMode = theme === THEME_COLOR;
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -62,12 +63,21 @@ const LoginScreen = () => {
       setIsLoading(false);
     } catch (error) {
       console.log('Error raised:', error);
+      if (error === 'Domain not set') {
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: 'Domain not set',
+        });
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: 'Something went wrong',
+        });
+      }
+    } finally {
       setIsLoading(false);
-      Toast.show({
-        type: 'error',
-        text1: 'Error',
-        text2: 'Something went wrong',
-      });
     }
   };
 
@@ -75,7 +85,7 @@ const LoginScreen = () => {
     let trimmedDomain = updatedDomain.trim();
 
     // Validate if the domain is empty
-    if (trimmedDomain === '') {
+    if (trimmedDomain === undefined) {
       Toast.show({
         type: 'error',
         text1: 'Error',
@@ -90,18 +100,30 @@ const LoginScreen = () => {
     }
 
     try {
-      if (selectedKey) {
+      if (selectedKey || selectedKey !== undefined) {
         await dispatch(
           updateDomain({
             key: selectedKey,
             newDomain: trimmedDomain,
           }),
-        ).unwrap();
+        )
+          .unwrap()
+          .then(async res => {
+            await dispatch(selectUrl(res?.key)).unwrap();
+          })
+          .catch(error => {
+            console.error('Error setting domain:', error);
+          });
       } else {
-        await dispatch(setDomain(trimmedDomain)).unwrap();
+        await dispatch(setDomain(trimmedDomain))
+          .unwrap()
+          .then(async (newDomain) => {
+            await dispatch(selectUrl(newDomain?.key)).unwrap();
+          })
+          .catch(error => {
+            console.error('Error setting domain:', error);
+          });
       }
-
-      await dispatch(selectUrl(selectedKey)).unwrap();
       setIsEditing(false);
     } catch (error) {
       console.error('Error updating domain:', error);
@@ -121,7 +143,7 @@ const LoginScreen = () => {
         <View style={styles.loginContainer}>
           <CustomInput
             value={updatedDomain}
-            onChange={setUpdatedDomain}
+            onChange={e => setUpdatedDomain(e)}
             label="Domain"
             required={true}
             editable={isEditing}

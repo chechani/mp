@@ -26,17 +26,18 @@ export const STORAGE_KEYS = {
 // Thunk to handle user login
 export const loginUser = createAsyncThunk(
   'auth/login',
-  async (credentials, {rejectWithValue}) => {
+  async (credentials, {rejectWithValue,getState}) => {
     try {
-      const domain = await AsyncStorage.getItem('selected_base_url');
-      const parsedDomain = domain ? JSON.parse(domain) : null;
 
-      if (!parsedDomain || !parsedDomain.domain) {
+        const {selectedDomain} = getState().domains;
+
+        
+      if (!selectedDomain || !selectedDomain.domain) {
         throw new Error('Domain not set');
       }
 
       const response = await fetch(
-        `${parsedDomain.domain}/api/method/frappe_whatsapp.login.app_login`,
+        `${selectedDomain.domain}/api/method/frappe_whatsapp.login.app_login`,
         {
           method: 'POST',
           headers: {

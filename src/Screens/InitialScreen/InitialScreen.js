@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   Alert,
   FlatList,
@@ -31,7 +31,12 @@ const InitialScreen = () => {
   const isDarkMode = theme === THEME_COLOR;
   const bottomSheetRef = useRef(null);
   const dispatch = useAppDispatch();
+  const [domains, setDomains] = useState([]);
   const domainState = useAppSelector(state => state.domains);
+
+  useEffect(() => {
+    setDomains(domainState?.domains);
+  }, [domainState]);
 
   const [domain, setDomainInput] = useState('');
 
@@ -40,25 +45,36 @@ const InitialScreen = () => {
   };
 
   const handleAddUrl = async () => {
+    // Format the domain input
     let formattedDomain = domain
       .trim()
       .toLowerCase()
-      .replace(/(^\w+:|^)\/\//, '');
+      .replace(/(^\w+:|^)\/\//, ''); // Remove protocol if present
 
     const domainRegex =
       /^(?!:\/\/)([a-zA-Z0-9-_]+\.)?[a-zA-Z0-9][a-zA-Z0-9-_]+\.[a-zA-Z]{2,11}?$/;
 
+    // Validate the formatted domain
     if (!formattedDomain || !domainRegex.test(formattedDomain)) {
       Alert.alert('Please enter a valid domain');
-    } else {
-      try {
-        const fullDomain = `https://${formattedDomain}`;
-        await dispatch(setDomain(fullDomain)).unwrap();
-        setDomainInput('');
-        bottomSheetRef.current?.dismiss();
-      } catch (error) {
-        console.error('Error adding domain:', error);
-      }
+      return; // Exit early on invalid input
+    }
+
+    try {
+      // Add "https://" prefix to the domain
+      const fullDomain = `https://${formattedDomain}`;
+
+      // Dispatch setDomain and handle the result
+      const result = await dispatch(setDomain(fullDomain)).unwrap();
+
+      setDomains(prevDomains => [...prevDomains, result]);
+
+      // Clear input and dismiss bottom sheet
+      setDomainInput('');
+      bottomSheetRef.current?.dismiss();
+    } catch (error) {
+      console.error('Error adding domain:', error);
+      Alert.alert('Failed to add domain. Please try again.');
     }
   };
 
@@ -75,6 +91,7 @@ const InitialScreen = () => {
   const handleRemoveDomain = async key => {
     await dispatch(removeDomain(key)).unwrap();
   };
+  
   return (
     <LinearGradient
       colors={
@@ -86,7 +103,7 @@ const InitialScreen = () => {
       end={{x: 1, y: 0}}
       style={[{flex: 1}]}>
       <FlatList
-        data={domainState?.domains}
+        data={domains}
         inverted
         keyExtractor={item => item.key.toString()}
         renderItem={({item}) => {

@@ -18,12 +18,11 @@ export const setDomain = createAsyncThunk(
     try {
       const existingDomains =
         JSON.parse(await AsyncStorage.getItem('domains')) || [];
-      const updatedDomains = [
-        ...existingDomains,
-        {key: Date.now().toString(), domain},
-      ];
+      const newDomain = {key: Date.now().toString(), domain};
+      const updatedDomains = [...existingDomains, newDomain];
       await AsyncStorage.setItem('domains', JSON.stringify(updatedDomains));
-      return updatedDomains;
+
+      return newDomain;
     } catch (error) {
       return rejectWithValue('Failed to set domain');
     }
@@ -46,12 +45,23 @@ export const loadDomain = createAsyncThunk(
 // Thunk to remove a domain from AsyncStorage
 export const removeDomain = createAsyncThunk(
   'domain/removeDomain',
-  async (key, {rejectWithValue}) => {
+  async (key, {rejectWithValue, getState}) => {
     try {
       const existingDomains =
         JSON.parse(await AsyncStorage.getItem('domains')) || [];
+
       const updatedDomains = existingDomains.filter(item => item.key !== key);
+
+      // Get the current selectedDomain from the state
+      const {selectedDomain} = getState().domains;
+
+      // If the removed domain is the selectedDomain, clear it
+      if (selectedDomain?.key === key) {
+        await AsyncStorage.removeItem('selected_base_url');
+      }
+
       await AsyncStorage.setItem('domains', JSON.stringify(updatedDomains));
+
       return updatedDomains;
     } catch (error) {
       return rejectWithValue('Failed to remove domain');
@@ -104,10 +114,22 @@ export const updateDomain = createAsyncThunk(
     try {
       const existingDomains =
         JSON.parse(await AsyncStorage.getItem('domains')) || [];
-      const updatedDomains = existingDomains.map(item =>
-        item.key === key ? {...item, domain: newDomain} : item,
-      );
+
+      let updatedDomains;
+
+      if (existingDomains.length === 0) {
+        // If there are no existing domains, add the new domain as a fresh entry
+        updatedDomains = [{key, domain: newDomain}];
+      } else {
+        // Otherwise, update the domain with the matching key
+        updatedDomains = existingDomains.map(item =>
+          item.key === key ? {...item, domain: newDomain} : item,
+        );
+      }
+
+      // Save the updated domains to AsyncStorage
       await AsyncStorage.setItem('domains', JSON.stringify(updatedDomains));
+
       return updatedDomains;
     } catch (error) {
       return rejectWithValue('Failed to update domain');
@@ -123,18 +145,18 @@ const domainSlice = createSlice({
   extraReducers: builder => {
     builder
       // Set domain cases
-      .addCase(setDomain.pending, state => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(setDomain.fulfilled, (state, action) => {
-        state.loading = false;
-        state.domains = action.payload;
-      })
-      .addCase(setDomain.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+      // .addCase(setDomain.pending, state => {
+      //   state.loading = true;
+      //   state.error = null;
+      // })
+      // .addCase(setDomain.fulfilled, (state, action) => {
+      //   state.loading = false;
+      //   state.domains = action.payload;
+      // })
+      // .addCase(setDomain.rejected, (state, action) => {
+      //   state.loading = false;
+      //   state.error = action.payload;
+      // })
       // Load domain cases
       .addCase(loadDomain.pending, state => {
         state.loading = true;
@@ -155,8 +177,12 @@ const domainSlice = createSlice({
       })
       .addCase(removeDomain.fulfilled, (state, action) => {
         state.loading = false;
-        state.domains = action.payload;
-        state.selectedDomain = null;
+        state.domains = action.payload.updatedDomains;
+        // Clear the selectedDomain if it was removed
+        if (action.payload.clearedSelectedDomain) {
+          state.selectedDomain = null;
+          state.isSaveUrl = false;
+        }
       })
       .addCase(removeDomain.rejected, (state, action) => {
         state.loading = false;
