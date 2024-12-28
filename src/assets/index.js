@@ -50,5 +50,4 @@ export { default as Info } from './Svg/Info';
 export { default as ReportIcon } from './Svg/Report'
 export { default as HelpIcon } from './Svg/Help'
 export { default as WhatsAppIcon } from './Svg/WhatsApp'
-export { default as Logo2 } from './Svg/logo2'
 export { default as AnniversaryIcon } from './Svg/anniversary'
