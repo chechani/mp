@@ -40,10 +40,10 @@ const SupportScreen = () => {
         {/* Top Container - Logo Section */}
         <View style={styles.topContainer}>
           <View style={styles.logoWrapper}>
-            <SvgIcon.Logo2
+            {/* <SvgIcon.Logo2
               height={spacing.HEIGHT_105}
               width={spacing.WIDTH_156}
-            />
+            /> */}
           </View>
         </View>
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -26,9 +26,9 @@ import {
   useLazyGetWhatsAppContactCategoryQuery,
 } from '../../api/store/slice/contactSlice';
 import * as SvgIcon from '../../assets';
-import { textScale } from '../../styles/responsiveStyles';
-import { spacing } from '../../styles/spacing';
-import { fontNames } from '../../styles/typography';
+import {textScale} from '../../styles/responsiveStyles';
+import {spacing} from '../../styles/spacing';
+import {fontNames} from '../../styles/typography';
 import BottonComp from '../Common/BottonComp';
 import CommonPopupModal from '../Common/CommonPopupModal';
 import CommonToolBar from '../Common/CommonToolBar';
@@ -37,10 +37,15 @@ import CustomBottomSheet from '../Common/CustomBottomSheet';
 import CustomBottomSheetFlatList from '../Common/CustomBottomSheetFlatList';
 import LoadingScreen from '../Common/Loader';
 import RegularText from '../Common/RegularText';
-import { useTheme } from '../hooks';
+import {useTheme} from '../hooks';
+import CustomInput from '../Common/CustomInput';
+import CustomButton from '../Common/CustomButton';
+import TextComponent from '../Common/TextComponent';
+import Colors from '../../theme/colors';
 
 const ContactListComponent = () => {
   const {theme} = useTheme();
+  const isDarkMode = theme === THEME_COLOR;
   const [contacts, setContacts] = useState([]);
   const [filteredContacts, setFilteredContacts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -332,8 +337,7 @@ const ContactListComponent = () => {
             isSelected
               ? styles.selectedContactBackground
               : {
-                  backgroundColor:
-                    theme === THEME_COLOR ? colors.white : colors.black,
+                  backgroundColor: isDarkMode ? colors.white : colors.black,
                 },
           ]}
           onPress={handlePress}
@@ -344,7 +348,7 @@ const ContactListComponent = () => {
             <RegularText
               style={[
                 styles.contactName,
-                {color: theme === THEME_COLOR ? colors.black : colors.white},
+                {color: isDarkMode ? colors.black : colors.white},
               ]}>
               {item?.full_name}
             </RegularText>
@@ -352,7 +356,7 @@ const ContactListComponent = () => {
               <RegularText
                 style={[
                   styles.companyName,
-                  {color: theme === THEME_COLOR ? colors.black : colors.white},
+                  {color: isDarkMode ? colors.black : colors.white},
                 ]}>
                 {item?.company_name}
               </RegularText>
@@ -361,7 +365,7 @@ const ContactListComponent = () => {
               <RegularText
                 style={[
                   styles.customCategory,
-                  {color: theme === THEME_COLOR ? colors.black : colors.white},
+                  {color: isDarkMode ? colors.black : colors.white},
                 ]}>
                 {item?.custom_category}
               </RegularText>
@@ -372,8 +376,7 @@ const ContactListComponent = () => {
           style={[
             styles.divider,
             {
-              backgroundColor:
-                theme === THEME_COLOR ? colors.grey300 : colors.grey600,
+              backgroundColor: isDarkMode ? colors.grey300 : colors.grey600,
             },
           ]}
         />
@@ -453,12 +456,12 @@ const ContactListComponent = () => {
     <View
       style={[
         styles.headerContainer,
-        {backgroundColor: theme === THEME_COLOR ? colors.white : '#151414'},
+        {backgroundColor: isDarkMode ? colors.white : '#151414'},
       ]}>
       <RegularText
         style={[
           styles.filterTitle,
-          {color: theme === THEME_COLOR ? colors.black : colors.white},
+          {color: isDarkMode ? colors.black : colors.white},
         ]}>
         Filter by Category
       </RegularText>
@@ -504,165 +507,119 @@ const ContactListComponent = () => {
         />
       )}
 
-      <View
-        style={[
-          styles.container,
-          {
-            backgroundColor:
-              theme === THEME_COLOR ? colors.white : colors.black,
-          },
-        ]}>
-        <View style={{marginHorizontal: spacing.MARGIN_10}}>
-          <View
-            style={{
-              alignItems: 'center',
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-            }}>
-            <RegularText
-              onPress={() => handleCategoryChange('All')}
+      <View style={{marginHorizontal: spacing.MARGIN_10}}>
+        <View
+          style={{
+            alignItems: 'center',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+          }}>
+          <RegularText
+            onPress={() => handleCategoryChange('All')}
+            style={[
+              styles.filterText,
+              {color: isDarkMode ? colors.black : colors.white},
+              selectedCategory === 'All',
+            ]}>
+            Reset All
+          </RegularText>
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <TouchableOpacity
+              onPress={toggleBottomSheet}
+              style={styles.addContactBtnContainer}>
+              <SvgIcon.AddICon
+                width={spacing.WIDTH_30}
+                height={spacing.HEIGHT_30}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => fetchContacts({page, category: selectedCategory})}
               style={[
-                styles.filterText,
-                {color: theme === THEME_COLOR ? colors.black : colors.white},
-                selectedCategory === 'All',
+                styles.addContactBtnContainer,
+                {marginLeft: spacing.MARGIN_6},
               ]}>
-              Reset All
-            </RegularText>
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <TouchableOpacity
-                onPress={toggleBottomSheet}
-                style={styles.addContactBtnContainer}>
-                <SvgIcon.AddICon
-                  width={spacing.WIDTH_30}
-                  height={spacing.HEIGHT_30}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() =>
-                  fetchContacts({page, category: selectedCategory})
-                }
-                style={[
-                  styles.addContactBtnContainer,
-                  {marginLeft: spacing.MARGIN_6},
-                ]}>
-                <SvgIcon.ReloadIcon
-                  width={spacing.WIDTH_30}
-                  height={spacing.HEIGHT_30}
-                />
-              </TouchableOpacity>
-            </View>
+              <SvgIcon.ReloadIcon
+                width={spacing.WIDTH_30}
+                height={spacing.HEIGHT_30}
+              />
+            </TouchableOpacity>
           </View>
         </View>
-
-        <FlatList
-          // estimatedItemSize={100}
-          data={filteredContacts}
-          keyExtractor={item => item?.mobile_no?.toString()}
-          renderItem={renderContactItem}
-          ListEmptyComponent={() => (
-            <RegularText
-              style={[
-                styles.noDataText,
-                {color: theme === THEME_COLOR ? colors.black : colors.white},
-              ]}>
-              No contacts found.
-            </RegularText>
-          )}
-          contentContainerStyle={styles.flatListContainer}
-          onEndReached={searchQuery === '' ? handleLoadMore : null}
-          onEndReachedThreshold={0.5}
-          ListFooterComponent={
-            isLoadingMore && (
-              <ActivityIndicator size="large" color={colors.green} style={{}} />
-            )
-          }
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-        />
       </View>
 
-      {/* BottomSheet for adding a new contact */}
-      <CustomBottomSheet ref={bottomSheetRef} snapPoints={['80%']}>
-        <View style={styles.bottomSheetContent}>
+      <FlatList
+        data={filteredContacts}
+        keyExtractor={item => item?.mobile_no?.toString()}
+        renderItem={renderContactItem}
+        ListEmptyComponent={() => (
           <RegularText
             style={[
-              styles.bottomSheetTitle,
-              {color: theme === THEME_COLOR ? colors.black : colors.white},
+              styles.noDataText,
+              {color: isDarkMode ? colors.black : colors.white},
             ]}>
-            Add New Contact
+            No contacts found.
           </RegularText>
-          <TextInput
-            style={[
-              styles.input,
-              {
-                color: theme === THEME_COLOR ? colors.grey700 : colors.grey300,
-              },
-            ]}
+        )}
+        contentContainerStyle={styles.flatListContainer}
+        onEndReached={searchQuery === '' ? handleLoadMore : null}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          isLoadingMore && (
+            <ActivityIndicator size="large" color={colors.green} style={{}} />
+          )
+        }
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      />
+
+      {/* BottomSheet for adding a new contact */}
+      <CustomBottomSheet ref={bottomSheetRef} snapPoints={['90%']}>
+        <View style={styles.bottomSheetContent}>
+          <TextComponent
+            text={'Add New Contact'}
+            size={textScale(18)}
+            style={{
+              color: isDarkMode ? Colors.dark.black : Colors.light.white,
+            }}
+            textAlign={'center'}
+          />
+          <CustomInput
             placeholder="First Name"
-            placeholderTextColor={
-              theme === THEME_COLOR ? colors.grey700 : colors.grey300
-            }
             value={newContact.first_name}
-            onChangeText={text =>
-              setNewContact({...newContact, first_name: text})
-            }
+            onChange={text => setNewContact({...newContact, first_name: text})}
+            label="First Name"
+            required={true}
           />
-          <TextInput
-            style={[
-              styles.input,
-              {
-                color: theme === THEME_COLOR ? colors.grey700 : colors.grey300,
-              },
-            ]}
+          <CustomInput
             placeholder="Last Name"
-            placeholderTextColor={
-              theme === THEME_COLOR ? colors.grey700 : colors.grey300
-            }
             value={newContact.last_name}
-            onChangeText={text =>
-              setNewContact({...newContact, last_name: text})
-            }
+            onChange={text => setNewContact({...newContact, last_name: text})}
+            label="Last Name"
+            required={true}
           />
-          <TextInput
-            style={[
-              styles.input,
-              {
-                color: theme === THEME_COLOR ? colors.grey700 : colors.grey300,
-              },
-            ]}
+          <CustomInput
             placeholder="Mobile Number"
-            placeholderTextColor={
-              theme === THEME_COLOR ? colors.grey700 : colors.grey300
-            }
             value={newContact.mobile}
-            keyboardType="numeric"
-            onChangeText={text => setNewContact({...newContact, mobile: text})}
+            onChange={text => setNewContact({...newContact, mobile: text})}
+            label="Mobile Number"
+            required={true}
           />
-          <TextInput
-            style={[
-              styles.input,
-              {
-                color: theme === THEME_COLOR ? colors.grey700 : colors.grey300,
-              },
-            ]}
+          <CustomInput
             placeholder="Email"
-            placeholderTextColor={
-              theme === THEME_COLOR ? colors.grey700 : colors.grey300
-            }
             value={newContact.email}
-            onChangeText={text => setNewContact({...newContact, email: text})}
+            onChange={text => setNewContact({...newContact, email: text})}
+            label="Email"
           />
-          <BottonComp
-            style={styles.addContactBtn}
-            text="Add Contact"
-            textStyle={styles.addContactText}
+          <CustomButton
+            title={'Add Contact'}
             onPress={handleAddContact}
             isLoading={isCreateContact}
             disabled={isContactBtnDisabled}
           />
         </View>
       </CustomBottomSheet>
+
       <CustomBottomSheetFlatList
         ref={filterFormCategoryBottomSheet}
         snapPoints={['60%']}
