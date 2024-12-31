@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {
   Alert,
   StyleSheet,
@@ -12,21 +12,22 @@ import {
   useUploadeMediaMutation,
 } from '../../api/store/slice/templeteSlice';
 import * as SvgIcon from '../../assets';
-import { textScale } from '../../styles/responsiveStyles';
-import { spacing } from '../../styles/spacing';
-import { fontNames } from '../../styles/typography';
+import {textScale} from '../../styles/responsiveStyles';
+import {spacing} from '../../styles/spacing';
+import {fontNames} from '../../styles/typography';
 import Colors from '../../theme/colors';
 import colors from '../../Utils/colors';
-import { pickAndSendMediaMessage } from '../../Utils/commonImagePicker';
+import {pickAndSendMediaMessage} from '../../Utils/commonImagePicker';
 import THEME_COLOR from '../../Utils/Constant';
-import { CommonToastMessage } from '../../Utils/helperFunctions';
+import {CommonToastMessage} from '../../Utils/helperFunctions';
 import AnimatedComponentToggle from '../Common/AnimatedComponentToggale';
 import AnimatedModal from '../Common/AnimatedModal';
 import BottomComp from '../Common/BottonComp';
 import CommonPopupModal from '../Common/CommonPopupModal';
 import CustomBottomSheetFlatList from '../Common/CustomBottomSheetFlatList';
 import RegularText from '../Common/RegularText';
-import { useTheme } from '../hooks';
+import {useTheme} from '../hooks';
+import Loader from '../Common/Loader';
 
 const TemaplateItemColum = ({Mobile_No, templateBottomSheetRef}) => {
   const {theme} = useTheme();

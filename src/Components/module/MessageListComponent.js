@@ -12,7 +12,7 @@ import DocumentPicker from 'react-native-document-picker';
 
 // Import your custom components and utilities
 import MessageListColum from '../Colums/MessageListColum';
-import LoadingScreen from '../Common/Loader';
+import Loader from '../Common/Loader';
 import RegularText from '../Common/RegularText';
 
 // Import your custom styles and utilities
@@ -33,10 +33,9 @@ import {
   useLazyGetWhatsAppOptionMessagesQuery,
   useSendOutGoingMediaMessageMutation,
   useSendOutGoingTextMessageMutation,
-  useSendWhatsappKeyWordMessageMutation
+  useSendWhatsappKeyWordMessageMutation,
 } from '../../api/store/slice/chatSlice';
 import * as SvgIcon from '../../assets/index';
-import { useSocket } from '../../context/SocketContext';
 import NavigationString from '../../Navigations/NavigationString';
 import colors from '../../Utils/colors';
 import { pickAndSendMediaMessage } from '../../Utils/commonImagePicker';
@@ -59,6 +58,7 @@ const MESSAGE_RECEIVED_EVENT = 'new_whatsapp_message';
 
 const MessageListComponent = ({Mobile_No, unreadMessages, title}) => {
   const {theme} = useTheme();
+  const isDarkMode = theme === THEME_COLOR;
 
   // Your API endpoints
   const [triggerChatGetData] = useLazyGetAllChatQuery();
@@ -92,12 +92,11 @@ const MessageListComponent = ({Mobile_No, unreadMessages, title}) => {
   const [deleteChats] = useDeleteChatsMutation();
   const [allDeleteChat] = useAlldeleteChatMutation();
 
-
   // Refs
   const messageBottomSheetRef = useRef(null);
   const tamplateBottomSheetRef = useRef(null);
 
-  const {socket} = useSocket();
+  const socket = useAppSelector(state => state.socket.socket);
   // State variables
   const [data, setData] = useState([]);
   const [message, setMessage] = useState('');
@@ -131,7 +130,9 @@ const MessageListComponent = ({Mobile_No, unreadMessages, title}) => {
 
   const selectionMode = selectedMessages.length > 0;
   const LIMIT = 30;
-  const selectedDomain = useAppSelector(state => state.domains?.selectedDomain?.domain);
+  const selectedDomain = useAppSelector(
+    state => state.domains?.selectedDomain?.domain,
+  );
 
   const [activeQuery, setActiveQuery] = useState(null);
 
@@ -442,7 +443,6 @@ const MessageListComponent = ({Mobile_No, unreadMessages, title}) => {
     }
   };
 
-
   // socket event listener
   const onMessageReceived = (message, event, user, docname) => {
     setData(prevData => {
@@ -460,8 +460,6 @@ const MessageListComponent = ({Mobile_No, unreadMessages, title}) => {
       socket.off(MESSAGE_RECEIVED_EVENT, onMessageReceived);
     };
   }, [socket]);
-  
-
 
   const handleSendTemplate = () => {
     setOpenChatTemplate(false);
@@ -529,10 +527,9 @@ const MessageListComponent = ({Mobile_No, unreadMessages, title}) => {
         return acc;
       }, []);
       const res = await deleteChats({record_names: names});
-      const deleteResponse = res?.data
+      const deleteResponse = res?.data;
       console.log(deleteResponse);
-      
-      
+
       setIsToolBarVisible(false);
       setSelectedMessages([]);
       setIsDeleteMode(false);
@@ -639,7 +636,7 @@ const MessageListComponent = ({Mobile_No, unreadMessages, title}) => {
 
   const messageBottomSheetListEmptyComponent = () => {
     if (isLoading) {
-      return <LoadingScreen color={colors.green} />;
+      return <Loader />;
     }
     return (
       <View style={styles.chatOptionContainer}>
@@ -693,9 +690,9 @@ const MessageListComponent = ({Mobile_No, unreadMessages, title}) => {
   const handleComfirmClearChat = async () => {
     try {
       const res = await allDeleteChat({contacts: [title]});
-      const allChatDeleteResponse = res?.data
+      const allChatDeleteResponse = res?.data;
       console.log(allChatDeleteResponse);
-      
+
       if (allChatDeleteResponse?.status_code === 200) {
         CommonToastMessage('success', allChatDeleteResponse?.message);
         setIsClearChat(false);
@@ -711,7 +708,7 @@ const MessageListComponent = ({Mobile_No, unreadMessages, title}) => {
   return (
     <>
       {loading ? (
-        <LoadingScreen color={colors.green} />
+        <Loader />
       ) : (
         <>
           {isToolBarVisible ? (
@@ -752,16 +749,13 @@ const MessageListComponent = ({Mobile_No, unreadMessages, title}) => {
               renderItem={renderItem}
               onEndReachedThreshold={0.5}
               onEndReached={handleLoadMore}
-              ListFooterComponent={
-                loadingMore && <LoadingScreen color={colors.green} />
-              }
+              ListFooterComponent={loadingMore && <Loader />}
               ListEmptyComponent={
                 <RegularText
                   style={[
                     styles.emptyText,
                     {
-                      color:
-                        theme === THEME_COLOR ? colors.black : colors.white,
+                      color: isDarkMode ? colors.black : colors.white,
                     },
                   ]}>
                   No messages found.
@@ -801,9 +795,7 @@ const MessageListComponent = ({Mobile_No, unreadMessages, title}) => {
                     <SvgIcon.AddICon
                       height={spacing.HEIGHT_34}
                       width={spacing.WIDTH_34}
-                      color={
-                        theme === THEME_COLOR ? colors.black : colors.white
-                      }
+                      color={isDarkMode ? colors.black : colors.white}
                     />
                   </TouchableOpacity>
                 )}
@@ -813,8 +805,9 @@ const MessageListComponent = ({Mobile_No, unreadMessages, title}) => {
                     style={[
                       styles.textInputContainer,
                       {
-                        backgroundColor:
-                          theme === THEME_COLOR ? colors.white : colors.grey800,
+                        backgroundColor: isDarkMode
+                          ? colors.white
+                          : colors.grey800,
                       },
                       // {height: inputHeightAnim},
                     ]}>
@@ -823,10 +816,9 @@ const MessageListComponent = ({Mobile_No, unreadMessages, title}) => {
                         style={[
                           styles.replyingMessageContainer,
                           {
-                            backgroundColor:
-                              theme === THEME_COLOR
-                                ? colors.grey200
-                                : colors.grey700,
+                            backgroundColor: isDarkMode
+                              ? colors.grey200
+                              : colors.grey700,
                           },
                         ]}>
                         <View style={styles.replyingMessageContent}>
@@ -835,10 +827,9 @@ const MessageListComponent = ({Mobile_No, unreadMessages, title}) => {
                               style={[
                                 styles.replyText,
                                 {
-                                  color:
-                                    theme === THEME_COLOR
-                                      ? colors.grey600
-                                      : colors.grey100,
+                                  color: isDarkMode
+                                    ? colors.grey600
+                                    : colors.grey100,
                                 },
                               ]}
                               numberOfLines={2}>
@@ -861,11 +852,7 @@ const MessageListComponent = ({Mobile_No, unreadMessages, title}) => {
                             onPress={handleCancelReply}
                             style={styles.cancelReplyButton}>
                             <SvgIcon.Wrong
-                              color={
-                                theme === THEME_COLOR
-                                  ? colors.black
-                                  : colors.white
-                              }
+                              color={isDarkMode ? colors.black : colors.white}
                             />
                           </TouchableOpacity>
                         </View>
@@ -880,19 +867,14 @@ const MessageListComponent = ({Mobile_No, unreadMessages, title}) => {
                         ref={inputRef}
                         placeholder="Send Message"
                         placeholderTextColor={
-                          theme === THEME_COLOR
-                            ? colors.grey500
-                            : colors.grey100
+                          isDarkMode ? colors.grey500 : colors.grey100
                         }
                         style={[
                           styles.inputTextStyle,
                           {
                             height: inputHeight,
                             maxHeight: maxTextInputHeight,
-                            color:
-                              theme === THEME_COLOR
-                                ? colors.black
-                                : colors.white,
+                            color: isDarkMode ? colors.black : colors.white,
                           },
                         ]}
                         multiline
@@ -913,11 +895,7 @@ const MessageListComponent = ({Mobile_No, unreadMessages, title}) => {
                         <SvgIcon.SendMessage
                           height={spacing.HEIGHT_24}
                           width={spacing.WIDTH_24}
-                          color={
-                            theme === THEME_COLOR
-                              ? colors.grey800
-                              : colors.grey100
-                          }
+                          color={isDarkMode ? colors.grey800 : colors.grey100}
                         />
                       </TouchableOpacity>
                     </View>
@@ -1035,8 +1013,7 @@ const MessageListComponent = ({Mobile_No, unreadMessages, title}) => {
         right={spacing.WIDTH_10}
         modalStyle={{
           elevation: 0,
-          backgroundColor:
-            theme === THEME_COLOR ? colors.grey600 : colors.grey900,
+          backgroundColor: isDarkMode ? colors.grey600 : colors.grey900,
         }}>
         <View style={styles.optionGrid}>
           {options.map((option, index) => {
@@ -1056,8 +1033,7 @@ const MessageListComponent = ({Mobile_No, unreadMessages, title}) => {
                   style={[
                     styles.optionText,
                     {
-                      color:
-                        theme === THEME_COLOR ? colors.black : colors.white,
+                      color: isDarkMode ? colors.black : colors.white,
                     },
                   ]}>
                   {option.name}
@@ -1075,7 +1051,7 @@ const MessageListComponent = ({Mobile_No, unreadMessages, title}) => {
         right={spacing.WIDTH_10}
         modalStyle={{
           borderRadius: spacing.RADIUS_6,
-          backgroundColor: theme === THEME_COLOR ? colors.white : colors.black,
+          backgroundColor: isDarkMode ? colors.white : colors.black,
           paddingHorizontal: spacing.PADDING_20,
         }}>
         <TouchableOpacity onPress={handleClearChat}>
@@ -1083,7 +1059,7 @@ const MessageListComponent = ({Mobile_No, unreadMessages, title}) => {
             style={{
               fontSize: textScale(14),
               fontFamily: fontNames.ROBOTO_FONT_FAMILY_BOLD,
-              color: theme === THEME_COLOR ? colors.black : colors.white,
+              color: isDarkMode ? colors.black : colors.white,
             }}>
             clear chat
           </RegularText>

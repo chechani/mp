@@ -1,20 +1,18 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import NavigationString from '../../Navigations/NavigationString';
-import { AuthContext } from '../../Provider/AuthProvider';
 import { useTheme } from '../../Components/hooks';
+import NavigationString from '../../Navigations/NavigationString';
 import colors from '../../Utils/colors';
 import THEME_COLOR from '../../Utils/Constant';
-import { navigate } from '../../Utils/helperFunctions';
 
 const DashboardScreen = () => {
   const {theme} = useTheme();
-  const {saveInitialScreen} = useContext(AuthContext);
+  // const {saveInitialScreen} = useContext(AuthContext);
 
-  const handleScreenClick = async screenName => {
-    await saveInitialScreen(screenName);
-    navigate(screenName);
-  };
+  // const handleScreenClick = async screenName => {
+  //   await saveInitialScreen(screenName);
+  //   navigate(screenName);
+  // };
 
   return (
     <View

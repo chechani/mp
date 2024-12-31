@@ -91,11 +91,11 @@ const GetAllMessageComponent = () => {
       case 'Unread':
         return message.unread_messages > 0;
       case 'All':
-        return true; 
-      case 'Favourites': 
-        return message.is_favourite; 
+        return true;
+      case 'Favourites':
+        return message.is_favourite;
       case 'Archived':
-        return message.is_archived; 
+        return message.is_archived;
       default:
         return false;
     }
@@ -166,7 +166,7 @@ const GetAllMessageComponent = () => {
           },
         ]}>
         {isLoading === 'initial' ? (
-          <LoadingScreen color={colors.green800} />
+          <LoadingScreen />
         ) : (
           <FlashList
             data={filteredData}

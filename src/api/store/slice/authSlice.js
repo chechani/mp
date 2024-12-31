@@ -26,14 +26,10 @@ export const STORAGE_KEYS = {
 // Thunk to handle user login
 export const loginUser = createAsyncThunk(
   'auth/login',
-  async (credentials, {rejectWithValue,getState}) => {
+  async (credentials, {rejectWithValue, getState}) => {
     try {
+      const {selectedDomain} = getState().domains;
 
-        const {selectedDomain} = getState().domains;
-        console.log(selectedDomain);
-        
-
-        
       if (!selectedDomain || !selectedDomain.domain) {
         throw new Error('Domain not set');
       }
@@ -112,10 +108,10 @@ export const loadAuthState = createAsyncThunk(
         AsyncStorage.getItem(STORAGE_KEYS.USER),
         AsyncStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN),
       ]);
-
       if (accessToken && userStr) {
         try {
           const user = JSON.parse(userStr);
+
           return {user, isAuthenticated: true};
         } catch (error) {
           console.error('Failed to parse user data:', error);

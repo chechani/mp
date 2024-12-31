@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Modal, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {Modal, StyleSheet, Text, TouchableOpacity, View, Platform} from 'react-native';
 import Animated, {
   runOnJS,
   useAnimatedStyle,
@@ -25,26 +25,25 @@ const CommonPopupModal = ({
   const opacity = useSharedValue(0);
   const scale = useSharedValue(0.8);
 
+  const isLightTheme = theme === THEME_COLOR;
+  const textColor = isLightTheme ? colors.grey900 : colors.grey200;
+  const modalBackground = isLightTheme ? colors.white : colors.grey900;
+
   useEffect(() => {
     if (isVisible) {
-      setModalVisible(true);
-      // Animate opacity and scale in
+      setTimeout(() => setModalVisible(true), 50); // Delay to prevent render glitches
       opacity.value = withTiming(1, {duration: 200});
-      scale.value = withSpring(1, {damping: 20, stiffness: 100});
+      scale.value = withSpring(1);
     } else {
-      // Animate opacity and scale out
       opacity.value = withTiming(0, {duration: 200}, finished => {
-        if (finished) {
-          runOnJS(setModalVisible)(false);
-        }
+        if (finished) runOnJS(setModalVisible)(false);
       });
-      scale.value = withTiming(0.8, {duration: 200});
+      scale.value = withTiming(0.8);
     }
   }, [isVisible]);
 
   // Animated styles
   const animatedOverlayStyle = useAnimatedStyle(() => ({
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     opacity: opacity.value,
   }));
 
@@ -58,33 +57,29 @@ const CommonPopupModal = ({
       transparent
       visible={modalVisible}
       animationType="none"
-      onRequestClose={onCancel}>
+      onRequestClose={onCancel}
+      accessibilityViewIsModal
+      accessibilityLabel="Popup Modal">
       <Animated.View style={[styles.overlay, animatedOverlayStyle]}>
         <Animated.View
           style={[
             styles.modalContainer,
             animatedModalStyle,
-            {
-              backgroundColor:
-                theme === THEME_COLOR ? colors.white : colors.grey900,
-            },
+            {backgroundColor: modalBackground},
           ]}>
-          <Text style={[styles.messageText, messageText,{color: theme === THEME_COLOR ? colors.white : colors.grey200,}]}>
+          <Text
+            style={[styles.messageText, messageText, {color: textColor}]}
+            accessibilityRole="text">
             {message}
           </Text>
           <View style={styles.buttonContainer}>
             {buttons.map((button, index) => (
               <TouchableOpacity
                 key={index}
-                style={[
-                  styles.button,
-                  {backgroundColor: button.color || '#28a745'},
-                ]}
-                onPress={() => {
-                  if (typeof button.onPress === 'function') {
-                    button.onPress();
-                  }
-                }}>
+                style={[styles.button, {backgroundColor: button.color || '#28a745'}]}
+                onPress={button.onPress}
+                accessibilityRole="button"
+                accessibilityLabel={button.text}>
                 <Text style={styles.buttonText}>{button.text}</Text>
               </TouchableOpacity>
             ))}
@@ -102,15 +97,15 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    // The background color and opacity are handled by Animated styles
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
   },
   modalContainer: {
     width: '80%',
-    backgroundColor: 'white',
     borderRadius: 15,
     padding: 25,
     alignItems: 'center',
-    elevation: 10,
+    elevation: Platform.OS === 'android' ? 10 : 0,
+    backgroundColor: 'white', // Default background
   },
   messageText: {
     fontSize: 18,

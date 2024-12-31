@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -8,7 +8,7 @@ import {
   Vibration,
   View,
 } from 'react-native';
-import { useApiURLs } from '../../Config/url';
+import {useApiURLs} from '../../Config/url';
 import NavigationString from '../../Navigations/NavigationString';
 import THEME_COLOR from '../../Utils/Constant';
 import colors from '../../Utils/colors';
@@ -18,16 +18,16 @@ import {
   goBack,
   navigate,
 } from '../../Utils/helperFunctions';
-import { useDeleteContactMutation } from '../../api/store/slice/contactSlice';
-import { useLazySearchConatctQuery } from '../../api/store/slice/searchSlice';
+import {useDeleteContactMutation} from '../../api/store/slice/contactSlice';
+import {useLazySearchConatctQuery} from '../../api/store/slice/searchSlice';
 import * as SvgIcon from '../../assets';
-import { textScale } from '../../styles/responsiveStyles';
-import { spacing } from '../../styles/spacing';
-import { fontNames } from '../../styles/typography';
+import {textScale} from '../../styles/responsiveStyles';
+import {spacing} from '../../styles/spacing';
+import {fontNames} from '../../styles/typography';
 import AnimatedModal from '../Common/AnimatedModal';
 import CommonPopupModal from '../Common/CommonPopupModal';
 import RegularText from '../Common/RegularText';
-import { useTheme } from '../hooks';
+import {useTheme} from '../hooks';
 
 const SearchContact = () => {
   const {theme} = useTheme();
@@ -237,6 +237,23 @@ const SearchContact = () => {
           />
         )}
       </View>
+
+      <CommonPopupModal
+        isVisible={isDeleteMode}
+        buttons={[
+          {
+            text: 'Cancel',
+            color: colors.red600,
+            onPress: handleCancelDeletePress,
+          },
+          {
+            text: 'Delete',
+            color: colors.green600,
+            onPress: handleConfirmDeletePress,
+          },
+        ]}
+        message="Are you sure you want to Delete"
+      />
       <AnimatedModal
         isVisible={isModalVisible}
         close={() => {
@@ -244,6 +261,7 @@ const SearchContact = () => {
         }}
         animationType="none"
         top={spacing.HEIGHT_216}
+        left={spacing.HEIGHT_128}
         backDropColor="rgba(255,255,255, 0.3)"
         modalStyle={{elevation: 0}}>
         <TouchableOpacity
@@ -262,24 +280,6 @@ const SearchContact = () => {
           </RegularText>
         </TouchableOpacity>
       </AnimatedModal>
-
-      <CommonPopupModal
-        isVisible={isDeleteMode}
-        buttons={[
-          {
-            text: 'Cancel',
-            color: colors.red600,
-            onPress: handleCancelDeletePress,
-          },
-          {
-            text: 'Delete',
-            color: colors.green600,
-            onPress: handleConfirmDeletePress,
-          },
-        ]}
-        message="Are you sure you want to Delete"
-        messageColor="#4B0082"
-      />
     </>
   );
 };

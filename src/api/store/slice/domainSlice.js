@@ -1,6 +1,6 @@
 // Domain Slice for managing domain information
-import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
 
 // Initial state for domain management
 const domainInitialState = {
@@ -73,8 +73,6 @@ export const removeDomain = createAsyncThunk(
 export const selectUrl = createAsyncThunk(
   'domain/selectUrl',
   async (key, {rejectWithValue}) => {
-    console.log(key);
-    
     try {
       const existingDomains =
         JSON.parse(await AsyncStorage.getItem('domains')) || [];
@@ -146,19 +144,6 @@ const domainSlice = createSlice({
   reducers: {},
   extraReducers: builder => {
     builder
-      // Set domain cases
-      // .addCase(setDomain.pending, state => {
-      //   state.loading = true;
-      //   state.error = null;
-      // })
-      // .addCase(setDomain.fulfilled, (state, action) => {
-      //   state.loading = false;
-      //   state.domains = action.payload;
-      // })
-      // .addCase(setDomain.rejected, (state, action) => {
-      //   state.loading = false;
-      //   state.error = action.payload;
-      // })
       // Load domain cases
       .addCase(loadDomain.pending, state => {
         state.loading = true;
@@ -233,5 +218,4 @@ const domainSlice = createSlice({
       });
   },
 });
-
 export default domainSlice.reducer;

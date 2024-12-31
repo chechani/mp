@@ -1,17 +1,16 @@
 import React from 'react';
-import {ImageBackground, StyleSheet, View} from 'react-native';
+import { ImageBackground, View } from 'react-native';
+import { useTheme } from '../../Components/hooks';
 import MessageListComponent from '../../Components/module/MessageListComponent';
-import {Images} from '../../Utils/ImagePath';
-import {useTheme} from '../../Components/hooks';
 import THEME_COLOR from '../../Utils/Constant';
-import ContainerComponent from '../../Components/Common/ContainerComponent';
+import { Images } from '../../Utils/ImagePath';
 
 const ChatScreen = ({route}) => {
   const {theme} = useTheme();
   const {Mobile_No, title, unreadMessages, contact} = route.params;
 
   return (
-    <ContainerComponent noPadding useScrollView={false}>
+    <View style={{flex:1}}>
       <ImageBackground
         source={
           theme === THEME_COLOR
@@ -26,7 +25,7 @@ const ChatScreen = ({route}) => {
           contact={contact}
         />
       </ImageBackground>
-    </ContainerComponent>
+    </View>
   );
 };
 

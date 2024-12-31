@@ -1,4 +1,5 @@
 import {combineReducers, configureStore} from '@reduxjs/toolkit';
+import socketReducer from '../store/slice/socketSlice'
 import domainReducer from './slice/domainSlice';
 import authReducer from './slice/authSlice';
 import themeReducer from './slice/themeSlice';
@@ -15,6 +16,7 @@ import {FormApiSlices} from './slice/formSlice';
 import {TempleteApiSlices} from './slice/templeteSlice';
 
 const baseReducer = combineReducers({
+  socket: socketReducer,
   domains: domainReducer,
   auth: authReducer,
   theme: themeReducer,

@@ -3,9 +3,9 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {
   ActivityIndicator,
   Keyboard,
-  Modal,
   ScrollView,
   StyleSheet,
+  Text,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -30,6 +30,8 @@ import CustomInput from '../Common/CustomInput';
 import LoadingScreen from '../Common/Loader';
 import TextComponent from '../Common/TextComponent';
 import {useTheme} from '../hooks';
+import Modal from 'react-native-modal';
+import CustomModal from '../Common/CustomModal';
 
 const ComplainsComponent = () => {
   const {theme} = useTheme();
@@ -64,6 +66,7 @@ const ComplainsComponent = () => {
     triggerGetAllPanchayat,
     {data: panchayats, isFetching: isFetchingPanchayats},
   ] = useLazyGetAllPanchayatQuery();
+
   const [triggerGetAllTehsil, {data: tehsils, isFetching: isFetchingTehsils}] =
     useLazyGetAllTehsilQuery();
   const [
@@ -164,7 +167,6 @@ const ComplainsComponent = () => {
     fetchComplaintsData(1, true);
   };
 
-
   // Render footer for loading indicator
   const RenderFooter = () => {
     if (isFetching && !isRefreshing) {
@@ -191,7 +193,7 @@ const ComplainsComponent = () => {
         });
         break;
       case 'panchayat':
-        triggerGetAllPanchayat({tehsil: filters.tehsil});
+        triggerGetAllPanchayat({tehsil: 'Indore'});
         break;
       case 'tehsil':
         triggerGetAllTehsil();
@@ -256,7 +258,6 @@ const ComplainsComponent = () => {
 
   return (
     <>
-      {/* <View style={{flex: 1}}> */}
       <CommoneHeader
         title="Complaints"
         showLeftIcon={true}
@@ -307,7 +308,6 @@ const ComplainsComponent = () => {
               displayValue = filters[key] || '';
               break;
           }
-
           return (
             <TouchableOpacity
               key={key}
@@ -338,6 +338,9 @@ const ComplainsComponent = () => {
           value={filters.mobile}
           onChange={handleMobileChange}
           maxLength={10}
+          inputStyles={{
+            color: isDarkMode ? Colors.dark.white : Colors.light.white,
+          }}
         />
       </View>
       {/* Apply Filters Button */}
@@ -356,103 +359,105 @@ const ComplainsComponent = () => {
       </View>
 
       {isRefreshing ? (
-        <LoadingScreen color={Colors.default.primaryText} />
+        <LoadingScreen />
       ) : (
-        <>
-          <FlashList
-            data={complaintsData}
-            renderItem={({item}) => (
-              <ComplainsColums
-                item={item}
-                fetchData={() => fetchComplaintsData(1)}
+        <FlashList
+          data={complaintsData}
+          renderItem={({item}) => (
+            <ComplainsColums
+              item={item}
+              fetchData={() => fetchComplaintsData(1)}
+            />
+          )}
+          estimatedItemSize={100}
+          onEndReached={loadMoreData}
+          onEndReachedThreshold={0.1}
+          ListFooterComponent={RenderFooter}
+          refreshing={isRefreshing}
+          onRefresh={refreshData}
+          ListEmptyComponent={
+            !isFetching &&
+            complaintsData.length === 0 && (
+              <TextComponent
+                text={'No complaints available'}
+                size={textScale(16)}
+                style={{
+                  color: isDarkMode ? Colors.dark.black : Colors.light.white,
+                  textAlign: 'center',
+                }}
               />
-            )}
-            estimatedItemSize={100}
-            onEndReached={loadMoreData}
-            onEndReachedThreshold={0.1}
-            ListFooterComponent={RenderFooter}
-            refreshing={isRefreshing}
-            onRefresh={refreshData}
-            ListEmptyComponent={
-              !isFetching &&
-              complaintsData.length === 0 && (
+            )
+          }
+        />
+      )}
+
+      <CustomModal
+        visible={modalVisible.visible}
+        onClose={() => setModalVisible({key: null, visible: false})}
+        title={`Select ${modalVisible.key}`}>
+        {isFetchingFilterData ? (
+          <ActivityIndicator size="large" color={Colors.default.primaryText} />
+        ) : isDataAvailable ? (
+          <ScrollView style={styles.modalScrollView}>
+            {modalVisible.key === 'status' ? (
+              filterData[modalVisible.key]?.data?.length > 0 ? (
+                filterData[modalVisible.key]?.data?.map((item, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.modalItem}
+                    onPress={() => handleFilterChange(modalVisible.key, item)}>
+                    <TextComponent
+                      text={item}
+                      size={textScale(16)}
+                      color={
+                        isDarkMode ? Colors.dark.black : Colors.light.white
+                      }
+                    />
+                  </TouchableOpacity>
+                ))
+              ) : (
                 <TextComponent
-                  text={'No complaints available'}
+                  text={'No options available'}
                   size={textScale(16)}
-                  style={{
-                    color: isDarkMode ? Colors.dark.black : Colors.light.white,
-                    textAlign: 'center',
-                  }}
+                  color={isDarkMode ? Colors.dark.black : Colors.light.white}
                 />
               )
-            }
-          />
-        </>
-      )}
-      {/* </View> */}
+            ) : Array.isArray(filterData[modalVisible.key]?.data) &&
+              filterData[modalVisible.key]?.data?.length > 0 ? (
+              filterData[modalVisible.key]?.data?.map((item, index) => {
+                let label = '';
+                let value = '';
 
-      <Modal
-        transparent={true}
-        visible={modalVisible.visible}
-        animationType="slide"
-        onRequestClose={() => setModalVisible({key: null, visible: false})}>
-        {/* Backdrop Overlay */}
-        <TouchableOpacity
-          style={styles.modalBackdrop}
-          activeOpacity={1}
-          onPress={() => setModalVisible({key: null, visible: false})}
-        />
+                switch (modalVisible.key) {
+                  case 'village':
+                    label = item.village_name_hindi || 'Unnamed Village';
+                    value = item.name;
+                    break;
+                  case 'panchayat':
+                    label = item.abbreviated_name_hindi || 'Unnamed Panchayat';
+                    value = item.name;
+                    break;
+                  case 'tehsil':
+                    label = item.tehsil_name_hindi || 'Unnamed Tehsil';
+                    value = item.name;
+                    break;
+                  case 'profession':
+                    label = item.profession_hindi || 'Unnamed Profession';
+                    value = item.name;
+                    break;
+                  default:
+                    label = item.name;
+                    value = item.name;
+                    break;
+                }
 
-        {/* Modal Content */}
-        <View style={styles.modalOverlay}>
-          <View
-            style={[
-              styles.modalContainer,
-              {
-                backgroundColor: isDarkMode
-                  ? Colors.light.white
-                  : Colors.dark.black,
-              },
-            ]}>
-            <TextComponent
-              text={'Select ' + modalVisible.key}
-              size={textScale(18)}
-              fontWeight="600"
-              style={{
-                color: isDarkMode ? Colors.dark.black : Colors.light.white,
-              }}
-            />
-
-            {isFetchingFilterData ? (
-              <ActivityIndicator
-                size="large"
-                color={Colors.default.primaryText}
-              />
-            ) : isDataAvailable ? (
-              <ScrollView style={styles.modalScrollView}>
-                {modalVisible.key === 'status' ? (
-                  filterData[modalVisible.key]?.data?.length > 0 ? (
-                    filterData[modalVisible.key]?.data?.map((item, index) => (
-                      <TouchableOpacity
-                        key={index}
-                        style={styles.modalItem}
-                        onPress={() =>
-                          handleFilterChange(modalVisible.key, item)
-                        }>
-                        <TextComponent
-                          text={item}
-                          size={textScale(16)}
-                          style={{
-                            color: isDarkMode
-                              ? Colors.dark.black
-                              : Colors.light.white,
-                          }}
-                        />
-                      </TouchableOpacity>
-                    ))
-                  ) : (
+                return (
+                  <TouchableOpacity
+                    key={value}
+                    style={styles.modalItem}
+                    onPress={() => handleFilterChange(modalVisible.key, value)}>
                     <TextComponent
-                      text={'No options available'}
+                      text={label}
                       size={textScale(16)}
                       style={{
                         color: isDarkMode
@@ -460,67 +465,9 @@ const ComplainsComponent = () => {
                           : Colors.light.white,
                       }}
                     />
-                  )
-                ) : Array.isArray(filterData[modalVisible.key]?.data) &&
-                  filterData[modalVisible.key]?.data?.length > 0 ? (
-                  filterData[modalVisible.key]?.data?.map(item => {
-                    let label = '';
-                    let value = '';
-
-                    switch (modalVisible.key) {
-                      case 'village':
-                        label = item.village_name_hindi;
-                        value = item.name;
-                        break;
-                      case 'panchayat':
-                        label = item.abbreviated_name_hindi;
-                        value = item.name;
-                        break;
-                      case 'tehsil':
-                        label = item.tehsil_name_hindi;
-                        value = item.name;
-                        break;
-                      case 'profession':
-                        label = item.profession_hindi;
-                        value = item.name;
-                        break;
-                      default:
-                        label = item.name;
-                        value = item.name;
-                        break;
-                    }
-
-                    return (
-                      <TouchableOpacity
-                        key={value}
-                        style={styles.modalItem}
-                        onPress={() =>
-                          handleFilterChange(modalVisible.key, value)
-                        }>
-                        <TextComponent
-                          text={label}
-                          size={textScale(16)}
-                          style={{
-                            color: isDarkMode
-                              ? Colors.dark.black
-                              : Colors.light.white,
-                          }}
-                        />
-                      </TouchableOpacity>
-                    );
-                  })
-                ) : (
-                  <TextComponent
-                    text={'No options available'}
-                    size={textScale(16)}
-                    style={{
-                      color: isDarkMode
-                        ? Colors.dark.black
-                        : Colors.light.white,
-                    }}
-                  />
-                )}
-              </ScrollView>
+                  </TouchableOpacity>
+                );
+              })
             ) : (
               <TextComponent
                 text={'No options available'}
@@ -530,13 +477,21 @@ const ComplainsComponent = () => {
                 }}
               />
             )}
-            <CustomButton
-              title={'Close'}
-              onPress={() => setModalVisible({key: null, visible: false})}
-            />
-          </View>
-        </View>
-      </Modal>
+          </ScrollView>
+        ) : (
+          <TextComponent
+            text={'No options available'}
+            size={textScale(16)}
+            style={{
+              color: isDarkMode ? Colors.dark.black : Colors.light.white,
+            }}
+          />
+        )}
+        <CustomButton
+          title={'Close'}
+          onPress={() => setModalVisible({key: null, visible: false})}
+        />
+      </CustomModal>
     </>
   );
 };
@@ -584,12 +539,14 @@ const styles = StyleSheet.create({
     padding: spacing.PADDING_20,
     alignItems: 'center',
   },
-
   modalScrollView: {
     width: '100%',
     marginBottom: spacing.MARGIN_10,
   },
   modalItem: {
     paddingVertical: spacing.PADDING_10,
+    width: '100%',
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.default.grey,
   },
 });

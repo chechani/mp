@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -18,12 +18,12 @@ import {
   useLazySearchContactQuery,
 } from '../../api/store/slice/contactSlice';
 import * as SvgIcon from '../../assets/index';
-import { useApiURLs } from '../../Config/url';
-import { boxShadow, boxShadowLess } from '../../styles/Mixins';
-import { textScale } from '../../styles/responsiveStyles';
-import { spacing } from '../../styles/spacing';
-import { fontNames } from '../../styles/typography';
-import { apiGet } from '../../Utils/apiCalls';
+import {useApiURLs} from '../../Config/url';
+import {boxShadow, boxShadowLess} from '../../styles/Mixins';
+import {textScale} from '../../styles/responsiveStyles';
+import {spacing} from '../../styles/spacing';
+import {fontNames} from '../../styles/typography';
+import {apiGet} from '../../Utils/apiCalls';
 import colors from '../../Utils/colors';
 import THEME_COLOR from '../../Utils/Constant';
 import {
@@ -38,34 +38,52 @@ import CustomBottomSheetFlatList from '../Common/CustomBottomSheetFlatList';
 import LoadingScreen from '../Common/Loader';
 import RegularText from '../Common/RegularText';
 import TextInputComp from '../Common/TextInputComp';
-import { useTheme } from '../hooks';
+import {useTheme} from '../hooks';
+import CustomInput from '../Common/CustomInput';
+import Colors from '../../theme/colors';
 
 const INITIAL_PAGE = 1;
 const PAGE_SIZE = 50;
 const SEARCH_DEBOUNCE_MS = 500;
 
-const GroupInfo = ({groupName, title, setCreateGroup}) => {
+const GroupInfo = ({groupName, title, setCreateGroup, isDarkMode}) => {
   return (
     <View style={styles.groupInfoContainer}>
-      <TextInputComp
+      <CustomInput
         placeholder="Group Name"
+        label="Group Name"
+        required={true}
         value={groupName}
-        onChangeText={text =>
+        onChange={text =>
           setCreateGroup(prevState => ({...prevState, groupName: text}))
         }
-        textInputLeftIcon={SvgIcon.GroupIcon}
-        istextInputLeftIcon={true}
-        inputStyle={styles.groupInput}
+        inputStyles={{
+          color: isDarkMode ? Colors.dark.black : Colors.light.white,
+        }}
+        showFirstChildren={true}
+        FirstChildren={
+          <SvgIcon.GroupIcon
+            color={isDarkMode ? Colors.dark.black : Colors.light.white}
+          />
+        }
       />
-      <TextInputComp
+      <CustomInput
         placeholder="Title"
+        label="Title"
+        required={true}
         value={title}
-        onChangeText={text =>
+        onChange={text =>
           setCreateGroup(prevState => ({...prevState, title: text}))
         }
-        textInputLeftIcon={SvgIcon.Artical}
-        istextInputLeftIcon={true}
-        inputStyle={styles.groupInput}
+        inputStyles={{
+          color: isDarkMode ? Colors.dark.black : Colors.light.white,
+        }}
+        showFirstChildren={true}
+        FirstChildren={
+          <SvgIcon.Artical
+            color={isDarkMode ? Colors.dark.black : Colors.light.white}
+          />
+        }
       />
     </View>
   );
@@ -74,7 +92,7 @@ const ListHeaderComponent = ({
   groupName,
   title,
   setCreateGroup,
-  theme,
+  isDarkMode,
   isContactBtn,
   setIsDynamicFilters,
   onClickContactBotton,
@@ -85,7 +103,7 @@ const ListHeaderComponent = ({
       <RegularText
         style={[
           styles.modalHeader,
-          {color: theme === THEME_COLOR ? colors.black : colors.white},
+          {color: isDarkMode ? colors.black : colors.white},
         ]}>
         Create New Group
       </RegularText>
@@ -93,6 +111,7 @@ const ListHeaderComponent = ({
         groupName={groupName}
         title={title}
         setCreateGroup={setCreateGroup}
+        isDarkMode={isDarkMode}
       />
       {isContactBtn && (
         <BottomComp
@@ -111,12 +130,12 @@ const ListHeaderComponent = ({
 };
 
 const DynamicFiltersRow = React.memo(
-  ({index, filter, onFilterChange, handleDynamicFilterApiCall, theme, url}) => {
+  ({index, filter, onFilterChange, handleDynamicFilterApiCall, isDarkMode, url}) => {
     return (
       <View style={{flex: 1}}>
         <RegularText
           style={{
-            color: theme === THEME_COLOR ? colors.black : colors.white,
+            color: isDarkMode ? colors.black : colors.white,
             marginLeft: spacing.MARGIN_14,
             fontSize: textScale(16),
             marginVertical: spacing.MARGIN_8,
@@ -176,6 +195,7 @@ const DynamicFiltersRow = React.memo(
 
 const BroadCastGroupListComponent = () => {
   const {theme} = useTheme();
+  const isDarkMode = theme === THEME_COLOR;
   const createGroupRef = useRef(null);
   const contactRef = useRef(null);
   const searchTimeoutRef = useRef(null);
@@ -190,8 +210,7 @@ const BroadCastGroupListComponent = () => {
   } = useGetBroadCastGroupQuery();
   const [triggerAllContact] = useLazyGetAllContactQuery();
   const [triggerSearchContact] = useLazySearchContactQuery();
-  const { GET_LOGICAL_OPERATOR, GET_OPERATOR, GET_CRITERIA} =
-    useApiURLs();
+  const {GET_LOGICAL_OPERATOR, GET_OPERATOR, GET_CRITERIA} = useApiURLs();
 
   const [createNewGroup] = useCreateNewGroupMutation();
 
@@ -359,7 +378,7 @@ const BroadCastGroupListComponent = () => {
       const isSelected = selectedContacts.includes(id);
       const backgroundColor = isSelected
         ? colors.green200
-        : theme === THEME_COLOR
+        : isDarkMode
         ? colors.white
         : '#151414';
 
@@ -373,14 +392,14 @@ const BroadCastGroupListComponent = () => {
             <RegularText
               style={[
                 styles.contactName,
-                {color: theme === THEME_COLOR ? colors.black : colors.white},
+                {color: isDarkMode ? colors.black : colors.white},
               ]}>
               {item?.full_name || 'Unknown Contact'}
             </RegularText>
             <RegularText
               style={[
                 styles.contactMobile,
-                {color: theme === THEME_COLOR ? colors.black : colors.white},
+                {color: isDarkMode ? colors.black : colors.white},
               ]}>
               {item?.mobile_no}
             </RegularText>
@@ -495,7 +514,7 @@ const BroadCastGroupListComponent = () => {
         style={[
           styles.searchHeader,
           {
-            backgroundColor: theme === THEME_COLOR ? colors.white : '#151414',
+            backgroundColor: isDarkMode ? colors.white : '#151414',
           },
         ]}>
         <TouchableOpacity
@@ -507,7 +526,7 @@ const BroadCastGroupListComponent = () => {
           <SvgIcon.BackIcon
             width={spacing.WIDTH_24}
             height={spacing.WIDTH_24}
-            color={theme === THEME_COLOR ? colors.grey800 : colors.white}
+            color={isDarkMode ? colors.grey800 : colors.white}
           />
         </TouchableOpacity>
         <TextInput
@@ -525,7 +544,7 @@ const BroadCastGroupListComponent = () => {
           <SvgIcon.Filter
             width={spacing.WIDTH_24}
             height={spacing.WIDTH_24}
-            color={theme === THEME_COLOR ? colors.grey800 : colors.white}
+            color={isDarkMode ? colors.grey800 : colors.white}
           />
         </TouchableOpacity> */}
       </View>
@@ -537,7 +556,7 @@ const BroadCastGroupListComponent = () => {
       <RegularText
         style={[
           styles.noDataText,
-          {color: theme === THEME_COLOR ? colors.black : colors.white},
+          {color: isDarkMode ? colors.black : colors.white},
         ]}>
         {contactsError || 'No contacts found.'}
       </RegularText>
@@ -663,7 +682,7 @@ const BroadCastGroupListComponent = () => {
 
       <CustomBottomSheetFlatList
         ref={createGroupRef}
-        snapPoints={['40%', '90%']}
+        snapPoints={['50%', '90%']}
         enableDynamicSizing={false}
         data={dynamicFilters}
         keyExtractor={(item, index) => index.toString()}
@@ -671,7 +690,7 @@ const BroadCastGroupListComponent = () => {
           <DynamicFiltersRow
             filter={item}
             index={index}
-            theme={theme}
+            isDarkMode={isDarkMode}
             onFilterChange={handleFilterChange}
             handleDynamicFilterApiCall={handleDynamicFilterApiCall}
             url={[GET_CRITERIA, GET_OPERATOR, GET_LOGICAL_OPERATOR]}
@@ -683,7 +702,7 @@ const BroadCastGroupListComponent = () => {
             groupName={createGroup.groupName}
             title={createGroup.title}
             setCreateGroup={setCreateGroup}
-            theme={theme}
+            isDarkMode={isDarkMode}
             contactRef={contactRef}
             isContactBtn={isContactBtn}
             setIsDynamicFilters={setIsDynamicFilters}
@@ -768,6 +787,9 @@ const BroadCastGroupListComponent = () => {
 export default BroadCastGroupListComponent;
 
 const styles = StyleSheet.create({
+  groupInfoContainer: {
+    paddingHorizontal: spacing.PADDING_16,
+  },
   container: {
     flex: 1,
   },

@@ -3,29 +3,25 @@ import {
   DrawerContentScrollView,
   DrawerItemList,
 } from '@react-navigation/drawer';
-import React, { useEffect, useState } from 'react';
-import { StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {StatusBar, StyleSheet, TouchableOpacity, View} from 'react-native';
 import Toast from 'react-native-toast-message';
-import {
-  logoutUser,
-  STORAGE_KEYS
-} from '../../api/store/slice/authSlice';
+import {logoutUser, STORAGE_KEYS} from '../../api/store/slice/authSlice';
 import * as SvgIcon from '../../assets';
-import commonStyle, { APP_PADDING_HORIZONTAL } from '../../styles/commonStyle';
-import { textScale } from '../../styles/responsiveStyles';
-import { spacing } from '../../styles/spacing';
-import { fontNames } from '../../styles/typography';
+import commonStyle, {APP_PADDING_HORIZONTAL} from '../../styles/commonStyle';
+import {textScale} from '../../styles/responsiveStyles';
+import {spacing} from '../../styles/spacing';
+import {fontNames} from '../../styles/typography';
 import colors from '../../Utils/colors';
 import THEME_COLOR from '../../Utils/Constant';
-import { closeDrawer } from '../../Utils/helperFunctions';
+import {closeDrawer} from '../../Utils/helperFunctions';
 import RegularText from '../Common/RegularText';
-import { useAppDispatch, useTheme } from '../hooks';
+import {useAppDispatch, useTheme} from '../hooks';
 
 const DrawerComponent = props => {
   const {theme, toggleTheme} = useTheme();
 
   const dispatch = useAppDispatch();
- 
 
   const [userInfo, setUserInfo] = useState({
     userName: '',
@@ -75,9 +71,8 @@ const DrawerComponent = props => {
     getUserData();
   }, []);
 
-  const handleLogout = async (key) => {
+  const handleLogout = async () => {
     try {
-      await AsyncStorage.multiRemove(Object.values(STORAGE_KEYS));
       dispatch(logoutUser());
       Toast.show({
         type: 'success',

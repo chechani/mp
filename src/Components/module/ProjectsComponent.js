@@ -1,6 +1,6 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { FlashList } from '@shopify/flash-list';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import {FlashList} from '@shopify/flash-list';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -9,7 +9,7 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  View
+  View,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import {
@@ -27,13 +27,13 @@ import {
   useUpdateProjectDetailsMutation,
 } from '../../api/store/slice/ProjectSlice';
 import * as SvgIcon from '../../assets';
-import { textScale } from '../../styles/responsiveStyles';
-import { spacing } from '../../styles/spacing';
-import { fontNames } from '../../styles/typography';
+import {textScale} from '../../styles/responsiveStyles';
+import {spacing} from '../../styles/spacing';
+import {fontNames} from '../../styles/typography';
 import Colors from '../../theme/colors';
 import colors from '../../Utils/colors';
 import THEME_COLOR from '../../Utils/Constant';
-import { openDrawer } from '../../Utils/helperFunctions';
+import {openDrawer} from '../../Utils/helperFunctions';
 import ProjectlistColums from '../Colums/ProjectlistColums';
 import CommoneHeader from '../Common/CommoneHeader';
 import CustomBottomSheet from '../Common/CustomBottomSheet';
@@ -43,7 +43,7 @@ import CustomInput from '../Common/CustomInput';
 import LoadingScreen from '../Common/Loader';
 import RegularText from '../Common/RegularText';
 import TextComponent from '../Common/TextComponent';
-import { useTheme } from '../hooks';
+import {useTheme} from '../hooks';
 
 const ProjectsComponent = () => {
   const {theme} = useTheme();
@@ -351,33 +351,7 @@ const ProjectsComponent = () => {
 
   const handleCommonBarRightIconPress = index => {
     const actions = {
-      0: () => {
-        projectAddRef.current?.present(),
-          setFormState({
-            project_name: '',
-            project_code: '',
-            project_type: '',
-            project_scheme: '',
-            status: '',
-            village: '',
-            estimated_cost: '',
-            allocated_cost: '',
-            actual_cost: '',
-            project_description: '',
-            actual_end_date: '',
-            actual_start_date: '',
-            start_date: '',
-            end_date: '',
-          });
-        setFormStateDisplay({
-          end_date: '',
-          project_scheme: '',
-          project_type: '',
-          start_date: '',
-          status: '',
-          village: '',
-        });
-      },
+      0: () => projectAddRef.current?.present(),
       1: () => fetchProjectData,
     };
 
@@ -701,6 +675,33 @@ const ProjectsComponent = () => {
     }
   };
 
+  const projectAddOnDismiss = () => {
+    setFormState({
+      project_name: '',
+      project_code: '',
+      project_type: '',
+      project_scheme: '',
+      status: '',
+      village: '',
+      estimated_cost: '',
+      allocated_cost: '',
+      actual_cost: '',
+      project_description: '',
+      actual_end_date: '',
+      actual_start_date: '',
+      start_date: '',
+      end_date: '',
+    });
+    setFormStateDisplay({
+      end_date: '',
+      project_scheme: '',
+      project_type: '',
+      start_date: '',
+      status: '',
+      village: '',
+    });
+  };
+
   return (
     <>
       <CommoneHeader
@@ -967,6 +968,7 @@ const ProjectsComponent = () => {
       <CustomBottomSheetFlatList
         ref={projectAddRef}
         snapPoints={['100%']}
+        onDismiss={projectAddOnDismiss}
         keyExtractor={index => index.toString()}
         data={[1]}
         renderItem={() => (
@@ -976,11 +978,6 @@ const ProjectsComponent = () => {
               paddingVertical: spacing.PADDING_16,
               paddingHorizontal: spacing.PADDING_10,
             }}>
-            {/* <RegularText
-              style={[styles.header, {color: themeColors.textColor}]}>
-              Create Project
-            </RegularText> */}
-
             <TextComponent
               text={' Create Project'}
               size={textScale(16)}
@@ -1008,9 +1005,7 @@ const ProjectsComponent = () => {
                     }));
                   }}>
                   <SvgIcon.Wrong
-                    color={
-                      isDarkMode ? Colors.dark.black : Colors.light.white
-                    }
+                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
                   />
                 </TouchableOpacity>
               }
@@ -1022,7 +1017,7 @@ const ProjectsComponent = () => {
               value={formState.project_code}
               onChange={text => handleInputChange('project_code', text)}
               inputStyles={{
-                color:isDarkMode ? Colors.dark.black : Colors.light.white,
+                color: isDarkMode ? Colors.dark.black : Colors.light.white,
               }}
               showSecondChildren={formState.project_code}
               SecondChildren={
@@ -1034,9 +1029,7 @@ const ProjectsComponent = () => {
                     }));
                   }}>
                   <SvgIcon.Wrong
-                    color={
-                      isDarkMode ? Colors.dark.black : Colors.light.white
-                    }
+                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
                   />
                 </TouchableOpacity>
               }
@@ -1100,7 +1093,7 @@ const ProjectsComponent = () => {
               }
               editable={false}
               inputStyles={{
-                color: isDarkMode ? Colors.dark.black : Colors.light.white
+                color: isDarkMode ? Colors.dark.black : Colors.light.white,
               }}
               showSecondChildren={true}
               SecondChildren={
@@ -1149,7 +1142,7 @@ const ProjectsComponent = () => {
               }
               editable={false}
               inputStyles={{
-                color:isDarkMode ? Colors.dark.black : Colors.light.white,
+                color: isDarkMode ? Colors.dark.black : Colors.light.white,
               }}
               showSecondChildren={true}
               SecondChildren={
@@ -1189,7 +1182,7 @@ const ProjectsComponent = () => {
                 openNestedBottomSheet('tehsil', triggerGetAllTehsil);
               }}
               inputStyles={{
-                color: isDarkMode ? Colors.dark.black : Colors.light.white
+                color: isDarkMode ? Colors.dark.black : Colors.light.white,
               }}
               editable={false}
               showSecondChildren={true}
@@ -1232,7 +1225,7 @@ const ProjectsComponent = () => {
               value={formState.estimated_cost}
               onChange={text => handleInputChange('estimated_cost', text)}
               inputStyles={{
-                color: isDarkMode ? Colors.dark.black : Colors.light.white
+                color: isDarkMode ? Colors.dark.black : Colors.light.white,
               }}
               type={'numeric'}
               showSecondChildren={formState.estimated_cost}
@@ -1245,9 +1238,7 @@ const ProjectsComponent = () => {
                     }))
                   }>
                   <SvgIcon.Wrong
-                    color={
-                      isDarkMode ? Colors.dark.black : Colors.light.white
-                    }
+                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
                   />
                 </TouchableOpacity>
               }
@@ -1257,7 +1248,7 @@ const ProjectsComponent = () => {
               value={formState.allocated_cost}
               onChange={text => handleInputChange('allocated_cost', text)}
               inputStyles={{
-                color: isDarkMode ? Colors.dark.black : Colors.light.white
+                color: isDarkMode ? Colors.dark.black : Colors.light.white,
               }}
               type={'numeric'}
               showSecondChildren={formState.allocated_cost}
@@ -1270,9 +1261,7 @@ const ProjectsComponent = () => {
                     }))
                   }>
                   <SvgIcon.Wrong
-                    color={
-                      isDarkMode ? Colors.dark.black : Colors.light.white
-                    }
+                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
                   />
                 </TouchableOpacity>
               }
@@ -1295,9 +1284,7 @@ const ProjectsComponent = () => {
                     }))
                   }>
                   <SvgIcon.Wrong
-                    color={
-                      isDarkMode ? Colors.dark.black : Colors.light.white
-                    }
+                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
                   />
                 </TouchableOpacity>
               }
@@ -1326,9 +1313,7 @@ const ProjectsComponent = () => {
                       }));
                   }}>
                   <SvgIcon.Wrong
-                    color={
-                      isDarkMode ? Colors.dark.black : Colors.light.white
-                    }
+                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
                   />
                 </TouchableOpacity>
               }
@@ -1366,9 +1351,7 @@ const ProjectsComponent = () => {
                       }));
                   }}>
                   <SvgIcon.Wrong
-                    color={
-                      isDarkMode ? Colors.dark.black : Colors.light.white
-                    }
+                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
                   />
                 </TouchableOpacity>
               }
@@ -1405,9 +1388,7 @@ const ProjectsComponent = () => {
                     }))
                   }>
                   <SvgIcon.Wrong
-                    color={
-                      isDarkMode ? Colors.dark.black : Colors.light.white
-                    }
+                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
                   />
                 </TouchableOpacity>
               }
@@ -1577,9 +1558,7 @@ const ProjectsComponent = () => {
                     }
                   }}>
                   <SvgIcon.Wrong
-                    color={
-                      isDarkMode ? Colors.dark.black : Colors.light.white
-                    }
+                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
                   />
                 </TouchableOpacity>
               }
@@ -1754,9 +1733,7 @@ const ProjectsComponent = () => {
                     }))
                   }>
                   <SvgIcon.Wrong
-                    color={
-                      isDarkMode ? Colors.dark.black : Colors.light.white
-                    }
+                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
                   />
                 </TouchableOpacity>
               }
@@ -1780,9 +1757,7 @@ const ProjectsComponent = () => {
                     }))
                   }>
                   <SvgIcon.Wrong
-                    color={
-                      isDarkMode ? Colors.dark.black : Colors.light.white
-                    }
+                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
                   />
                 </TouchableOpacity>
               }
@@ -1806,9 +1781,7 @@ const ProjectsComponent = () => {
                     }))
                   }>
                   <SvgIcon.Wrong
-                    color={
-                      isDarkMode ? Colors.dark.black : Colors.light.white
-                    }
+                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
                   />
                 </TouchableOpacity>
               }
@@ -1837,9 +1810,7 @@ const ProjectsComponent = () => {
                       }));
                   }}>
                   <SvgIcon.Wrong
-                    color={
-                      isDarkMode ? Colors.dark.black : Colors.light.white
-                    }
+                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
                   />
                 </TouchableOpacity>
               }
@@ -1878,9 +1849,7 @@ const ProjectsComponent = () => {
                       }));
                   }}>
                   <SvgIcon.Wrong
-                    color={
-                      isDarkMode ? Colors.dark.black : Colors.light.white
-                    }
+                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
                   />
                 </TouchableOpacity>
               }
@@ -1920,9 +1889,7 @@ const ProjectsComponent = () => {
                     }))
                   }>
                   <SvgIcon.Wrong
-                    color={
-                      isDarkMode ? Colors.dark.black : Colors.light.white
-                    }
+                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
                   />
                 </TouchableOpacity>
               }
@@ -1964,7 +1931,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontFamily: fontNames.ROBOTO_FONT_FAMILY_BOLD,
   },
-  
+
   buttonText: {
     color: colors.white,
     fontSize: textScale(14),
@@ -1992,7 +1959,7 @@ const styles = StyleSheet.create({
     padding: spacing.PADDING_20,
     alignItems: 'center',
   },
- 
+
   modalScrollView: {
     width: '100%',
     marginBottom: spacing.MARGIN_10,
@@ -2001,14 +1968,13 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.PADDING_10,
   },
 
-
   header: {
     fontSize: textScale(20),
     fontFamily: fontNames.ROBOTO_FONT_FAMILY_BOLD,
     marginBottom: spacing.MARGIN_20,
     alignSelf: 'center',
   },
- 
+
   buttonText: {
     color: '#fff',
     fontFamily: fontNames.ROBOTO_FONT_FAMILY_BOLD,

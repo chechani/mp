@@ -1,7 +1,8 @@
 import React from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import Colors from '../../theme/colors';
 
-const LoadingScreen = ({color = '#000', containerStyle,size='large'}) => {
+const LoadingScreen = ({color=Colors.dark.accent, containerStyle,size='large'}) => {
   return (
     <View
       style={[

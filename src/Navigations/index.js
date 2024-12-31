@@ -1,14 +1,15 @@
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React, { useEffect, useState } from 'react';
-import { StyleSheet } from 'react-native';
-import { initializeApp } from '../api/store/slice/initialization';
+import {NavigationContainer} from '@react-navigation/native';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import React, {useEffect, useState} from 'react';
+import {StyleSheet} from 'react-native';
+import {initializeApp} from '../api/store/slice/initialization';
 import LoadingScreen from '../Components/Common/Loader';
-import { useAppDispatch, useAppSelector } from '../Components/hooks/index';
-import { navigationRef } from '../NavigationServies';
-import { SplashScreen } from '../Screens';
-import { AuthStack } from './AuthStack';
-import { MainStack } from './MainStack';
+import {useAppDispatch, useAppSelector} from '../Components/hooks/index';
+import {navigationRef} from '../NavigationServies';
+import {SplashScreen} from '../Screens';
+import {AuthStack} from './AuthStack';
+import {MainStack} from './MainStack';
+import Colors from '../theme/colors';
 
 const Stack = createNativeStackNavigator();
 
@@ -27,14 +28,16 @@ function AppStack() {
         setInitialized(true);
       }
     };
+    initialize();
+  }, [dispatch]);
+
+  useEffect(() => {
     const splashTimeout = setTimeout(() => {
       setShowSplash(false);
-      initialize();
     }, 3000);
 
-    // Cleanup timeout on component unmount
     return () => clearTimeout(splashTimeout);
-  }, [dispatch]);
+  }, []);
 
   const {isAuthenticated} = useAppSelector(state => state.auth);
 
@@ -42,7 +45,7 @@ function AppStack() {
     return <SplashScreen />;
   }
   if (!initialized) {
-    return <LoadingScreen color="green" />;
+    return <LoadingScreen />;
   }
 
   return (

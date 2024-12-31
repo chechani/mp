@@ -188,6 +188,9 @@ const LoginScreen = () => {
                 />
               </View>
             }
+            inputStyles={{
+              color: isDarkMode ? Colors.dark.black : Colors.light.white,
+            }}
           />
 
           <CustomInput
@@ -204,6 +207,9 @@ const LoginScreen = () => {
                 />
               </View>
             }
+            inputStyles={{
+              color: isDarkMode ? Colors.dark.black : Colors.light.white,
+            }}
           />
 
           <CustomButton

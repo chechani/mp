@@ -309,7 +309,7 @@ const ComplainsComponent = () => {
                   style={[
                     styles.filterItem,
                     {
-                      backgroundColor: isDarkMode
+                      backgroundColor: !isDarkMode
                         ? Colors.dark.grey
                         : Colors.light.grey,
                     },
@@ -335,6 +335,9 @@ const ComplainsComponent = () => {
             value={filters.mobile}
             onChange={handleMobileChange}
             maxLength={10}
+            inputStyles={{
+              color: isDarkMode ? Colors.dark.black : Colors.light.white,
+            }}
           />
         </View>
 

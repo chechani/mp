@@ -1,10 +1,9 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
   RefreshControl,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   Vibration,
   View,
@@ -26,22 +25,21 @@ import {
   useLazyGetWhatsAppContactCategoryQuery,
 } from '../../api/store/slice/contactSlice';
 import * as SvgIcon from '../../assets';
-import {textScale} from '../../styles/responsiveStyles';
-import {spacing} from '../../styles/spacing';
-import {fontNames} from '../../styles/typography';
-import BottonComp from '../Common/BottonComp';
+import { textScale } from '../../styles/responsiveStyles';
+import { spacing } from '../../styles/spacing';
+import { fontNames } from '../../styles/typography';
+import Colors from '../../theme/colors';
 import CommonPopupModal from '../Common/CommonPopupModal';
 import CommonToolBar from '../Common/CommonToolBar';
 import CommoneHeader from '../Common/CommoneHeader';
 import CustomBottomSheet from '../Common/CustomBottomSheet';
 import CustomBottomSheetFlatList from '../Common/CustomBottomSheetFlatList';
+import CustomButton from '../Common/CustomButton';
+import CustomInput from '../Common/CustomInput';
 import LoadingScreen from '../Common/Loader';
 import RegularText from '../Common/RegularText';
-import {useTheme} from '../hooks';
-import CustomInput from '../Common/CustomInput';
-import CustomButton from '../Common/CustomButton';
 import TextComponent from '../Common/TextComponent';
-import Colors from '../../theme/colors';
+import { useTheme } from '../hooks';
 
 const ContactListComponent = () => {
   const {theme} = useTheme();
@@ -590,6 +588,9 @@ const ContactListComponent = () => {
             onChange={text => setNewContact({...newContact, first_name: text})}
             label="First Name"
             required={true}
+            inputStyles={{
+              color: isDarkMode ? Colors.dark.black : Colors.light.white,
+            }}
           />
           <CustomInput
             placeholder="Last Name"
@@ -597,6 +598,9 @@ const ContactListComponent = () => {
             onChange={text => setNewContact({...newContact, last_name: text})}
             label="Last Name"
             required={true}
+            inputStyles={{
+              color: isDarkMode ? Colors.dark.black : Colors.light.white,
+            }}
           />
           <CustomInput
             placeholder="Mobile Number"
@@ -604,12 +608,18 @@ const ContactListComponent = () => {
             onChange={text => setNewContact({...newContact, mobile: text})}
             label="Mobile Number"
             required={true}
+            inputStyles={{
+              color: isDarkMode ? Colors.dark.black : Colors.light.white,
+            }}
           />
           <CustomInput
             placeholder="Email"
             value={newContact.email}
             onChange={text => setNewContact({...newContact, email: text})}
             label="Email"
+            inputStyles={{
+              color: isDarkMode ? Colors.dark.black : Colors.light.white,
+            }}
           />
           <CustomButton
             title={'Add Contact'}

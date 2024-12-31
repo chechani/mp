@@ -70,7 +70,7 @@ const CommonToolBar = ({
         key={index}
         onPress={() => onRightIconPress(index)}
         hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
-        style={{marginLeft: spacing.MARGIN_10}}>
+        style={{marginRight: spacing.MARGIN_10}}>
         <Icon
           width={spacing.WIDTH_24}
           height={spacing.HEIGHT_24}
