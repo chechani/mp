@@ -1,5 +1,5 @@
-import React from "react";
-import { Modal, StyleSheet } from "react-native";
+import React from 'react';
+import {Modal, StyleSheet} from 'react-native';
 
 const ModalComp = ({
   children,
@@ -12,9 +12,8 @@ const ModalComp = ({
     <Modal
       visible={isVisible}
       onRequestClose={onBackdropPress}
-      style={[styles.modalStyle ,style]}
-      {...props}
-    >
+      style={[styles.modalStyle, style]}
+      {...props}>
       {children}
     </Modal>
   );
@@ -23,6 +22,5 @@ const ModalComp = ({
 export default ModalComp;
 
 const styles = StyleSheet.create({
-  modalStyle: {
-  },
+  modalStyle: {},
 });

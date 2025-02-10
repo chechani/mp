@@ -1,9 +1,11 @@
-import React, { useEffect } from 'react';
+import React, {useEffect} from 'react';
 import {
   Dimensions,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
   TouchableWithoutFeedback,
-  View
+  View,
 } from 'react-native';
 import Animated, {
   interpolate,
@@ -11,14 +13,14 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
+import {spacing} from '../../styles/spacing';
 import {
   registerBackHandler,
   unregisterBackHandler,
 } from '../Common/BackHandlerManager';
 import BackDrop from './BackDrop';
-import { spacing } from '../../styles/spacing';
 
-const { width, height } = Dimensions.get('window');
+const {width, height} = Dimensions.get('window');
 
 const AnimatedModal = ({
   isVisible,
@@ -32,11 +34,12 @@ const AnimatedModal = ({
   bottom = undefined,
   backDropColor = 'rgba(0, 0, 0, 0.5)',
   modalStyle,
+  keyboardAvoidingViewProps,
 }) => {
   const animationValue = useSharedValue(0);
 
   useEffect(() => {
-    animationValue.value = withTiming(isVisible ? 1 : 0, { duration });
+    animationValue.value = withTiming(isVisible ? 1 : 0, {duration});
   }, [isVisible]);
 
   useEffect(() => {
@@ -83,7 +86,7 @@ const AnimatedModal = ({
     }
 
     return {
-      transform: [{ translateX }, { translateY }],
+      transform: [{translateX}, {translateY}],
       opacity: animationValue.value,
     };
   });
@@ -107,17 +110,17 @@ const AnimatedModal = ({
       />
 
       {/* Modal Content with Animated Styles */}
+
       <Animated.View
-        style={[
-          styles.modal,
-          modalAnimation,
-          modalPosition,
-          modalStyle,
-        ]}
-      >
-        <TouchableWithoutFeedback onPress={() => {}}>
-          <View style={[styles.contentContainer]}>{children}</View>
-        </TouchableWithoutFeedback>
+        style={[styles.modal, modalAnimation, modalPosition, modalStyle]}>
+        <KeyboardAvoidingView
+          style={[styles.keyboardAvoiding]}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          {...keyboardAvoidingViewProps}>
+          <TouchableWithoutFeedback onPress={() => {}}>
+            <View style={[styles.contentContainer]}>{children}</View>
+          </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
       </Animated.View>
     </>
   );
@@ -143,11 +146,14 @@ const styles = StyleSheet.create({
     elevation: 5, // Shadow on Android
     shadowColor: '#000', // Shadow on iOS
     shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 5 },
+    shadowOffset: {width: 0, height: 5},
     maxHeight: '100%',
     maxWidth: '100%',
   },
   contentContainer: {
     flexGrow: 1,
+  },
+  keyboardAvoiding: {
+    flex: 1,
   },
 });

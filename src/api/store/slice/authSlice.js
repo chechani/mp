@@ -1,5 +1,6 @@
-import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
+import {disconnectSocket} from '../../SocketManager';
 
 // Initial state for auth management
 const initialState = {
@@ -33,13 +34,12 @@ export const loginUser = createAsyncThunk(
       if (!selectedDomain || !selectedDomain.domain) {
         throw new Error('Domain not set');
       }
-
       const response = await fetch(
         `${selectedDomain.domain}/api/method/frappe_whatsapp.login.app_login`,
         {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify(credentials),
         },
@@ -94,7 +94,7 @@ export const loginUser = createAsyncThunk(
       }
     } catch (error) {
       console.error('Error during login:', error.message);
-      return rejectWithValue(error.message || 'Network error');
+      return rejectWithValue(error.message || 'Login failed');
     }
   },
 );
@@ -108,13 +108,13 @@ export const loadAuthState = createAsyncThunk(
         AsyncStorage.getItem(STORAGE_KEYS.USER),
         AsyncStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN),
       ]);
-      if (accessToken && userStr) {
+      if (userStr && accessToken) {
         try {
           const user = JSON.parse(userStr);
 
           return {user, isAuthenticated: true};
         } catch (error) {
-          console.error('Failed to parse user data:', error);
+          console.error('Failed to parse user data:', error.message);
           throw new Error('Corrupted user data in storage');
         }
       }
@@ -122,7 +122,7 @@ export const loadAuthState = createAsyncThunk(
       return {user: null, isAuthenticated: false};
     } catch (error) {
       console.error('Error loading auth state:', error.message);
-      return rejectWithValue(error.message || 'Failed to load auth state');
+      return rejectWithValue('Failed to load authentication state');
     }
   },
 );
@@ -134,6 +134,7 @@ export const logoutUser = createAsyncThunk(
     try {
       const keysToRemove = Object.values(STORAGE_KEYS);
       await AsyncStorage.multiRemove(keysToRemove);
+      disconnectSocket();
       dispatch(logout());
     } catch (error) {
       console.error('Failed to logout user:', error.message);

@@ -1,5 +1,4 @@
 import React from 'react';
-import { StyleSheet } from 'react-native';
 import ContainerComponent from '../../Components/Common/ContainerComponent';
 import ContactListComponent from '../../Components/module/ContactListComponent';
 
@@ -13,4 +12,4 @@ const ContactScreen = () => {
 
 export default ContactScreen;
 
-const styles = StyleSheet.create({});
+

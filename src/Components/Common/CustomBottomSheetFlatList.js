@@ -2,6 +2,7 @@ import {
   BottomSheetBackdrop,
   BottomSheetFlatList,
   BottomSheetModal,
+  BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet';
 import React, {
   forwardRef,
@@ -10,15 +11,16 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { BackHandler, StyleSheet, View } from 'react-native';
-import { useTheme } from '../hooks';
+import {BackHandler, StyleSheet, View} from 'react-native';
 import colors from '../../Utils/colors';
 import THEME_COLOR from '../../Utils/Constant';
+import Loader from '../Common/Loader';
+import {useTheme} from '../hooks';
 
 const CustomBottomSheetFlatList = forwardRef(
   (
     {
-      snapPoints,
+      snapPoints = ['30%'],
       onDismiss,
       modalStyle,
       backgroundStyle,
@@ -41,21 +43,23 @@ const CustomBottomSheetFlatList = forwardRef(
       footerrenderFooter,
       invertStickyHeaders = false,
       inverted = false,
-      FooterComponent, 
-      footerStyle, 
-      enableFooter = false, 
+      FooterComponent,
+      footerStyle,
+      enableFooter = false,
       ListFooterComponent,
+      loading = false,
+      LoaderComponent,
+      enableDynamicSizing,
       ...otherProps
     },
     ref,
   ) => {
-    const { theme } = useTheme();
+    const {theme} = useTheme();
     const [isModalOpen, setIsModalOpen] = useState(false);
-
     const memoizedSnapPoints = useMemo(() => snapPoints, [snapPoints]);
 
     const renderBackdrop = useCallback(
-      (backdropProps) => (
+      backdropProps => (
         <BottomSheetBackdrop
           {...backdropProps}
           appearsOnIndex={0}
@@ -96,57 +100,73 @@ const CustomBottomSheetFlatList = forwardRef(
     };
 
     return (
-      <>
+      <BottomSheetModalProvider>
         <BottomSheetModal
           ref={ref}
           snapPoints={memoizedSnapPoints}
+          enableDynamicSizing={enableDynamicSizing}
           onDismiss={handleDismiss}
-          onChange={(index) => setIsModalOpen(index >= 0)}
+          onChange={index => setIsModalOpen(index >= 0)}
           backdropComponent={renderBackdrop}
           handleIndicatorStyle={styles.handleIndicator}
           backgroundStyle={[
             styles.background,
             backgroundStyle,
             {
-              backgroundColor:
-                theme === THEME_COLOR ? colors.white : '#151414',
+              backgroundColor: theme === THEME_COLOR ? colors.white : '#212020',
             },
           ]}
           style={[styles.modal, modalStyle]}
           enablePanDownToClose={enablePanDownToClose}
-          contentContainerStyle={contentContainerStyleModal}      
-          {...otherProps}
-        >
-          {/* FlatList for Comments or Other Data */}
-          <BottomSheetFlatList
-            data={data}
-            keyExtractor={keyExtractor}
-            renderItem={renderItem}
-            contentContainerStyle={[
-              contentContainerStyle,
-              { minHeight: '20%', paddingBottom: enableFooter ? 100 : 0 },
-            ]}
-            ListHeaderComponent={ListHeaderComponent}
-            ListEmptyComponent={ListEmptyComponent}
-            stickyHeaderIndices={stickyHeaderIndicesFlatList}
-            onEndReached={onEndReached}
-            onEndReachedThreshold={onEndReachedThreshold}
-            refreshControl={refreshControl}
-            keyboardShouldPersistTaps={keyboardShouldPersistTaps}
-            keyboardDismissMode={keyboardDismissMode}
-            invertStickyHeaders={invertStickyHeaders}
-            inverted={inverted}
-            ListFooterComponent={ListFooterComponent}
-            
-          />
-          {/* Fixed Footer Component */}
-          {enableFooter && FooterComponent && (
-            <View style={[styles.footerContainer, footerStyle]}>
-              {FooterComponent}
-            </View>
+          contentContainerStyle={[
+            contentContainerStyleModal,
+            styles.minHeight30,
+          ]}
+          {...otherProps}>
+          {/* Loader or FlatList */}
+          {loading ? (
+            LoaderComponent || <Loader />
+          ) : (
+            <>
+              {/* FlatList for Comments or Other Data */}
+              <BottomSheetFlatList
+                data={data}
+                keyExtractor={keyExtractor}
+                renderItem={renderItem}
+                contentContainerStyle={[
+                  contentContainerStyle,
+                  {minHeight: '30%', paddingBottom: enableFooter ? 100 : 0},
+                ]}
+                ListHeaderComponent={ListHeaderComponent}
+                ListEmptyComponent={ListEmptyComponent}
+                stickyHeaderIndices={stickyHeaderIndicesFlatList}
+                onEndReached={onEndReached}
+                onEndReachedThreshold={onEndReachedThreshold}
+                refreshControl={refreshControl}
+                keyboardShouldPersistTaps={keyboardShouldPersistTaps}
+                keyboardDismissMode={keyboardDismissMode}
+                invertStickyHeaders={invertStickyHeaders}
+                inverted={inverted}
+                ListFooterComponent={ListFooterComponent}
+              />
+              {/* Fixed Footer Component */}
+              {enableFooter && FooterComponent && (
+                <View
+                  style={[
+                    styles.footerContainer,
+                    footerStyle,
+                    {
+                      backgroundColor:
+                        theme === THEME_COLOR ? colors.white : '#151414',
+                    },
+                  ]}>
+                  {FooterComponent}
+                </View>
+              )}
+            </>
           )}
         </BottomSheetModal>
-      </>
+      </BottomSheetModalProvider>
     );
   },
 );
@@ -156,7 +176,7 @@ export default React.memo(CustomBottomSheetFlatList);
 const styles = StyleSheet.create({
   modal: {
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: {width: 0, height: 4},
     shadowOpacity: 0.3,
     shadowRadius: 4,
   },
@@ -175,5 +195,13 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#ddd',
     backgroundColor: '#fff',
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  minHeight30: {
+    minHeight: '30%',
   },
 });

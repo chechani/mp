@@ -1,70 +1,96 @@
-import React, {useEffect, useRef, useState} from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import React, {useCallback, useRef, useState} from 'react';
+import {StyleSheet, TouchableOpacity, View} from 'react-native';
+import {useLazyGetNextActionsQuery} from '../../api/store/slice/chatSlice';
+import {useLazyGetAllMessageListQuery} from '../../api/store/slice/messageSlice';
 import {useLazySearchMessageQuery} from '../../api/store/slice/searchSlice';
-import * as SvgIcon from '../../assets';
 import NavigationString from '../../Navigations/NavigationString';
+import {Divider} from '../../styles/commonStyle';
 import {textScale} from '../../styles/responsiveStyles';
 import {spacing} from '../../styles/spacing';
 import {fontNames} from '../../styles/typography';
+import Colors from '../../theme/colors';
 import colors from '../../Utils/colors';
-import THEME_COLOR from '../../Utils/Constant';
+import THEME_COLOR, {DataMode} from '../../Utils/Constant';
 import {
   formatTimestamp,
   getColorForParticipant,
-  goBack,
   navigate,
 } from '../../Utils/helperFunctions';
-import RegularText from '../Common/RegularText';
+import ContainerComponent from '../Common/ContainerComponent';
+import CustomBottomSheetFlatList from '../Common/CustomBottomSheetFlatList';
+import DynamicSearch from '../Common/DynamicSearch';
+import TextComponent from '../Common/TextComponent';
 import {useTheme} from '../hooks';
 
 const SearchMessage = () => {
+  const getActionBottomSheetRef = useRef(null);
+  const dynamicSearchRef = useRef(null);
+
   const {theme} = useTheme();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [message, setMessage] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const searchInputRef = useRef(null);
+  const isDarkMode = theme === THEME_COLOR;
+  const [nextActions, setNextActions] = useState([]);
+  const [selectedFilter, setSelectedFilter] = useState('');
   const [triggerSearchMessage] = useLazySearchMessageQuery();
+  const [getAllMessage] = useLazyGetAllMessageListQuery();
+  const [getNextActions] = useLazyGetNextActionsQuery();
 
-  useEffect(() => {
-    searchInputRef.current?.focus();
-  }, []);
+  const fetchSearchResultsAPI = useCallback(
+    async (query, page = 1, limit = 20, signal) => {
+      try {
+        const payload = {
+          search_query: query.trim(),
+          action: selectedFilter,
+          status_date: '',
+        };
+        const response = await triggerSearchMessage(payload, {signal}).unwrap();
+        const items = response?.data ?? [];
+        const hasMore = items.length === limit; // Check if limit reached
 
-  const searchMessage = async query => {
-    const trimmedQuery = query.trim();
-    if (!trimmedQuery) {
-      setMessage([]);
-      return;
-    }
-    setLoading(true);
-    try {
-      const response = await triggerSearchMessage({search_query: trimmedQuery});
-
-      const fetchedMessage = response?.data?.data || [];
-      setMessage(fetchedMessage);
-    } catch (e) {
-      console.error('Error fetching contacts:', e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (searchQuery) {
-        searchMessage(searchQuery);
-      } else {
-        setMessage([]);
+        return {
+          results: items,
+          hasMore,
+        };
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          console.log('Search request aborted');
+          return {results: [], hasMore: false};
+        }
+        console.error('Search Error:', error);
+        return {results: [], hasMore: false, error: error.message};
       }
-    }, 500);
-    return () => clearTimeout(timeoutId);
-  }, [searchQuery]);
+    },
+    [triggerSearchMessage, selectedFilter],
+  );
+
+  const fetchDefaultDataAPI = useCallback(
+    async (page = 1, page_size = 20, signal) => {
+      try {
+        const response = await getAllMessage(
+          {
+            page,
+            page_size,
+          },
+          {signal},
+        ).unwrap();
+
+        const items = response?.message?.chats ?? [];
+        const total_pages = response.message?.total_pages;
+        const hasMore = page < total_pages;
+        return {
+          results: items,
+          hasMore,
+        };
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          console.log('Default data request aborted');
+          return {results: [], hasMore: false};
+        }
+        console.error('Default Data Error:', error);
+        return {results: [], hasMore: false, error: error.message};
+      }
+    },
+    [getAllMessage],
+  );
 
   const renderItem = ({item}) => {
     const contactInitial = item?.contact
@@ -86,152 +112,227 @@ const SearchMessage = () => {
       item.message_id.toString(),
     );
     return (
-      <TouchableOpacity
-        style={styles.messageListContainer}
-        onPress={() =>
-          navigate(NavigationString.ChatScreen, {
-            Mobile_No: item?.mobile_no,
-            title: item?.contact || item?.mobile_no,
-            unreadMessages: item?.unread_messages,
-            contact: item?.contact,
-          })
-        }
-        activeOpacity={0.8}>
-        <View style={styles.itemContainer}>
-          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-            <View style={{flexDirection: 'row', flex: 1}}>
-              <View style={[styles.userDPStyle, {backgroundColor}]}>
-                <RegularText
-                  style={{fontSize: textScale(15), color: textColor}}>
-                  {contactInitial}
-                </RegularText>
-              </View>
-              <View style={{marginLeft: spacing.MARGIN_6, flex: 1}}>
-                <RegularText
-                  style={[
-                    styles.contactNameTextStyle,
-                    {
-                      color:
-                        theme === THEME_COLOR ? colors.black : colors.white,
-                    },
-                  ]}
-                  numberOfLines={1}
-                  ellipsizeMode="tail">
-                  {item?.contact ||
-                    item?.mobile_no?.replace(/\D/g, '').slice(-10)}
-                </RegularText>
-                <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                  {/* {statusIcon && isOutgoing && statusIcon.type === 'svg' && (
+      <>
+        <TouchableOpacity
+          style={styles.messageListContainer}
+          onPress={() =>
+            navigate(NavigationString.ChatScreen, {
+              Mobile_No: item?.mobile_no,
+              title: item?.contact || item?.mobile_no,
+              unreadMessages: item?.unread_messages,
+              contact: item?.contact,
+            })
+          }
+          activeOpacity={0.8}>
+          <View style={styles.itemContainer}>
+            <View
+              style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+              <View style={{flexDirection: 'row', flex: 1}}>
+                <View style={[styles.userDPStyle, {backgroundColor}]}>
+                  <TextComponent
+                    text={contactInitial}
+                    size={textScale(15)}
+                    color={textColor}
+                  />
+                </View>
+                <View style={{marginLeft: spacing.MARGIN_6, flex: 1}}>
+                  <TextComponent
+                    text={
+                      item?.contact ||
+                      item?.mobile_no?.replace(/\D/g, '').slice(-10)
+                    }
+                    size={textScale(15)}
+                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                    flex={1}
+                    font={fontNames.ROBOTO_FONT_FAMILY_MEDIUM}
+                  />
+
+                  <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                    {/* {statusIcon && isOutgoing && statusIcon.type === 'svg' && (
                   <StatusIconComponent
                     color={statusIcon.color}
                     width={20}
                     height={20}
                   />
                 )} */}
-                  <RegularText
-                    style={[
-                      styles.messageDescriptionStyle,
-                      {
-                        color:
-                          theme === THEME_COLOR ? colors.black : colors.white,
-                      },
-                    ]}>
-                    {renderMessagePreview()}
-                  </RegularText>
+                    <TextComponent
+                      text={renderMessagePreview()}
+                      color={
+                        isDarkMode ? Colors.dark.black : Colors.light.white
+                      }
+                    />
+                  </View>
                 </View>
               </View>
-            </View>
-            <View style={styles.timestampContainer}>
-              {item?.unread_messages > 0 && (
-                <RegularText
-                  style={[
-                    styles.unreadMessagesStyle,
-                    {
-                      color:
-                        theme === THEME_COLOR ? colors.black : colors.white,
-                    },
-                  ]}>
-                  {item.unread_messages}
-                </RegularText>
-              )}
-              <RegularText
-                style={[
-                  styles.formatTimestampStyle,
-                  {
-                    color:
-                      theme === THEME_COLOR ? colors.grey600 : colors.grey200,
-                  },
-                ]}>
-                {formatTimestamp(item?.creation)}
-              </RegularText>
+              <View style={styles.timestampContainer}>
+                {item?.unread_messages > 0 && (
+                  <TextComponent
+                    text={item.unread_messages}
+                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
+                    size={textScale(12)}
+                    style={{
+                      borderRadius: spacing.WIDTH_24 / 2,
+                      width: spacing.WIDTH_24,
+                      height: spacing.WIDTH_24,
+                      backgroundColor: colors.green700,
+                      textAlignVertical: 'center',
+                    }}
+                    textAlign={'center'}
+                  />
+                )}
+                <TextComponent
+                  text={formatTimestamp(item?.creation)}
+                  color={isDarkMode ? Colors.dark.black : Colors.light.white}
+                  size={textScale(12)}
+                  font={fontNames.ROBOTO_FONT_FAMILY_BOLD}
+                />
+              </View>
             </View>
           </View>
-        </View>
+        </TouchableOpacity>
+        <Divider />
+      </>
+    );
+  };
+
+  // handle get next action
+  const handleGetNextAction = async item => {
+    setSelectedFilter(item);
+
+    if (getActionBottomSheetRef.current) {
+      getActionBottomSheetRef.current.dismiss();
+    }
+  };
+
+  // render get next action item
+  const renderGetNextActionItem = ({item}) => {
+    return (
+      <TouchableOpacity
+        activeOpacity={0.8}
+        style={[
+          styles.getNextActionContainer,
+          {
+            backgroundColor:
+              selectedFilter === item?.action ? colors.green : colors.green200,
+          },
+        ]}
+        onPress={() => handleGetNextAction(item?.action)}>
+        <TextComponent
+          text={item?.action}
+          font={fontNames.ROBOTO_FONT_FAMILY_MEDIUM}
+          color={
+            selectedFilter === item?.action
+              ? Colors.default.white
+              : Colors.default.black
+          }
+          textAlign={'center'}
+        />
       </TouchableOpacity>
     );
   };
 
+  // render get next action list empty component
+  const renderGetNextActionListEmptyComponent = () => {
+    return (
+      <View style={styles.emptyActionText}>
+        <TextComponent text="No actions found" />
+      </View>
+    );
+  };
+
+  // handle click filter
+  const handleClickFilter = async () => {
+    const response = await getNextActions().unwrap();
+    setNextActions(response.data);
+    if (getActionBottomSheetRef.current) {
+      getActionBottomSheetRef.current.present();
+    }
+  };
+  const renderListHeaderComponent = () => (
+    <View
+      style={{
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: spacing.PADDING_16,
+        position: 'relative',
+      }}>
+      <View style={{flex: 1}} />
+
+      <TextComponent
+        text={'Filter by action'}
+        font={fontNames.ROBOTO_FONT_FAMILY_MEDIUM}
+        style={{
+          marginBottom: spacing.MARGIN_10,
+          textAlign: 'center',
+          flex: 1,
+        }}
+        color={isDarkMode ? Colors.dark.black : Colors.light.white}
+      />
+
+      <TouchableOpacity
+        style={{flex: 1, alignItems: 'flex-end'}}
+        onPress={() => {
+          setSelectedFilter('');
+          if (getActionBottomSheetRef.current) {
+            getActionBottomSheetRef.current.dismiss();
+          }
+        }}>
+        <TextComponent
+          text="Remove Filter"
+          font={fontNames.ROBOTO_FONT_FAMILY_MEDIUM}
+          style={{marginBottom: spacing.MARGIN_10}}
+          color={selectedFilter ? Colors.default.accent : Colors.default.black}
+        />
+      </TouchableOpacity>
+    </View>
+  );
+
   return (
     <>
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          backgroundColor: theme === THEME_COLOR ? colors.white : colors.black,
-        }}>
-        <TouchableOpacity
-          onPress={() => goBack()}
-          style={{marginLeft: spacing.MARGIN_6}}>
-          <SvgIcon.BackIcon
-            width={spacing.WIDTH_24}
-            height={spacing.HEIGHT_24}
-            color={theme === THEME_COLOR ? colors.black : colors.white}
-          />
-        </TouchableOpacity>
-        <TextInput
-          ref={searchInputRef}
-          style={[
-            styles.searchInput,
-            {color: theme === THEME_COLOR ? colors.black : colors.white},
+      <ContainerComponent noPadding useScrollView={false}>
+        <DynamicSearch
+          key={selectedFilter}
+          ref={dynamicSearchRef}
+          data={[]}
+          dataMode={DataMode.REMOTE}
+          searchKeys={[
+            'creation',
+            'unread_messages',
+            'message',
+            'contact',
+            'mobile_no',
           ]}
-          placeholder="Search"
-          placeholderTextColor={
-            theme === THEME_COLOR ? colors.black : colors.white
-          }
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          spellCheck
-          autoCorrect
+          // fetchDefaultData={fetchDefaultDataAPI}
+          fetchSearchResults={fetchSearchResultsAPI}
+          placeholder="Search message..."
+          isgoBackArrowShow={true}
+          renderCustomItem={renderItem}
+          minCharacters={1}
+          // defaultDataPage={1}
+          // defaultDataLimit={20}
+          isFilterShow={true}
+          onClickFilter={handleClickFilter}
+          selectedFilter={selectedFilter}
+          retryCount={2}
+          retryDelay={500}
         />
-      </View>
-      <View
-        style={[
-          styles.container,
-          {
-            backgroundColor:
-              theme === THEME_COLOR ? colors.white : colors.black,
-          },
-        ]}>
-        {loading ? (
-          <ActivityIndicator size="large" color={colors.green} />
-        ) : (
-          <FlatList
-            data={message}
-            keyExtractor={item => item.name.toString()}
-            renderItem={renderItem}
-            ListEmptyComponent={
-              <RegularText
-                style={{
-                  alignSelf: 'center',
-                  fontSize: textScale(14),
-                  color: theme === THEME_COLOR ? colors.black : colors.white,
-                }}>
-                No Messages found.
-              </RegularText>
-            }
-          />
-        )}
-      </View>
+      </ContainerComponent>
+
+      <CustomBottomSheetFlatList
+        ref={getActionBottomSheetRef}
+        snapPoints={['40%', '80%']}
+        data={nextActions}
+        keyExtractor={(item, index) =>
+          item?.name?.toString() || index.toString()
+        }
+        renderItem={renderGetNextActionItem}
+        ListHeaderComponent={renderListHeaderComponent}
+        ListEmptyComponent={renderGetNextActionListEmptyComponent}
+        contentContainerStyle={{paddingBottom: spacing.PADDING_20}}
+      />
     </>
   );
 };
@@ -239,36 +340,6 @@ const SearchMessage = () => {
 export default SearchMessage;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingVertical: spacing.PADDING_16,
-    backgroundColor: '#fff',
-  },
-  searchInput: {
-    height: spacing.HEIGHT_50,
-    borderColor: '#ddd',
-    borderWidth: 1,
-    borderRadius: spacing.RADIUS_8,
-    paddingHorizontal: spacing.PADDING_16,
-    marginBottom: spacing.MARGIN_16,
-    color: colors.black,
-    flex: 1,
-    margin: spacing.MARGIN_16,
-  },
-  contactItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.PADDING_10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
-  },
-  contactInfo: {
-    marginLeft: spacing.MARGIN_10,
-  },
-  contactName: {
-    fontSize: textScale(18),
-    fontWeight: 'bold',
-  },
   avatar: {
     width: spacing.HEIGHT_40,
     height: spacing.HEIGHT_40,
@@ -291,9 +362,6 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.PADDING_4,
   },
   messageListContainer: {
-    borderBottomWidth: 1,
-    borderColor: colors.grey400,
-    marginHorizontal: spacing.MARGIN_14,
     marginVertical: spacing.MARGIN_4,
     justifyContent: 'space-around',
   },
@@ -330,5 +398,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.grey300,
+  },
+  getNextActionContainer: {
+    padding: spacing.PADDING_16,
+    borderRadius: spacing.RADIUS_12,
+    backgroundColor: colors.green200,
+    marginVertical: spacing.MARGIN_6,
+    marginHorizontal: spacing.MARGIN_16,
+  },
+  emptyActionText: {
+    fontSize: textScale(16),
+    color: colors.black,
+    textAlign: 'center',
+    marginTop: spacing.MARGIN_16,
   },
 });

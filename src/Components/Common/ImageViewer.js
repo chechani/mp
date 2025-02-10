@@ -9,7 +9,6 @@ import {
   View,
 } from 'react-native';
 import ImageViewer from 'react-native-image-zoom-viewer';
-import RegularText from './RegularText';
 
 const {width, height} = Dimensions.get('window');
 
@@ -97,11 +96,10 @@ const ImageZoomViewer = ({message, thumbnailStyle, baseUrl}) => {
             enablePreload
             doubleClickInterval={300}
             maxOverflow={0}
-            
             renderImage={props => (
               <Image
                 {...props}
-                style={{width, height, resizeMode: 'contain'}} 
+                style={{width, height, resizeMode: 'contain'}}
               />
             )}
           />

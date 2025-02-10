@@ -1,63 +1,47 @@
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import React from 'react';
-import {spacing} from '../../styles/spacing';
-import {textScale} from '../../styles/responsiveStyles';
-import colors from '../../Utils/colors';
-import RegularText from '../Common/RegularText';
-import THEME_COLOR from '../../Utils/Constant';
-import {useTheme} from '../hooks';
-import {navigate} from '../../Utils/helperFunctions';
+import {StyleSheet, TouchableOpacity} from 'react-native';
 import NavigationString from '../../Navigations/NavigationString';
+import {Divider} from '../../styles/commonStyle';
+import {textScale} from '../../styles/responsiveStyles';
+import {spacing} from '../../styles/spacing';
+import Colors from '../../theme/colors';
+import THEME_COLOR from '../../Utils/Constant';
+import {navigate} from '../../Utils/helperFunctions';
+import TextComponent from '../Common/TextComponent';
+import {useTheme} from '../hooks';
 
 const BroadCastGroupColum = ({item}) => {
   const {theme} = useTheme();
+  const isDarkMode = theme === THEME_COLOR;
   return (
-    <View>
+    <>
       <TouchableOpacity
         onPress={() =>
           navigate(NavigationString.broadCastGroupDetailScreen, {
             name: item?.name,
           })
         }
-        style={[
-          styles.card,
-          {
-            backgroundColor:
-              theme === THEME_COLOR ? colors.white : colors.black,
-          },
-        ]}>
-        <RegularText
-          style={[
-            styles.groupName,
-            {color: theme === THEME_COLOR ? colors.black : colors.white},
-          ]}>
-          {item.group_name}
-        </RegularText>
-        <RegularText
-          style={[
-            styles.groupTitle,
-            {color: theme === THEME_COLOR ? colors.grey700 : colors.grey300},
-          ]}>
-          {item.title}
-        </RegularText>
-        <RegularText
-          style={[
-            styles.messageCount,
-            {color: theme === THEME_COLOR ? colors.grey500 : colors.grey400},
-          ]}>
-          Messages: {item.message_count}
-        </RegularText>
+        style={styles.card}>
+        <TextComponent
+          text={item.group_name}
+          color={isDarkMode ? Colors.dark.black : Colors.light.white}
+          size={textScale(18)}
+        />
+        <TextComponent
+          text={item.title}
+          color={isDarkMode ? Colors.dark.black : Colors.light.white}
+          size={textScale(15)}
+          style={{opacity: 0.8}}
+        />
+        <TextComponent
+          text={`Messages: ${item.message_count}`}
+          color={isDarkMode ? Colors.dark.black : Colors.light.white}
+          size={textScale(14)}
+          style={{opacity: 0.5}}
+        />
       </TouchableOpacity>
-      <View
-        style={[
-          styles.divider,
-          {
-            backgroundColor:
-              theme === THEME_COLOR ? colors.grey300 : colors.grey600,
-          },
-        ]}
-      />
-    </View>
+      <Divider />
+    </>
   );
 };
 
@@ -65,24 +49,7 @@ export default BroadCastGroupColum;
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff',
-    borderRadius: spacing.RADIUS_8,
-    padding: spacing.PADDING_16,
-  },
-  groupName: {
-    fontSize: textScale(18),
-    color: colors.white,
-  },
-  groupTitle: {
-    fontSize: textScale(16),
-    color: colors.grey200,
-  },
-  messageCount: {
-    fontSize: textScale(14),
-    color: colors.white,
-  },
-  divider: {
-    height: 0.5,
-    backgroundColor: colors.grey300,
+    paddingHorizontal: spacing.PADDING_16,
+    paddingVertical: spacing.PADDING_12,
   },
 });

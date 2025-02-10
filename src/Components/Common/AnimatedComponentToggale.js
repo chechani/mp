@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {StyleSheet, TouchableOpacity, View} from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 import Animated, {
   Layout,
   useAnimatedStyle,
@@ -7,13 +8,13 @@ import Animated, {
 } from 'react-native-reanimated';
 import * as SvgIcon from '../../assets';
 import {scale, textScale, verticalScale} from '../../styles/responsiveStyles';
+import {spacing} from '../../styles/spacing';
+import {fontNames} from '../../styles/typography';
+import Colors from '../../theme/colors';
 import colors from '../../Utils/colors';
 import THEME_COLOR from '../../Utils/Constant';
 import {useTheme} from '../hooks';
-import RegularText from './RegularText';
-import {fontNames} from '../../styles/typography';
-import LinearGradient from 'react-native-linear-gradient';
-import {spacing} from '../../styles/spacing';
+import TextComponent from './TextComponent';
 
 const AnimatedComponentToggle = ({
   children,
@@ -70,6 +71,7 @@ const AnimatedComponentToggle = ({
   };
 
   const {theme} = useTheme();
+  const isDarkMode = theme === THEME_COLOR;
 
   return (
     <>
@@ -80,39 +82,36 @@ const AnimatedComponentToggle = ({
         <View style={styles.row}>
           {LeftComponent && (
             <LeftComponent
-              width={scale(30)} // Scaled based on width
-              height={scale(30)}
-              color={theme === THEME_COLOR ? colors.black : colors.white}
+              width={spacing.WIDTH_30}
+              height={spacing.HEIGHT_30}
+              color={isDarkMode ? Colors.dark.black : colors.white}
             />
           )}
           <View style={styles.column}>
             {isExtraText && (
-              <RegularText
-                style={[
-                  styles.extraTextStyle,
-                  {color: theme === THEME_COLOR ? colors.black : colors.white},
-                ]}>
-                Task Number: {extraText}
-              </RegularText>
+              <TextComponent
+                text={`Task Number: ${extraText}`}
+                color={isDarkMode ? Colors.dark.black : Colors.light.white}
+                size={textScale(16)}
+                font={fontNames.ROBOTO_FONT_FAMILY_BOLD}
+                style={{marginTop: spacing.MARGIN_8}}
+              />
             )}
             {tabName && (
-              <RegularText
-                style={[
-                  styles.tabNameStyle,
-                  tabNameStyle,
-                  {color: theme === THEME_COLOR ? colors.black : colors.white},
-                ]}>
-                {tabName}
-              </RegularText>
+              <TextComponent
+                text={tabName}
+                color={isDarkMode ? Colors.dark.black : Colors.light.white}
+                font={fontNames.ROBOTO_FONT_FAMILY_BOLD}
+                style={{textTransform: 'capitalize', ...tabNameStyle}}
+              />
             )}
             {descrption && (
-              <RegularText
-                style={[
-                  styles.descrptionStyle,
-                  {color: theme === THEME_COLOR ? colors.black : colors.white},
-                ]}>
-                {descrption}
-              </RegularText>
+              <TextComponent
+                text={descrption}
+                color={isDarkMode ? Colors.dark.black : Colors.light.white}
+                size={textScale(12)}
+                font={fontNames.ROBOTO_FONT_FAMILY_MEDIUM}
+              />
             )}
           </View>
         </View>
@@ -121,8 +120,9 @@ const AnimatedComponentToggle = ({
             <TouchableOpacity
               style={{
                 padding: spacing.PADDING_10,
-                backgroundColor:
-                  theme === THEME_COLOR ? colors.grey900 : colors.grey300,
+                backgroundColor: isDarkMode
+                  ? Colors.dark.greyTransparent
+                  : Colors.light.greyTransparent,
                 marginRight: spacing.MARGIN_6,
                 borderRadius: spacing.RADIUS_10,
                 opacity: 0.8,
@@ -143,13 +143,12 @@ const AnimatedComponentToggle = ({
                   styles.extraBtnStyleLinearGradient,
                   extraBtnStyleLinearGradient,
                 ]}>
-                <RegularText
-                  style={[
-                    extraBtnStyleText,
-                    {fontSize: textScale(12), color: colors.white},
-                  ]}>
-                  {btnText}
-                </RegularText>
+                <TextComponent
+                  text={btnText}
+                  size={textScale(12)}
+                  color={Colors.default.white}
+                  style={[extraBtnStyleText]}
+                />
               </LinearGradient>
             </TouchableOpacity>
           )}
@@ -158,7 +157,7 @@ const AnimatedComponentToggle = ({
               <RightComponent
                 width={scale(24)} // Scaled width
                 height={scale(24)} // Scaled height
-                color={theme === THEME_COLOR ? colors.black : colors.white}
+                color={isDarkMode ? colors.black : colors.white}
               />
             </Animated.View>
           )}

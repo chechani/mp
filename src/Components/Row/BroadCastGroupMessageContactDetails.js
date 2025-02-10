@@ -1,26 +1,24 @@
 import React, {useState} from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  FlatList,
-  ActivityIndicator,
-  TouchableOpacity,
-} from 'react-native';
-import CustomHeader from '../Common/CommoneHeader';
-import * as SvgIcon from '../../assets';
-import {getColorForParticipant, goBack} from '../../Utils/helperFunctions';
-import {useFetchContactsByStatusQuery} from '../../api/store/slice/broadCastMessageSlice';
-import RegularText from '../Common/RegularText';
-import {useTheme} from '../hooks';
+import {FlatList, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import THEME_COLOR from '../../Utils/Constant';
 import colors from '../../Utils/colors';
+import {getColorForParticipant, goBack} from '../../Utils/helperFunctions';
+import {useFetchContactsByStatusQuery} from '../../api/store/slice/broadCastMessageSlice';
+import * as SvgIcon from '../../assets';
+import {Divider} from '../../styles/commonStyle';
 import {textScale} from '../../styles/responsiveStyles';
-import {fontNames} from '../../styles/typography';
 import {spacing} from '../../styles/spacing';
+import {fontNames} from '../../styles/typography';
+import Colors from '../../theme/colors';
+import CustomHeader from '../Common/CommoneHeader';
+import ContainerComponent from '../Common/ContainerComponent';
+import LoadingScreen from '../Common/Loader';
+import TextComponent from '../Common/TextComponent';
+import {useTheme} from '../hooks';
 
 const BroadCastGroupMessageContactDetails = ({route}) => {
   const {theme} = useTheme();
+  const isDarkMode = theme === THEME_COLOR;
   const {broadcast_name, status} = route.params;
   const [selectedStatus, setSelectedStatus] = useState(status);
 
@@ -33,24 +31,12 @@ const BroadCastGroupMessageContactDetails = ({route}) => {
     status: selectedStatus,
   });
 
-  if (isLoading) {
-    return (
-      <View
-        style={[
-          styles.center,
-          {backgroundColor: theme === THEME_COLOR ? '#f1f1f1' : '#333'},
-        ]}>
-        <ActivityIndicator size="large" color="#007bff" />
-      </View>
-    );
-  }
-
   if (isError) {
     return (
       <View
         style={[
           styles.center,
-          {backgroundColor: theme === THEME_COLOR ? '#f1f1f1' : '#333'},
+          {backgroundColor: isDarkMode ? '#f1f1f1' : '#333'},
         ]}>
         <Text style={styles.errorText}>
           Failed to load contacts. Please try again.
@@ -60,9 +46,60 @@ const BroadCastGroupMessageContactDetails = ({route}) => {
   }
 
   const contacts = data?.data || [];
+  const renderAvatar = (item, index) => {
+    const {backgroundColor, textColor} = getColorForParticipant(
+      index.toString(),
+    );
+    const firstLetter = item.contact ? item.contact.charAt(0) : '?';
+    return (
+      <View
+        style={[styles.avatarPlaceholder, {backgroundColor: backgroundColor}]}>
+        <TextComponent
+          text={firstLetter}
+          color={textColor}
+          size={textScale(15)}
+        />
+      </View>
+    );
+  };
+  const renderContactItem = ({item, index}) => {
+    return (
+      <>
+        <TouchableOpacity style={[styles.contactItem]} activeOpacity={0.7}>
+          {renderAvatar(item, index)}
+          <View style={[styles.contactInfo]}>
+            <TextComponent
+              text={item?.contact}
+              color={isDarkMode ? Colors.dark.black : Colors.light.white}
+              size={textScale(15)}
+              font={fontNames.ROBOTO_FONT_FAMILY_MEDIUM}
+            />
+            {item?.to && (
+              <TextComponent
+                text={item?.to}
+                color={isDarkMode ? Colors.dark.black : Colors.light.white}
+                font={fontNames.ROBOTO_FONT_FAMILY_LIGHT}
+                size={textScale(12)}
+              />
+            )}
+          </View>
+        </TouchableOpacity>
+        <Divider />
+      </>
+    );
+  };
+
+  const listEmptyComponent = () => (
+    <TextComponent
+      text={'No contacts available'}
+      size={textScale(16)}
+      textAlign={'center'}
+      color={isDarkMode ? Colors.dark.black : Colors.light.white}
+    />
+  );
 
   return (
-    <>
+    <ContainerComponent noPadding useScrollView={false}>
       <CustomHeader
         title={'Broadcast Details'}
         showLeftIcon={true}
@@ -74,11 +111,7 @@ const BroadCastGroupMessageContactDetails = ({route}) => {
       />
 
       {/* Status Filter */}
-      <View
-        style={[
-          styles.filterContainer,
-          {backgroundColor: theme === THEME_COLOR ? '#f1f1f1' : colors.black},
-        ]}>
+      <View style={[styles.filterContainer]}>
         {predefinedStatuses.map(statusItem => (
           <TouchableOpacity
             key={statusItem}
@@ -88,86 +121,31 @@ const BroadCastGroupMessageContactDetails = ({route}) => {
                 styles.activeFilterButton,
             ]}
             onPress={() => setSelectedStatus(statusItem)}>
-            <RegularText
-              style={[
-                styles.filterButtonText,
-                selectedStatus.toLowerCase() === statusItem.toLowerCase() &&
-                  styles.activeFilterButtonText,
-              ]}>
-              {statusItem.charAt(0).toUpperCase() + statusItem.slice(1)}
-            </RegularText>
+            <TextComponent
+              text={statusItem.charAt(0).toUpperCase() + statusItem.slice(1)}
+              color={
+                selectedStatus.toLowerCase() === statusItem.toLowerCase()
+                  ? Colors.default.white
+                  : Colors.default.black
+              }
+            />
           </TouchableOpacity>
         ))}
       </View>
 
-      {/* Contacts List */}
-      <View
-        style={[
-          styles.container,
-          {backgroundColor: theme === THEME_COLOR ? '#f1f1f1' : colors.black},
-        ]}>
-        {contacts.length === 0 ? (
-          <RegularText style={styles.noDataText}>
-            No contacts available
-          </RegularText>
+      <View style={[styles.container]}>
+        {isLoading ? (
+          <LoadingScreen />
         ) : (
           <FlatList
             data={contacts}
             keyExtractor={(item, index) => `${item.to}-${index}`}
-            renderItem={({item, index}) => {
-              const {backgroundColor} = getColorForParticipant(
-                `${item.to}-${index}`,
-              );
-              return (
-                <View
-                  style={[
-                    styles.contactCard,
-                    {
-                      backgroundColor:
-                        theme === THEME_COLOR ? '#ffffff' : '#555',
-                    },
-                  ]}>
-                  <View style={styles.avatarContainer}>
-                    <View
-                      style={[
-                        styles.avatar,
-                        {backgroundColor: backgroundColor},
-                      ]}>
-                      <RegularText style={styles.avatarText}>
-                        {item.contact ? item.contact[0] : 'U'}
-                      </RegularText>
-                    </View>
-                  </View>
-                  <View style={styles.contactInfoContainer}>
-                    <RegularText
-                      style={[
-                        styles.contactName,
-                        {color: theme === THEME_COLOR ? '#000' : '#fff'},
-                      ]}>
-                      {item.contact || 'Unknown Contact'}
-                    </RegularText>
-                    <RegularText
-                      style={[
-                        styles.contactDetails,
-                        {color: theme === THEME_COLOR ? '#333' : '#ddd'},
-                      ]}>
-                      Phone: {item.to || 'N/A'}
-                    </RegularText>
-                    <RegularText
-                      style={[
-                        styles.contactStatus,
-                        {color: theme === THEME_COLOR ? '#007bff' : '#1e90ff'},
-                      ]}>
-                      Status: {item.status || 'N/A'}
-                    </RegularText>
-                  </View>
-                </View>
-              );
-            }}
+            renderItem={renderContactItem}
+            ListEmptyComponent={listEmptyComponent}
           />
         )}
       </View>
-    </>
+    </ContainerComponent>
   );
 };
 
@@ -189,55 +167,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingVertical: spacing.PADDING_10,
-    backgroundColor: '#f9f9f9',
   },
-  noDataText: {
-    fontSize: textScale(16),
-    textAlign: 'center',
-    color: '#555',
-  },
-  contactCard: {
-    flexDirection: 'row',
-    padding: spacing.PADDING_16,
-    backgroundColor: colors.white,
-    borderRadius: spacing.RADIUS_8,
-  },
-  avatarContainer: {
-    marginRight: spacing.PADDING_16,
-  },
-  avatar: {
-    width: spacing.HEIGHT_40,
-    height: spacing.HEIGHT_40,
-    borderRadius: spacing.HEIGHT_40 / 2,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarText: {
-    color: colors.white,
-    fontSize: textScale(16),
-    fontWeight: 'bold',
-  },
-  contactInfoContainer: {
-    flex: 1,
-  },
-  contactName: {
-    fontSize: textScale(18),
-    marginBottom: spacing.MARGIN_4,
-    fontFamily: fontNames.ROBOTO_FONT_FAMILY_BOLD,
-  },
-  contactDetails: {
-    fontSize: textScale(16),
-    color: colors.grey800,
-    marginBottom: spacing.MARGIN_4,
-  },
-  contactStatus: {
-    fontSize: textScale(14),
-    color: colors.blue800,
-  },
+
   filterContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    backgroundColor: '#f1f1f1',
     padding: spacing.PADDING_8,
   },
   filterButton: {
@@ -249,11 +183,22 @@ const styles = StyleSheet.create({
   activeFilterButton: {
     backgroundColor: colors.blue800,
   },
-  filterButtonText: {
-    fontSize: textScale(14),
-    color: colors.grey800,
+
+  contactItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.PADDING_6,
+    paddingHorizontal: spacing.PADDING_16,
   },
-  activeFilterButtonText: {
-    color: colors.white,
+  contactInfo: {
+    flex: 1,
+  },
+  avatarPlaceholder: {
+    width: spacing.HEIGHT_40,
+    height: spacing.HEIGHT_40,
+    borderRadius: spacing.HEIGHT_40 / 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: spacing.MARGIN_10,
   },
 });

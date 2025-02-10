@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { BaseToast } from 'react-native-toast-message';
-import RegularText from '../Components/Common/RegularText';
+import TextComponent from '../Components/Common/TextComponent';
 import { textScale } from '../styles/responsiveStyles';
 import { spacing } from '../styles/spacing';
 
@@ -17,7 +17,10 @@ export const toastConfig = {
       text2={text2}
       renderTrailingIcon={() => (
         <View style={styles.trailingIcon}>
-          <RegularText style={styles.iconText}>✅</RegularText>
+          <TextComponent
+            text={'✅'}
+            size={textScale(17)}
+          />
         </View>
       )}
     />
@@ -33,7 +36,10 @@ export const toastConfig = {
       text2={text2}
       renderTrailingIcon={() => (
         <View style={styles.trailingIcon}>
-          <RegularText style={styles.iconText}>⚠️</RegularText>
+           <TextComponent
+            text={'⚠️'}
+            size={textScale(17)}
+          />
         </View>
       )}
     />
@@ -49,7 +55,10 @@ export const toastConfig = {
       text2={text2}
       renderTrailingIcon={() => (
         <View style={styles.trailingIcon}>
-          <RegularText style={styles.iconText}>❌</RegularText>
+           <TextComponent
+            text={'❌'}
+            size={textScale(17)}
+          />
         </View>
       )}
     />
@@ -64,7 +73,7 @@ const styles = StyleSheet.create({
     zIndex:1000
   },
   text2Style: {
-    fontSize: textScale(15),
+    fontSize: textScale(12),
     fontWeight: '400',
     color: '#4A4A4A',
     marginTop: spacing.MARGIN_2,
@@ -75,7 +84,7 @@ const styles = StyleSheet.create({
     marginLeft: spacing.MARGIN_8,
   },
   iconText: {
-    fontSize: textScale(20),
+    fontSize: textScale(15),
   },
 
   // Success Toast Styling
@@ -95,7 +104,7 @@ const styles = StyleSheet.create({
     zIndex: 1000, 
   },
   successText1Style: {
-    fontSize: textScale(18),
+    fontSize: textScale(15),
     fontWeight: '700',
     color: '#2E7D32', 
     marginBottom: spacing.MARGIN_2,
@@ -118,7 +127,7 @@ const styles = StyleSheet.create({
     zIndex: 1000, 
   },
   warningText1Style: {
-    fontSize: textScale(18),
+    fontSize: textScale(15),
     fontWeight: '700',
     color: '#E65100', 
     marginBottom: spacing.MARGIN_2,
@@ -141,7 +150,7 @@ const styles = StyleSheet.create({
     zIndex: 1000, 
   },
   errorText1Style: {
-    fontSize: textScale(18),
+    fontSize: textScale(15),
     fontWeight: '700',
     color: '#B71C1C', 
     marginBottom: spacing.MARGIN_2,

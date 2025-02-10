@@ -1,6 +1,11 @@
-import { FlashList } from '@shopify/flash-list';
-import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import React, {useCallback, useEffect, useState} from 'react';
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 const PaginatedList = ({
   fetchData,
@@ -14,7 +19,6 @@ const PaginatedList = ({
   enablePagination = true,
   enableRefresh = true,
 }) => {
-
   // State for pagination and data
   const [data, setData] = useState([]);
   const [page, setPage] = useState(1);
@@ -22,23 +26,43 @@ const PaginatedList = ({
   const [hasMoreData, setHasMoreData] = useState(true);
   const [isFetching, setIsFetching] = useState(false);
 
-  const loadData = useCallback(async (currentPage = 1, refreshing = false) => {
-    if (isFetching) return;
-    if (refreshing) setIsRefreshing(true);
-    setIsFetching(true);
+  const loadData = useCallback(
+    async (currentPage = 1, refreshing = false) => {
+      if (isFetching) return;
+      if (refreshing) setIsRefreshing(true);
+      setIsFetching(true);
 
-    try {
-      const response = await fetchData(currentPage, enablePagination ? (currentPage === 1 ? initialPageSize : incrementSize) : undefined, filters);
-      const newData = response.data.tickets;
-      setHasMoreData(newData.length > 0);
-      setData(prevData => (currentPage === 1 ? newData : [...prevData, ...newData]));
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    } finally {
-      setIsFetching(false);
-      setIsRefreshing(false);
-    }
-  }, [fetchData, initialPageSize, incrementSize, filters, enablePagination, isFetching]);
+      try {
+        const response = await fetchData(
+          currentPage,
+          enablePagination
+            ? currentPage === 1
+              ? initialPageSize
+              : incrementSize
+            : undefined,
+          filters,
+        );
+        const newData = response.data.tickets;
+        setHasMoreData(newData.length > 0);
+        setData(prevData =>
+          currentPage === 1 ? newData : [...prevData, ...newData],
+        );
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsFetching(false);
+        setIsRefreshing(false);
+      }
+    },
+    [
+      fetchData,
+      initialPageSize,
+      incrementSize,
+      filters,
+      enablePagination,
+      isFetching,
+    ],
+  );
 
   useEffect(() => {
     loadData(1);
@@ -64,17 +88,20 @@ const PaginatedList = ({
       {data.length === 0 && !isFetching ? (
         <Text style={styles.noDataText}>No data available</Text>
       ) : (
-        <FlashList
+        <FlatList
           data={data}
           renderItem={renderItem}
           keyExtractor={keyExtractor}
           ListHeaderComponent={ListHeaderComponent}
-          ListFooterComponent={() => (
-            isFetching && !isRefreshing ? <ActivityIndicator style={styles.loadingIndicator} /> : ListFooterComponent
-          )}
+          ListFooterComponent={() =>
+            isFetching && !isRefreshing ? (
+              <ActivityIndicator style={styles.loadingIndicator} />
+            ) : (
+              ListFooterComponent
+            )
+          }
           onEndReached={enablePagination ? handleEndReached : null}
           onEndReachedThreshold={0.5}
-          estimatedItemSize={100}
           refreshing={isRefreshing}
           onRefresh={handleRefresh}
         />

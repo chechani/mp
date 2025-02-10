@@ -1,9 +1,9 @@
 import React from 'react';
-import { Text, StyleSheet } from 'react-native';
-import { fontNames } from '../../styles/typography';
+import {StyleSheet, Text} from 'react-native';
+import {fontNames} from '../../styles/typography';
 import colors from '../../Utils/colors';
 
-const RegularText = ({ children = '', style = {}, ...props }) => {
+const RegularText = ({children = '', style = {}, ...props}) => {
   return (
     <Text {...props} style={[styles.text, style]}>
       {children}

@@ -1,12 +1,14 @@
 import React from 'react';
-import { View, Image, Modal, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import {
+  Image,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
-const MediaPreviewModal = ({
-  visible,
-  media,
-  onConfirm,
-  onCancel,
-}) => {
+const MediaPreviewModal = ({visible, media, onConfirm, onCancel}) => {
   return (
     <Modal visible={visible} transparent={true} animationType="slide">
       <View style={styles.container}>
@@ -18,7 +20,11 @@ const MediaPreviewModal = ({
         </View>
         {media && media.uri && (
           <View style={styles.imageContainer}>
-            <Image source={{ uri: media.uri }} style={styles.image} resizeMode="contain" />
+            <Image
+              source={{uri: media.uri}}
+              style={styles.image}
+              resizeMode="contain"
+            />
           </View>
         )}
         <View style={styles.footer}>

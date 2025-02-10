@@ -1,81 +1,100 @@
-import React, {useEffect, useRef, useState} from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  Vibration,
-  View,
-} from 'react-native';
-import {useApiURLs} from '../../Config/url';
+import React, {useCallback, useRef, useState} from 'react';
+import {StyleSheet, TouchableOpacity, Vibration, View} from 'react-native';
 import NavigationString from '../../Navigations/NavigationString';
-import THEME_COLOR from '../../Utils/Constant';
+import THEME_COLOR, {DataMode} from '../../Utils/Constant';
 import colors from '../../Utils/colors';
 import {
   CommonToastMessage,
   getColorForParticipant,
-  goBack,
   navigate,
 } from '../../Utils/helperFunctions';
-import {useDeleteContactMutation} from '../../api/store/slice/contactSlice';
+import {
+  useDeleteContactMutation,
+  useLazyGetAllContactQuery,
+} from '../../api/store/slice/contactSlice';
 import {useLazySearchConatctQuery} from '../../api/store/slice/searchSlice';
-import * as SvgIcon from '../../assets';
+import {Divider} from '../../styles/commonStyle';
 import {textScale} from '../../styles/responsiveStyles';
 import {spacing} from '../../styles/spacing';
 import {fontNames} from '../../styles/typography';
+import Colors from '../../theme/colors';
 import AnimatedModal from '../Common/AnimatedModal';
 import CommonPopupModal from '../Common/CommonPopupModal';
-import RegularText from '../Common/RegularText';
+import ContainerComponent from '../Common/ContainerComponent';
+import DynamicSearch from '../Common/DynamicSearch';
+import TextComponent from '../Common/TextComponent';
 import {useTheme} from '../hooks';
 
 const SearchContact = () => {
   const {theme} = useTheme();
-  const {SEARCH_CONTACT, DELETE_CONTACT} = useApiURLs();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [contacts, setContacts] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const searchInputRef = useRef(null);
+  const isDarkMode = theme === THEME_COLOR;
   const [selectedContacts, setSelectedContacts] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isDeleteMode, setIsDeleteMode] = useState(false);
-
-  const [searchContact] = useLazySearchConatctQuery();
+  const [triggerSearchContact] = useLazySearchConatctQuery();
   const [deleteContact] = useDeleteContactMutation();
+  const [getAllContact] = useLazyGetAllContactQuery();
+  const dynamicSearchRef = useRef(null);
 
-  useEffect(() => {
-    searchInputRef.current?.focus();
-  }, []);
+  const fetchSearchResultsAPI = useCallback(
+    async (query, page = 1, limit = 20, signal) => {
+      try {
+        const response = await triggerSearchContact(
+          {search_query: query.trim()},
+          {signal},
+        ).unwrap();
 
-  const searchContacts = async query => {
-    const trimmedQuery = query.trim();
-    if (!trimmedQuery) {
-      setContacts([]);
-      return;
-    }
-    setLoading(true);
-    try {
-      const response = await searchContact({search_query: trimmedQuery});
-      const fetchedContacts = response?.data?.data || [];
-      setContacts(fetchedContacts);
-    } catch (e) {
-      console.error('Error fetching contacts:', e);
-    } finally {
-      setLoading(false);
-    }
-  };
+        const items = response?.data ?? [];
+        const hasMore = items.length === limit; 
 
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (searchQuery) {
-        searchContacts(searchQuery);
-      } else {
-        setContacts([]);
+        return {
+          results: items,
+          hasMore,
+        };
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          console.log('Search request aborted');
+          return {results: [], hasMore: false};
+        }
+        console.error('Search Error:', error);
+        return {results: [], hasMore: false, error: error.message};
       }
-    }, 500);
-    return () => clearTimeout(timeoutId);
-  }, [searchQuery]);
+    },
+    [triggerSearchContact],
+  );
 
+  const fetchDefaultDataAPI = useCallback(
+    async (page = 1, limit = 20, signal) => {
+      try {
+        const response = await getAllContact(
+          {
+            page,
+            limit,
+            category: '',
+          },
+          {signal},
+        ).unwrap();
+
+        const items = response?.message ?? []; // Use 'message' property
+        // The getAllContact API doesn't seem to return a total count.
+        // If you can add it to the API, that would be ideal.
+        // Otherwise, you might have to fetch all data to determine the total count.
+        const hasMore = items.length === limit; // Check if limit reached
+        return {
+          results: items,
+          hasMore,
+        };
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          console.log('Default data request aborted');
+          return {results: [], hasMore: false};
+        }
+        console.error('Default Data Error:', error);
+        return {results: [], hasMore: false, error: error.message};
+      }
+    },
+    [getAllContact],
+  );
   const renderAvatar = contact => {
     const {backgroundColor, textColor} = getColorForParticipant(
       contact.mobile_no.toString(),
@@ -83,9 +102,11 @@ const SearchContact = () => {
     const firstLetter = contact.full_name ? contact.full_name.charAt(0) : '?';
     return (
       <View style={[styles.avatarPlaceholder, {backgroundColor}]}>
-        <RegularText style={[styles.avatarText, {color: textColor}]}>
-          {firstLetter}
-        </RegularText>
+        <TextComponent
+          text={firstLetter}
+          color={textColor}
+          size={textScale(18)}
+        />
       </View>
     );
   };
@@ -134,21 +155,43 @@ const SearchContact = () => {
     };
 
     return (
-      <TouchableOpacity
-        style={[styles.contactItem]}
-        onPress={handlePress}
-        onLongPress={handleLongPress}>
-        {renderAvatar(item)}
-        <View style={styles.contactInfo}>
-          <RegularText
-            style={[
-              styles.contactName,
-              {color: theme === THEME_COLOR ? colors.black : colors.white},
-            ]}>
-            {item?.full_name}
-          </RegularText>
-        </View>
-      </TouchableOpacity>
+      <>
+        <TouchableOpacity
+          style={[
+            styles.contactItem,
+            isSelected && styles.selectedContactBackground,
+          ]}
+          onPress={handlePress}
+          onLongPress={handleLongPress}
+          activeOpacity={0.7}>
+          {renderAvatar(item)}
+          <View style={[styles.contactInfo]}>
+            <TextComponent
+              text={item?.full_name}
+              color={isDarkMode ? Colors.dark.black : Colors.light.white}
+              size={textScale(15)}
+              font={fontNames.ROBOTO_FONT_FAMILY_MEDIUM}
+            />
+            {item?.company_name && (
+              <TextComponent
+                text={item?.company_name}
+                color={isDarkMode ? Colors.dark.black : Colors.light.white}
+                size={textScale(13)}
+                font={fontNames.ROBOTO_FONT_FAMILY_MEDIUM}
+              />
+            )}
+            {item?.custom_category && (
+              <TextComponent
+                text={item?.custom_category}
+                color={isDarkMode ? Colors.dark.black : Colors.light.white}
+                font={fontNames.ROBOTO_FONT_FAMILY_LIGHT}
+                size={textScale(12)}
+              />
+            )}
+          </View>
+        </TouchableOpacity>
+        <Divider />
+      </>
     );
   };
 
@@ -183,61 +226,23 @@ const SearchContact = () => {
 
   return (
     <>
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          backgroundColor: theme === THEME_COLOR ? colors.white : colors.black,
-        }}>
-        <TouchableOpacity
-          onPress={() => goBack()}
-          style={{marginLeft: spacing.MARGIN_6}}>
-          <SvgIcon.BackIcon
-            width={spacing.WIDTH_24}
-            height={spacing.HEIGHT_24}
-            color={theme === THEME_COLOR ? colors.black : colors.white}
-          />
-        </TouchableOpacity>
-        <TextInput
-          ref={searchInputRef}
-          style={[
-            styles.searchInput,
-            {color: theme === THEME_COLOR ? colors.black : colors.white},
-          ]}
-          placeholder="Search Contacts"
-          placeholderTextColor={colors.grey600}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
+      <ContainerComponent noPadding useScrollView={false}>
+        <DynamicSearch
+          ref={dynamicSearchRef}
+          data={[]}
+          dataMode={DataMode.REMOTE}
+          searchKeys={['full_name', 'company_name', 'custom_category']}
+          // fetchDefaultData={fetchDefaultDataAPI}
+          fetchSearchResults={fetchSearchResultsAPI}
+          placeholder="Search contacts..."
+          isgoBackArrowShow={true}
+          renderCustomItem={renderItem}
+          // defaultDataPage={1}
+          // defaultDataLimit={20}
+          retryCount={2}
+          retryDelay={500}
         />
-      </View>
-      <View
-        style={[
-          styles.container,
-          {
-            backgroundColor:
-              theme === THEME_COLOR ? colors.white : colors.black,
-          },
-        ]}>
-        {loading ? (
-          <ActivityIndicator size="large" color={colors.green} />
-        ) : (
-          <FlatList
-            data={contacts}
-            keyExtractor={item => item.mobile_no.toString()}
-            renderItem={renderItem}
-            ListEmptyComponent={
-              <RegularText
-                style={{
-                  color: theme === THEME_COLOR ? colors.black : colors.white,
-                  textAlign: 'center',
-                }}>
-                No contacts found.
-              </RegularText>
-            }
-          />
-        )}
-      </View>
-
+      </ContainerComponent>
       <CommonPopupModal
         isVisible={isDeleteMode}
         buttons={[
@@ -262,22 +267,24 @@ const SearchContact = () => {
         animationType="none"
         top={spacing.HEIGHT_216}
         left={spacing.HEIGHT_128}
-        backDropColor="rgba(255,255,255, 0.3)"
-        modalStyle={{elevation: 0}}>
+        backDropColor="rgba(255,255,255, 0.3)">
         <TouchableOpacity
-          style={{}}
+          style={{
+            backgroundColor: colors.red600,
+            opacity: 0.8,
+          }}
           activeOpacity={0.8}
           onPress={handleDeletePress}>
-          <RegularText
+          <TextComponent
+            text={'Delete Contact'}
+            size={textScale(16)}
+            color={Colors.default.white}
+            font={fontNames.ROBOTO_FONT_FAMILY_BOLD}
             style={{
-              fontSize: textScale(16),
-              fontFamily: fontNames.POPPINS_FONT_FAMILY_BOLD,
-              color: colors.black,
               paddingHorizontal: spacing.PADDING_16,
               paddingVertical: spacing.PADDING_10,
-            }}>
-            Delete Contact
-          </RegularText>
+            }}
+          />
         </TouchableOpacity>
       </AnimatedModal>
     </>
@@ -289,8 +296,6 @@ export default SearchContact;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: spacing.PADDING_16,
-    backgroundColor: '#fff',
   },
   searchInput: {
     height: spacing.HEIGHT_50,
@@ -306,9 +311,8 @@ const styles = StyleSheet.create({
   contactItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: spacing.PADDING_10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
+    padding: spacing.PADDING_6,
+    paddingHorizontal: spacing.PADDING_16,
   },
   contactInfo: {
     marginLeft: spacing.MARGIN_10,

@@ -29,7 +29,7 @@ export default navigationString = {
   searchContact: 'searchContact',
   searchMessage: 'searchMessage',
   splashScreen: 'splashScreen',
-  broadCastGroupScreen: 'broadCastGroupScreen',
+  broadCastGroupScreen: 'BroadCastGroup ',
   broadCastMessageScreen: 'broadCastMessageScreen',
   broadCastGroupDetailScreen: 'broadCastGroupDetailScreen',
   BroadCastGroupMessageListColumScreen: 'broadCastGroupMessageListColumScreen',
@@ -38,9 +38,14 @@ export default navigationString = {
   ProjectScreen: 'projectScreen',
   ComplainsScreen: 'complainsScreen',
   FeedBackScreen: 'feedBackScreen',
-  CommonComplaitsAndFeedBack: 'commonComplaitsAndFeedBack',
-  webView:'webView',
   Support:'SupportScreen',
-  PrivacyPolicy:'PrivacyPolicy',
-  AnniversaryScreen:'anniversaryScreen'
+  DateReminder:'DateReminderScreen',
+  CreateReminder:'CreateReminderScreen',
+  orederScreen:'orderScreen',
+  paymentScreen:'paymentScreen',
+  AccountDetailsScreen:'accountDetailsScreen',
+  deliveryScreen:'deliveryScreen',
+  DateReminderRowScreen:'dateReminderRowScreen',
+  selectConatctForCreateGroup:'selectConatctForCreateGroup',
+  SearchAndAddMemberForBroadCastGroup:'SearchAndAddMemberForBroadCastGroup'
 };

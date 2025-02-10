@@ -1,8 +1,9 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import { retrieveItem, TOKEN_KEY } from './CustomAsyncStorage';
+import { STORAGE_KEYS } from '../api/store/slice/authSlice';
 
 export async function getHeaders() {
-  const token = await retrieveItem(TOKEN_KEY);
+  const token = await AsyncStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
   // console.log('token', token);
     
   if (token) {

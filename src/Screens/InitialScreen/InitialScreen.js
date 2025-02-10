@@ -146,7 +146,7 @@ const InitialScreen = () => {
       <CustomButton
         title={'Add Domain'}
         onPress={handleAddMoreUrl}
-        style={{
+        buttonStyle={{
           width: '95%',
           alignSelf: 'center',
           marginVertical: spacing.MARGIN_10,

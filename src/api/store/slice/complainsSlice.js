@@ -13,8 +13,8 @@ import {
 } from '../../../Config/url';
 import { customBaseQuery } from '../utils';
 
-export const ComplainsSlice = createApi({
-  reducerPath: 'ComplainsSlice',
+export const ComplainsApiSlice = createApi({
+  reducerPath: 'ComplainsApiSlice',
   baseQuery: customBaseQuery,
   tagTypes: ['ComplainsSlice'],
   endpoints: builder => ({
@@ -108,7 +108,8 @@ export const ComplainsSlice = createApi({
           mobile,
           status,
         });
-
+        console.log(params);
+        
         return {
           url: `${GET_COMPLAIN_TICKETS_FILTERED}?${params.toString()}`,
           method: 'GET',
@@ -144,4 +145,4 @@ export const {
   useLazyGetAllFilteredComplaintsDataQuery,
 
   useUpdateStatusMutation,
-} = ComplainsSlice;
+} = ComplainsApiSlice;

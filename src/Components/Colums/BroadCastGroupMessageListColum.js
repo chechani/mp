@@ -1,47 +1,39 @@
 import React, {useRef, useState} from 'react';
-import {
-  FlatList,
-  Image,
-  Linking,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import {FlatList, StyleSheet, TouchableOpacity, View} from 'react-native';
+import Toast from 'react-native-toast-message';
 import {useGetBroadCastGroupQuery} from '../../api/store/slice/broadCastGroupSlice';
 import {
-  useFetchMessageStatusAndDetailsQuery,
   useLazyFetchBroadCastMessageTemplateQuery,
+  useLazyUploadeMediaQuery,
+  useSendBroadCastMessageMutation,
 } from '../../api/store/slice/broadCastMessageSlice';
 import * as SvgIcon from '../../assets';
-import NavigationString from '../../Navigations/NavigationString';
-import {textScale, width} from '../../styles/responsiveStyles';
+import {textScale} from '../../styles/responsiveStyles';
 import {spacing} from '../../styles/spacing';
 import {fontNames} from '../../styles/typography';
-import colors from '../../Utils/colors';
+import Colors from '../../theme/colors';
+import {pickAndSendMediaMessage} from '../../Utils/commonImagePicker';
 import THEME_COLOR from '../../Utils/Constant';
-import {goBack, navigate} from '../../Utils/helperFunctions';
-import AnimatedModal from '../Common/AnimatedModal';
-import BottonComp from '../Common/BottonComp';
+import {formatDateTime, goBack} from '../../Utils/helperFunctions';
 import CustomHeader from '../Common/CommoneHeader';
-import CustomBottomSheet from '../Common/CustomBottomSheet';
+import ContainerComponent from '../Common/ContainerComponent';
 import CustomBottomSheetFlatList from '../Common/CustomBottomSheetFlatList';
-import LoadingScreen from '../Common/Loader';
-import RegularText from '../Common/RegularText';
-import {useTheme} from '../hooks';
-import {useAppSelector} from '../hooks/index';
 import CustomButton from '../Common/CustomButton';
+import CustomDatePicker from '../Common/CustomDatePicker';
 import CustomInput from '../Common/CustomInput';
-import {BottomSheetView} from '@gorhom/bottom-sheet';
+import LoadingScreen from '../Common/Loader';
 import TextComponent from '../Common/TextComponent';
+import {useTheme} from '../hooks';
+import BroadCastGroupMessageRow from '../Row/BroadCastGroupMessageRow';
 
 const SelectHeaderName = ({
   selectedBroadCastMessageData,
   setSelectedBroadCastMessageData,
-  theme,
+  isDarkMode,
 }) => {
   return (
     <CustomInput
+      required={true}
       placeholder={'Enter Header Name'}
       value={selectedBroadCastMessageData.header_name}
       onChange={text => {
@@ -51,7 +43,7 @@ const SelectHeaderName = ({
         }));
       }}
       inputStyles={{
-        color: theme === THEME_COLOR ? colors.black : colors.white,
+        color: isDarkMode ? Colors.dark.black : Colors.light.white,
       }}
       label="Header Name"
     />
@@ -60,8 +52,10 @@ const SelectHeaderName = ({
 
 const BroadcastMessagesList = ({route}) => {
   const {theme} = useTheme();
+  const isDarkMode = theme === THEME_COLOR;
   const sendBroadCastRef = useRef(null);
   const selectTempleteRef = useRef(null);
+  const uploadedHeaderSamples = useRef(null);
   const {groupName} = route?.params;
   const {data, isLoading, isError, refetch} = useGetBroadCastGroupQuery();
   const [
@@ -69,10 +63,14 @@ const BroadcastMessagesList = ({route}) => {
     {
       data: BroadCastMessageTemplate,
       isLoading: BroadCastMessageTemplateIsLoading,
-      error,
     },
   ] = useLazyFetchBroadCastMessageTemplateQuery();
-  
+  const [
+    triggerCreateWaBroadcastMessage,
+    {isLoading: isLoadingCreateWABroadCastMessage},
+  ] = useSendBroadCastMessageMutation();
+  const [uploadMidea] = useLazyUploadeMediaQuery();
+
   const [selectedBroadCastMessageData, setSelectedBroadCastMessageData] =
     useState({
       template: '',
@@ -81,22 +79,25 @@ const BroadcastMessagesList = ({route}) => {
       mediaTypeModal: false,
       mediaType: '',
       header_name: '',
+      uploadedFileData: null,
+      uploadedFileName: '',
+      scheduletime: '',
+      scheduledate: '',
+      selectedUploadedSampleTitle: '',
+      uploadedMediaId: '',
     });
-
-  if (isLoading) {
-    return (
-      <View style={styles.center}>
-        <LoadingScreen color={colors.green} />
-      </View>
-    );
-  }
+  const [uploadedHeaderSampleData, setUploadedHeaderSampleData] = useState([]);
 
   if (isError) {
     return (
       <View style={styles.center}>
-        <RegularText style={[styles.errorText]}>
-          Failed to load messages. Please try again.
-        </RegularText>
+        <TextComponent
+          text={'Failed to load messages. Please try again.'}
+          color={Colors.default.error}
+          size={textScale(16)}
+          font={fontNames.ROBOTO_FONT_FAMILY_BOLD}
+          textAlign={'center'}
+        />
       </View>
     );
   }
@@ -106,16 +107,15 @@ const BroadcastMessagesList = ({route}) => {
   const SelectMessageTemplateName = () => {
     return (
       <CustomInput
-        placeholder={
-          selectedBroadCastMessageData.template?.actual_name || 'Select'
-        }
+        required={true}
+        value={selectedBroadCastMessageData.template?.actual_name || 'Select'}
         onPressTextInput={() => {
           setSelectedBroadCastMessageData(pre => ({...pre, template: ''}));
           selectTempleteRef.current?.present();
         }}
         editable={false}
         inputStyles={{
-          color: theme === THEME_COLOR ? colors.black : colors.white,
+          color: isDarkMode ? Colors.dark.black : Colors.light.white,
         }}
         label="Select Message Template"
         multiline
@@ -126,7 +126,8 @@ const BroadcastMessagesList = ({route}) => {
   const SelectWhenToSendMessageTemplate = () => {
     return (
       <CustomInput
-        placeholder={selectedBroadCastMessageData.whenToSend || 'Select'}
+        required={true}
+        value={selectedBroadCastMessageData.whenToSend || 'Select'}
         onPressTextInput={() => {
           setSelectedBroadCastMessageData(pre => ({...pre, whenToSend: ''})),
             setSelectedBroadCastMessageData(pre => ({
@@ -137,32 +138,36 @@ const BroadcastMessagesList = ({route}) => {
         }}
         editable={false}
         inputStyles={{
-          color: theme === THEME_COLOR ? colors.black : colors.white,
+          color: isDarkMode ? Colors.dark.black : Colors.light.white,
         }}
         label=" When to Send"
       />
     );
   };
 
-  const SelectMessageTemplate = () => {
+  const SelectedMessageTemplate = () => {
     return (
       <>
         <TextComponent
           text="Message Template"
-          color={theme === THEME_COLOR ? colors.black : colors.white}
+          color={isDarkMode ? Colors.dark.black : Colors.light.white}
           style={{marginLeft: spacing.MARGIN_6}}
         />
         <View
           style={{
             marginVertical: spacing.MARGIN_12,
-            backgroundColor:
-              theme === THEME_COLOR ? colors.grey800 : colors.grey100,
+            backgroundColor: isDarkMode
+              ? Colors.light.white
+              : Colors.dark.black,
             padding: spacing.PADDING_16,
             borderRadius: spacing.RADIUS_8,
+            borderWidth: 1,
+            borderColor: isDarkMode ? Colors.dark.black : Colors.light.white,
+            opacity: 0.9,
           }}>
           <TextComponent
             text={selectedBroadCastMessageData.template?.template}
-            color={theme === THEME_COLOR ? colors.white : colors.black}
+            color={!isDarkMode ? Colors.light.white : Colors.dark.black}
             lineHeight={20}
             font={fontNames.ROBOTO_FONT_FAMILY_REGULAR}
           />
@@ -170,14 +175,13 @@ const BroadcastMessagesList = ({route}) => {
       </>
     );
   };
-
   const SelectHeaderType = () => {
     return (
       <CustomInput
         placeholder={selectedBroadCastMessageData.template?.header_type}
         editable={false}
         inputStyles={{
-          color: theme === THEME_COLOR ? colors.black : colors.white,
+          color: isDarkMode ? Colors.dark.black : Colors.light.white,
         }}
         label="Header Type"
         multiline
@@ -188,7 +192,8 @@ const BroadcastMessagesList = ({route}) => {
   const SelectMediaType = () => {
     return (
       <CustomInput
-        placeholder={selectedBroadCastMessageData.mediaType || 'Select'}
+        required={true}
+        value={selectedBroadCastMessageData.mediaType || 'Select'}
         onPressTextInput={() => {
           setSelectedBroadCastMessageData(pre => ({...pre, whenToSend: ''})),
             setSelectedBroadCastMessageData(pre => ({
@@ -198,28 +203,60 @@ const BroadcastMessagesList = ({route}) => {
         }}
         editable={false}
         inputStyles={{
-          color: theme === THEME_COLOR ? colors.black : colors.white,
+          color: isDarkMode ? Colors.dark.black : Colors.light.white,
         }}
         label="Media Type"
       />
     );
   };
+  const renderUploadedSampleHeader = () => (
+    <TextComponent
+      text={'Uploaded Header Sample'}
+      color={isDarkMode ? Colors.dark.black : Colors.light.white}
+      size={textScale(16)}
+      textAlign={'center'}
+    />
+  );
+  const handleUploadedSampleSelect = item => {
+    setSelectedBroadCastMessageData(prev => ({
+      ...prev,
+      selectedUploadedSampleTitle: item?.title,
+      uploadedMediaId: item?.media_id,
+    }));
+    uploadedHeaderSamples.current?.dismiss();
+  };
+
+  const renderUploadedSampleItem = ({item}) => (
+    <TouchableOpacity
+      style={styles.uploadedSampleItem}
+      onPress={() => handleUploadedSampleSelect(item)}>
+      <TextComponent
+        text={item?.title}
+        color={Colors.default.black}
+        size={textScale(16)}
+      />
+    </TouchableOpacity>
+  );
 
   const SelectUploadedHeaderSample = () => {
     return (
       <CustomInput
-        placeholder={selectedBroadCastMessageData.mediaType || 'Select'}
-        onPressTextInput={() => {
-          // setSelectedBroadCastMessageData(pre => ({...pre, whenToSend: ''})),
-          //   setSelectedBroadCastMessageData(pre => ({
-          //     ...pre,
-          //     mediaTypeModal: !selectedBroadCastMessageData.mediaTypeModal,
-          //   }));
-          console.log('SelectUploadedHeaderSample');
+        required={true}
+        value={selectedBroadCastMessageData.mediaType || 'Select'}
+        onPressTextInput={async () => {
+          try {
+            const response = await uploadMidea({
+              header_type: selectedBroadCastMessageData.template?.header_type,
+            });
+            setUploadedHeaderSampleData(response.data);
+            uploadedHeaderSamples.current?.present();
+          } catch (error) {
+            console.log('Failed to upload sample header:', error);
+          }
         }}
         editable={false}
         inputStyles={{
-          color: theme === THEME_COLOR ? colors.black : colors.white,
+          color: isDarkMode ? Colors.dark.black : Colors.light.white,
         }}
         label="Uploaded Header Sample"
       />
@@ -228,18 +265,11 @@ const BroadcastMessagesList = ({route}) => {
   const SelectMediaID = () => {
     return (
       <CustomInput
-        placeholder={selectedBroadCastMessageData.mediaType || 'Select'}
-        onPressTextInput={() => {
-          // setSelectedBroadCastMessageData(pre => ({...pre, whenToSend: ''})),
-          //   setSelectedBroadCastMessageData(pre => ({
-          //     ...pre,
-          //     mediaTypeModal: !selectedBroadCastMessageData.mediaTypeModal,
-          //   }));
-          console.log('SelectMediaID');
-        }}
+        required={true}
+        value={selectedBroadCastMessageData.uploadedMediaId || 'Select'}
         editable={false}
         inputStyles={{
-          color: theme === THEME_COLOR ? colors.black : colors.white,
+          color: isDarkMode ? Colors.dark.black : Colors.light.white,
         }}
         label="Media ID"
       />
@@ -248,18 +278,19 @@ const BroadcastMessagesList = ({route}) => {
   const SelectHeaderSample = () => {
     return (
       <CustomInput
-        placeholder={selectedBroadCastMessageData.mediaType || 'Select'}
-        onPressTextInput={() => {
-          // setSelectedBroadCastMessageData(pre => ({...pre, whenToSend: ''})),
-          //   setSelectedBroadCastMessageData(pre => ({
-          //     ...pre,
-          //     mediaTypeModal: !selectedBroadCastMessageData.mediaTypeModal,
-          //   }));
-          console.log('SelectHeaderSample');
+        required={true}
+        value={selectedBroadCastMessageData.uploadedFileName || 'Select'}
+        onPressTextInput={async () => {
+          const result = await pickAndSendMediaMessage();
+          setSelectedBroadCastMessageData(pre => ({
+            ...pre,
+            uploadedFileData: result.data?.base64String,
+            uploadedFileName: result.data?.name,
+          }));
         }}
         editable={false}
         inputStyles={{
-          color: theme === THEME_COLOR ? colors.black : colors.white,
+          color: isDarkMode ? Colors.dark.black : Colors.light.white,
         }}
         label="Header Sample"
       />
@@ -267,12 +298,9 @@ const BroadcastMessagesList = ({route}) => {
   };
 
   const renderSelectTempleteItem = ({item}) => {
-    const backgroundColor =
-      theme === THEME_COLOR ? colors.grey100 : colors.grey800;
-    const textColor = theme === THEME_COLOR ? colors.black : colors.white;
     return (
       <TouchableOpacity
-        style={[styles.templateListContainer, {backgroundColor}]}
+        style={styles.templateListContainer}
         onPress={() => {
           setSelectedBroadCastMessageData(prev => ({
             ...prev,
@@ -280,184 +308,266 @@ const BroadcastMessagesList = ({route}) => {
           }));
           selectTempleteRef.current?.dismiss();
         }}>
-        <RegularText style={[styles.templateListTextStyle, {color: textColor}]}>
-          {item?.actual_name}
-        </RegularText>
+        <TextComponent
+          text={item?.actual_name.replace(/_/g, ' ')}
+          size={textScale(16)}
+          color={Colors.light.white}
+          font={fontNames.ROBOTO_FONT_FAMILY_MEDIUM}
+        />
       </TouchableOpacity>
     );
   };
 
   const ListHeaderComponentSelectTemplete = () => (
-    <RegularText
-      style={{
-        alignSelf: 'center',
-        color: theme === THEME_COLOR ? colors.black : colors.white,
-        fontSize: textScale(18),
-        fontFamily: fontNames.ROBOTO_FONT_FAMILY_BOLD,
-      }}>
-      Select Template
-    </RegularText>
+    <TextComponent
+      text={'Select Template'}
+      color={isDarkMode ? Colors.dark.black : Colors.light.white}
+      textAlign={'center'}
+      size={textScale(16)}
+      font={fontNames.ROBOTO_FONT_FAMILY_BOLD}
+    />
   );
+  const createWABrodcast = async () => {
+    try {
+      const SecheduleTime = formatDateTime(
+        selectedBroadCastMessageData.scheduletime,
+        'time',
+      );
+      const SecheduleDate = formatDateTime(
+        selectedBroadCastMessageData.scheduledate,
+        'date',
+      );
+
+      const finalSchedule = `${SecheduleDate} ${SecheduleTime}`
+      const payload = {
+        group: groupName,
+        message_template: selectedBroadCastMessageData.template?.actual_name,
+        header_name: selectedBroadCastMessageData.header_name,
+        media_type: selectedBroadCastMessageData.mediaType,
+        // uploaded_header_sample:selectedBroadCastMessageData.uploadedFileData,
+        filename: selectedBroadCastMessageData.uploadedFileName,
+        filedata: selectedBroadCastMessageData.uploadedFileData,
+        when_to_send: selectedBroadCastMessageData.whenToSend,
+        schedule_date_and_time: finalSchedule,
+      };
+     
+    
+      const res = await triggerCreateWaBroadcastMessage(payload).unwrap();
+      console.log(res);
+
+      if (res?.status_code === 200) {
+        refetch();
+        sendBroadCastRef.current?.dismiss();
+        Toast.show({
+          type: 'success',
+          text1: 'Success',
+          text2: res?.message,
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <>
-      <CustomHeader
-        title={groupName}
-        showLeftIcon={true}
-        leftIcon={SvgIcon.BackIcon}
-        onLeftIconPress={goBack}
-        showRightIcons={true}
-        rightIcons={[SvgIcon.ReloadIcon]}
-        onRightIconPress={() => refetch()}
-      />
-      <View
-        style={{
-          backgroundColor: theme === THEME_COLOR ? '#f9f9f9' : colors.black,
-          flex: 1,
-        }}>
-        <FlatList
-          data={messageList?.brodcasted_records}
-          keyExtractor={item => item.name.toString()}
-          renderItem={({item}) => <MessageItem message={item} theme={theme} />}
-          contentContainerStyle={{paddingBottom: spacing.PADDING_16}}
-          ListEmptyComponent={
-            <RegularText
-              style={[
-                styles.errorText,
-                {color: theme === THEME_COLOR ? colors.black : colors.white},
-              ]}>
-              No messages found for {groupName}
-            </RegularText>
-          }
-          inverted
+      <ContainerComponent
+        noPadding
+        useScrollView={false}
+        bottomComponent={
+          <CustomButton
+            title={'Send Message'}
+            onPress={() => {
+              sendBroadCastRef.current?.present();
+              fetchBroadCastMessageTemplate();
+            }}
+            isLoading={BroadCastMessageTemplateIsLoading}
+          />
+        }>
+        <CustomHeader
+          title={groupName}
+          showLeftIcon={true}
+          leftIcon={SvgIcon.BackIcon}
+          onLeftIconPress={goBack}
+          showRightIcons={true}
+          rightIcons={[SvgIcon.ReloadIcon]}
+          onRightIconPress={refetch}
         />
 
-        <BottonComp
-          text="Send Message"
-          style={styles.createGroupButton}
-          textStyle={{color: colors.white, fontSize: textScale(16)}}
-          onPress={() => {
-            sendBroadCastRef.current?.present(),
-              fetchBroadCastMessageTemplate();
-          }}
-          isLoading={BroadCastMessageTemplateIsLoading}
-        />
-      </View>
+        {isLoading ? (
+          <LoadingScreen />
+        ) : (
+          <FlatList
+            data={messageList?.brodcasted_records}
+            keyExtractor={item => item.name.toString()}
+            renderItem={({item}) => <BroadCastGroupMessageRow message={item} />}
+            contentContainerStyle={{paddingBottom: spacing.PADDING_16}}
+            ListEmptyComponent={
+              <TextComponent
+                text={`No messages found for ${groupName}`}
+                color={isDarkMode ? Colors.dark.black : Colors.light.white}
+                textAlign={'center'}
+                size={textScale(16)}
+                font={fontNames.ROBOTO_FONT_FAMILY_BOLD}
+              />
+            }
+            inverted
+          />
+        )}
+      </ContainerComponent>
+
       <CustomBottomSheetFlatList
         ref={sendBroadCastRef}
         snapPoints={['90%']}
         enableDynamicSizing={false}
+        onDismiss={() => setSelectedBroadCastMessageData({})}
         data={[1]}
         renderItem={() => (
           <>
-            <RegularText
-              style={[
-                styles.headerTitle,
-                {color: theme === THEME_COLOR ? colors.black : colors.white},
-              ]}>
-              Send WhatsApp Broadcasting to {groupName}
-            </RegularText>
+            <TextComponent
+              text={`Send WhatsApp Broadcasting to ${groupName}`}
+              color={isDarkMode ? Colors.dark.black : Colors.light.white}
+              textAlign={'center'}
+              size={textScale(16)}
+              font={fontNames.ROBOTO_FONT_FAMILY_BOLD}
+            />
             <View
               style={{
                 marginHorizontal: spacing.MARGIN_16,
                 marginVertical: spacing.MARGIN_12,
               }}>
               <SelectMessageTemplateName />
-              <SelectWhenToSendMessageTemplate />
-              {selectedBroadCastMessageData.iswhenToSendModalShow && (
-                <BottomSheetView
-                  style={[
-                    styles.optionContainer,
-                    {
-                      backgroundColor:
-                        theme === THEME_COLOR ? colors.grey800 : colors.grey100,
-                    },
-                  ]}>
-                  {['Now', 'Schedule'].map(option => (
-                    <TouchableOpacity
-                      key={option}
-                      onPress={() => {
-                        setSelectedBroadCastMessageData(prev => ({
-                          ...prev,
-                          whenToSend: option,
-                          iswhenToSendModalShow: false,
-                        }));
-                      }}
-                      style={{
-                        paddingVertical: spacing.PADDING_8,
-                        borderBottomWidth: 1,
-                        borderBottomColor: colors.grey700,
-                      }}>
-                      <RegularText
-                        style={{
-                          color:
-                            theme === THEME_COLOR ? colors.white : colors.black,
-                          textAlign: 'center',
-                        }}>
-                        {option}
-                      </RegularText>
-                    </TouchableOpacity>
-                  ))}
-                </BottomSheetView>
-              )}
-              <SelectMessageTemplate />
-              {!selectedBroadCastMessageData.template && (
+              <SelectedMessageTemplate />
+              {selectedBroadCastMessageData.template?.actual_name && (
                 <>
-                  <SelectHeaderType />
+                  {selectedBroadCastMessageData.template?.header_type && (
+                    <SelectHeaderType />
+                  )}
                   <SelectHeaderName
                     selectedBroadCastMessageData={selectedBroadCastMessageData}
                     setSelectedBroadCastMessageData={
                       setSelectedBroadCastMessageData
                     }
-                    theme={theme}
+                    isDarkMode={isDarkMode}
                   />
                   <SelectMediaType />
                 </>
               )}
-              {selectedBroadCastMessageData.mediaTypeModal && (
-                <BottomSheetView
-                  style={[
-                    styles.optionContainer,
-                    {
-                      backgroundColor:
-                        theme === THEME_COLOR ? colors.grey800 : colors.grey100,
-                    },
-                  ]}>
-                  {['Uploaded to Meta', 'Uploaded Now '].map(option => (
-                    <TouchableOpacity
-                      key={option}
-                      onPress={() => {
-                        setSelectedBroadCastMessageData(prev => ({
-                          ...prev,
-                          mediaType: option,
-                          mediaTypeModal: false,
-                        }));
-                      }}
-                      style={{
-                        paddingVertical: spacing.PADDING_8,
-                        borderBottomWidth: 1,
-                        borderBottomColor: colors.grey700,
-                      }}>
-                      <RegularText
-                        style={{
-                          color:
-                            theme === THEME_COLOR ? colors.white : colors.black,
-                          textAlign: 'center',
-                        }}>
-                        {option}
-                      </RegularText>
-                    </TouchableOpacity>
-                  ))}
-                </BottomSheetView>
-              )}
-              {selectedBroadCastMessageData.mediaType === 'Uploaded to Meta' ? (
+              {selectedBroadCastMessageData.mediaTypeModal &&
+                ['Uploaded to Meta', 'Upload Now'].map(option => (
+                  <TouchableOpacity
+                    key={option}
+                    onPress={() => {
+                      setSelectedBroadCastMessageData(prev => ({
+                        ...prev,
+                        mediaType: option,
+                        mediaTypeModal: false,
+                      }));
+                    }}
+                    style={{
+                      paddingVertical: spacing.PADDING_8,
+                      backgroundColor: Colors.default.primaryColor,
+                      borderRadius: spacing.RADIUS_6,
+                      marginVertical: spacing.MARGIN_6,
+                    }}>
+                    <TextComponent
+                      text={option}
+                      color={Colors.light.white}
+                      textAlign={'center'}
+                      size={textScale(16)}
+                      font={fontNames.ROBOTO_FONT_FAMILY_MEDIUM}
+                    />
+                  </TouchableOpacity>
+                ))}
+
+              {selectedBroadCastMessageData.mediaType ===
+                'Uploaded to Meta' && (
                 <>
                   <SelectUploadedHeaderSample />
                   <SelectMediaID />
                 </>
-              ) : (
+              )}
+
+              {selectedBroadCastMessageData.mediaType === 'Upload Now' && (
                 <SelectHeaderSample />
               )}
+
+              <SelectWhenToSendMessageTemplate />
+              {selectedBroadCastMessageData.iswhenToSendModalShow &&
+                ['Now', 'Schedule'].map(option => (
+                  <TouchableOpacity
+                    key={option}
+                    onPress={() => {
+                      setSelectedBroadCastMessageData(prev => ({
+                        ...prev,
+                        whenToSend: option,
+                        iswhenToSendModalShow: false,
+                      }));
+                    }}
+                    style={{
+                      paddingVertical: spacing.PADDING_8,
+                      backgroundColor: Colors.default.primaryColor,
+
+                      borderRadius: spacing.RADIUS_6,
+                      marginVertical: spacing.MARGIN_6,
+                    }}>
+                    <TextComponent
+                      text={option}
+                      color={Colors.light.white}
+                      textAlign={'center'}
+                      size={textScale(16)}
+                      font={fontNames.ROBOTO_FONT_FAMILY_MEDIUM}
+                    />
+                  </TouchableOpacity>
+                ))}
+
+              {selectedBroadCastMessageData.whenToSend === 'Schedule' && (
+                <>
+                  <CustomDatePicker
+                    label="Sechedule Date"
+                    onChange={date =>
+                      setSelectedBroadCastMessageData(prev => ({
+                        ...prev,
+                        scheduledate: date,
+                      }))
+                    }
+                    display="default"
+                    required={true}
+                    selectedDate={selectedBroadCastMessageData.scheduledate}
+                  />
+                  <CustomDatePicker
+                    label="Sechedule Time"
+                    onChange={time =>
+                      setSelectedBroadCastMessageData(prev => ({
+                        ...prev,
+                        scheduletime: time,
+                      }))
+                    }
+                    hour12={false}
+                    mode="time"
+                    display="default"
+                    required={true}
+                    selectedDate={selectedBroadCastMessageData.scheduletime}
+                  />
+                </>
+              )}
+
+              <CustomButton
+                title={'Create WA Broadcast'}
+                onPress={createWABrodcast}
+                isLoading={isLoadingCreateWABroadCastMessage}
+                disabled={
+                  !selectedBroadCastMessageData.template?.actual_name ||
+                  !selectedBroadCastMessageData.whenToSend ||
+                  !selectedBroadCastMessageData.header_name ||
+                  !selectedBroadCastMessageData.mediaType ||
+                  (selectedBroadCastMessageData.mediaType ===
+                    'Uploaded to Meta' &&
+                    !selectedBroadCastMessageData.uploadedFileData) ||
+                  (selectedBroadCastMessageData.mediaType === 'Upload Now' &&
+                    !selectedBroadCastMessageData.uploadedFileData)
+                }
+              />
             </View>
           </>
         )}
@@ -469,361 +579,47 @@ const BroadcastMessagesList = ({route}) => {
         renderItem={renderSelectTempleteItem}
         ListHeaderComponent={ListHeaderComponentSelectTemplete}
       />
+      <CustomBottomSheetFlatList
+        ref={uploadedHeaderSamples}
+        snapPoints={['40%']}
+        data={uploadedHeaderSampleData}
+        keyExtractor={item => item?.media_id.toString()}
+        renderItem={renderUploadedSampleItem}
+        ListHeaderComponent={renderUploadedSampleHeader}
+        ListEmptyComponent={
+          <TextComponent
+            text={'No uploaded header samples found'}
+            color={isDarkMode ? Colors.dark.black : Colors.light.white}
+            textAlign={'center'}
+            size={textScale(16)}
+            font={fontNames.ROBOTO_FONT_FAMILY_BOLD}
+          />
+        }
+      />
     </>
   );
 };
 
-const MessageItem = ({message, theme}) => {
-  const selectedDomain = useAppSelector(
-    state => state.domains?.selectedDomain?.domain,
-  );
-
-  const {data, isLoading, isError} = useFetchMessageStatusAndDetailsQuery(
-    message?.name,
-  );
-
-  if (isLoading) {
-    return (
-      <View
-        style={[
-          styles.messageCard,
-          {
-            backgroundColor:
-              theme === THEME_COLOR ? colors.black : colors.white,
-          },
-        ]}>
-        <RegularText
-          style={[
-            styles.loadingText,
-            {color: theme === THEME_COLOR ? colors.white : colors.black},
-          ]}>
-          Loading message details...
-        </RegularText>
-      </View>
-    );
-  }
-
-  if (isError) {
-    return (
-      <View style={styles.messageCard}>
-        <RegularText style={styles.errorText}>
-          Failed to load details for {message.group_name}
-        </RegularText>
-      </View>
-    );
-  }
-
-  const statusCount = data?.data?.status_count || {};
-  const details = data?.data?.details || [];
-  const isImage =
-    message?.header_sample?.startsWith('/files/') ||
-    /\.(jpeg|jpg|png)$/i.test(message?.header_sample);
-  return (
-    <View
-      style={{
-        marginBottom: spacing.PADDING_16,
-        maxWidth: '80%',
-        alignSelf: 'flex-end',
-      }}>
-      {isImage && message?.header_sample && (
-        <Image
-          source={{uri: `${selectedDomain}${message?.header_sample}`}}
-          style={{
-            width: spacing.WIDTH_105,
-            height: spacing.HEIGHT_128,
-            resizeMode: 'contain',
-            alignSelf: 'center',
-          }}
-        />
-      )}
-      <View
-        style={[
-          styles.messageCard,
-          {
-            backgroundColor: colors.green200,
-            alignSelf: 'flex-end',
-          },
-        ]}>
-        {/* Message Details */}
-        <MessageDetails message={{sent_message: details[0]?.sent_message}} />
-
-        {/* Status Counts */}
-        <View
-          style={[
-            styles.statusContainer,
-            {
-              backgroundColor: colors.green200,
-            },
-          ]}>
-          {['sent', 'failed', 'delivered', 'Success', 'read'].map(
-            (status, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.statusRow}
-                onPress={() =>
-                  navigate(
-                    NavigationString.BroadCastGroupMessageConatctDetailsScreen,
-                    {
-                      broadcast_name: message.name,
-                      status: status.toLowerCase(),
-                    },
-                  )
-                }>
-                <RegularText style={styles.statusText}>
-                  {status.charAt(0).toUpperCase() + status.slice(1)}:
-                </RegularText>
-                <View style={{alignItems: 'center', flexDirection: 'row'}}>
-                  <RegularText style={styles.statusValue}>
-                    {statusCount[status] || 0}
-                  </RegularText>
-                  <SvgIcon.RightArrow color={colors.blue700} />
-                </View>
-              </TouchableOpacity>
-            ),
-          )}
-        </View>
-      </View>
-    </View>
-  );
-};
-const MessageDetails = ({message}) => {
-  const content = message?.sent_message || 'No message content';
-  const parseMessage = text => {
-    const urlRegex =
-      /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/gi;
-
-    const phoneRegex = /(?<!\d)(\+?\d{10,12})(?!\d)/g;
-
-    const parts = [];
-    let lastIndex = 0;
-
-    // Find all matches first
-    const matches = [
-      ...text.matchAll(urlRegex),
-      ...text.matchAll(phoneRegex),
-    ].sort((a, b) => a.index - b.index);
-
-    matches.forEach(match => {
-      // Add text before the match
-      if (match.index > lastIndex) {
-        parts.push({
-          type: 'text',
-          value: text.slice(lastIndex, match.index),
-        });
-      }
-
-      // Determine if it's a URL or phone number
-      const isUrl = match[0].match(urlRegex);
-      parts.push({
-        type: isUrl ? 'url' : 'phone',
-        value: match[0],
-      });
-
-      lastIndex = match.index + match[0].length;
-    });
-
-    // Add remaining text
-    if (lastIndex < text.length) {
-      parts.push({
-        type: 'text',
-        value: text.slice(lastIndex),
-      });
-    }
-
-    return parts;
-  };
-
-  const handleLinkPress = url => {
-    const formattedUrl = url.toLowerCase().startsWith('http')
-      ? url
-      : `https://${url}`;
-    Linking.openURL(formattedUrl).catch(err => {
-      console.error('Failed to open URL:', err);
-    });
-  };
-
-  const handlePhonePress = phoneNumber => {
-    // Remove any non-digit characters from phone number
-    const cleanNumber = phoneNumber.replace(/\D/g, '');
-    Linking.openURL(`tel:${cleanNumber}`).catch(err => {
-      console.error('Failed to open phone dialer:', err);
-    });
-  };
-
-  const renderPart = (part, index) => {
-    switch (part.type) {
-      case 'text':
-        return (
-          <RegularText key={index} style={styles.messageText}>
-            {part.value}
-          </RegularText>
-        );
-
-      case 'url':
-        return (
-          <RegularText
-            key={index}
-            style={styles.linkText}
-            onPress={() => handleLinkPress(part.value)}>
-            {part.value}
-          </RegularText>
-        );
-
-      case 'phone':
-        return (
-          <RegularText
-            key={index}
-            style={styles.phoneText}
-            onPress={() => handlePhonePress(part.value)}>
-            {part.value}
-          </RegularText>
-        );
-
-      default:
-        return null;
-    }
-  };
-
-  const parsedContent = parseMessage(content);
-
-  return (
-    <View>{parsedContent.map((part, index) => renderPart(part, index))}</View>
-  );
-};
-
 const styles = StyleSheet.create({
-  messageContainer: {
-    padding: 10,
-    borderRadius: 8,
-    backgroundColor: '#f9f9f9',
-    marginVertical: 5,
-  },
-  messageText: {
-    fontSize: 16,
-    color: '#333',
-  },
-  linkText: {
-    color: '#1e90ff',
-    textDecorationLine: 'underline',
-  },
-  phoneText: {
-    color: '#024ea4',
-    textDecorationLine: 'underline',
-  },
-
   center: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  errorText: {
-    color: colors.red700,
-    fontSize: textScale(16),
-    fontFamily: fontNames.ROBOTO_FONT_FAMILY_BOLD,
-    textAlign: 'center',
-  },
-  messageCard: {
-    backgroundColor: colors.white,
-    borderRadius: spacing.RADIUS_8,
-    padding: spacing.PADDING_16,
-  },
-  loadingText: {
-    fontSize: textScale(16),
-    color: colors.grey800,
-  },
-  messageText: {
-    fontSize: textScale(16),
-    color: colors.grey900,
-    marginBottom: spacing.MARGIN_16,
-  },
-  statusContainer: {
-    paddingVertical: spacing.PADDING_8,
-    backgroundColor: '#f9f9f9',
-    borderRadius: spacing.RADIUS_8,
-  },
-  statusRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: spacing.PADDING_8,
-  },
-  statusText: {
-    fontSize: textScale(16),
-    color: colors.blue700,
-    fontFamily: fontNames.ROBOTO_FONT_FAMILY_BOLD,
-  },
-  statusValue: {
-    fontSize: textScale(16),
-    color: colors.blue700,
-    fontFamily: fontNames.ROBOTO_FONT_FAMILY_LIGHT,
-  },
-  createGroupButton: {
-    paddingHorizontal: spacing.PADDING_12,
-    paddingVertical: spacing.PADDING_12,
-    backgroundColor: colors.green600,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  createGroupText: {
-    color: colors.white,
-    marginLeft: spacing.MARGIN_4,
-    fontFamily: fontNames.ROBOTO_FONT_FAMILY_BOLD,
-  },
 
-  headerTypeButton: {
-    backgroundColor: colors.grey500,
-    borderWidth: 0,
-  },
-  headerTypeButtonText: {
-    color: colors.white,
-    fontSize: textScale(16),
-    fontFamily: fontNames.POPPINS_FONT_FAMILY_BOLD,
-  },
-  headerTitle: {
-    fontSize: textScale(16),
-    fontFamily: fontNames.ROBOTO_FONT_FAMILY_BOLD,
-    color: colors.white,
-    alignSelf: 'center',
-  },
-  headerTypeTitle: {
-    fontFamily: fontNames.ROBOTO_FONT_FAMILY_REGULAR,
-    fontSize: textScale(18),
-    color: colors.black,
-    marginVertical: spacing.MARGIN_6,
-  },
-  sendMessageBtn: {
-    width: '100%',
-    padding: spacing.PADDING_16,
-    alignItems: 'center',
-    backgroundColor: colors.green700,
-    position: 'absolute',
-    bottom: 0,
-    borderRadius: 0,
-  },
   templateListContainer: {
-    marginVertical: spacing.MARGIN_8,
-    marginHorizontal: spacing.MARGIN_16,
-    backgroundColor: colors.grey800,
-    paddingVertical: spacing.PADDING_10,
-    paddingHorizontal: spacing.PADDING_10,
-    alignItems: 'flex-start',
-    borderRadius: spacing.RADIUS_8,
+    marginVertical: spacing.MARGIN_4,
+    marginHorizontal: spacing.MARGIN_4,
+    padding: spacing.PADDING_10,
+    borderRadius: spacing.RADIUS_6,
+    backgroundColor: Colors.default.primaryColor,
   },
-  templateListTextStyle: {
-    color: colors.white,
-    fontSize: textScale(16),
-    fontFamily: fontNames.ROBOTO_FONT_FAMILY_MEDIUM,
-  },
-  uploadedtoggleText: {
-    textAlign: 'center',
-    marginVertical: spacing.MARGIN_6,
-  },
-  optionContainer: {
-    backgroundColor: colors.grey800,
-    padding: spacing.PADDING_16,
-    borderRadius: spacing.RADIUS_8,
-    marginVertical: spacing.MARGIN_8,
-    borderWidth: 1,
-    borderColor: colors.grey700,
+  uploadedSampleItem: {
+    backgroundColor: Colors.default.white,
+    marginVertical: spacing.PADDING_8,
+    borderRadius: spacing.RADIUS_10,
+    paddingHorizontal: spacing.PADDING_16,
+    paddingVertical: spacing.PADDING_12,
   },
 });
 

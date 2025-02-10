@@ -1,8 +1,9 @@
 import {createDrawerNavigator} from '@react-navigation/drawer';
-import React from 'react';
-import {StyleSheet, useWindowDimensions, View} from 'react-native';
+import React, {useMemo} from 'react';
+import {StyleSheet, View} from 'react-native';
 import * as SvgIcon from '../assets';
-import RegularText from '../Components/Common/RegularText';
+import TextComponent from '../Components/Common/TextComponent';
+import {useTheme} from '../Components/hooks';
 import DrawerComponent from '../Components/module/DrawerComponent';
 import * as Screens from '../Screens/index';
 import {boxShadow} from '../styles/Mixins';
@@ -10,11 +11,27 @@ import {textScale} from '../styles/responsiveStyles';
 import {spacing} from '../styles/spacing';
 import {fontNames} from '../styles/typography';
 import colors from '../Utils/colors';
-import THEME_COLOR from '../Utils/Constant';
 import NavigationString from './NavigationString';
-import {useTheme} from '../Components/hooks';
 
 const Drawer = createDrawerNavigator();
+
+const DRAWER_COLORS = {
+  light: {
+    background: colors.white,
+    text: '#1A1A1A',
+    activeBackground: '#006702',
+    activeText: colors.white,
+    inactiveBackground: 'transparent',
+  },
+  dark: {
+    background: '#1A1A1A',
+    text: colors.white,
+    activeBackground: '#006702',
+    activeText: colors.white,
+    inactiveBackground: 'transparent',
+  },
+};
+
 const MAIN_ITEMS = [
   {
     title: 'Complaints',
@@ -58,12 +75,12 @@ const MAIN_ITEMS = [
     component: Screens.FormScreen,
     name: NavigationString.FormScreen,
   },
-  // {
-  //   title: 'Task',
-  //   icon: SvgIcon.TaskIcon,
-  //   component: Screens.TaskScreen,
-  //   name: NavigationString.TaskScreen,
-  // },
+  {
+    title: 'Date Reminder',
+    icon: SvgIcon.DateReminder,
+    component: Screens.DateReminder,
+    name: NavigationString.DateReminder,
+  },
   {
     title: 'BroadCast Message',
     icon: SvgIcon.SendMessage,
@@ -77,117 +94,68 @@ const MAIN_ITEMS = [
     name: NavigationString.broadCastGroupScreen,
   },
   {
-    title: 'Anniversary',
-    icon: SvgIcon.AnniversaryIcon,
-    component: Screens.AnniversaryScreen,
-    name: NavigationString.AnniversaryScreen,
-  },
-  {
     title: 'Support',
     icon: SvgIcon.Support,
     component: Screens.SupportScreen,
     name: NavigationString.Support,
   },
-  // {
-  //   title: 'Dashboard',
-  //   icon: SvgIcon.DashBordIcon,
-  //   component: Screens.DashboardScreen,
-  //   name: NavigationString.DashBordScreen,
-  // },
 ];
 
 const DrawerScreen = () => {
-  // const { InitialScreen } = useContext(AuthContext);
-
-  // const navigation = useNavigation();
   const {theme} = useTheme();
-  // const [isReady, setIsReady] = useState(false);
+  const isDark = theme === 'dark';
+  const themeColors = isDark ? DRAWER_COLORS.dark : DRAWER_COLORS.light;
 
-  // useEffect(() => {
-  //   if (!MAIN_ITEMS) {
-  //     console.error('MAIN_ITEMS is undefined');
-  //     setIsReady(true);
-  //     return;
-  //   }
+  const DrawerItem = ({item, focused}) => {
+    const textColor = focused ? themeColors.activeText : themeColors.text;
 
-  //   const isValidInitialScreen = InitialScreen && MAIN_ITEMS.some(item => item.name === InitialScreen);
-
-  //   if (isValidInitialScreen) {
-  //     navigation.dispatch(
-  //       CommonActions.reset({
-  //         index: 0,
-  //         routes: [{ name: InitialScreen }],
-  //       })
-  //     );
-  //   } else {
-  //     navigation.dispatch(
-  //       CommonActions.reset({
-  //         index: 0,
-  //         routes: [{ name: NavigationString.DashBordScreen }],
-  //       })
-  //     );
-  //   }
-  //   setIsReady(true);
-  // }, [InitialScreen]);
-
-  // if (!isReady) {
-  //   return <LoadingScreen />;
-  // }
-
-  const renderDrawerIcon = (item, theme, isFocused) => {
-    const iconColor = isFocused
-      ? colors.white
-      : theme === THEME_COLOR
-      ? colors.black
-      : colors.white;
     return (
-      <View style={styles.iconContainer}>
-        <item.icon
-          width={spacing.WIDTH_24}
-          height={spacing.HEIGHT_24}
-          color={iconColor}
+      <View style={[styles.drawerItem, focused && styles.activeItem]}>
+        <item.icon width={24} height={24} color={textColor} />
+
+        <TextComponent
+          text={item.title}
+          color={textColor}
+          font={fontNames.ROBOTO_FONT_FAMILY_BOLD}
+          style={styles.itemText}
         />
-        <RegularText
-          style={[
-            styles.titleStyle,
-            {color: isFocused ? colors.white : iconColor},
-          ]}>
-          {item.title}
-        </RegularText>
       </View>
     );
   };
 
-  const dimensions = useWindowDimensions();
+  const screenOptions = useMemo(
+    () => ({
+      headerShown: false,
+      drawerPosition: 'left',
+      drawerStyle: {
+        width: '75%',
+        backgroundColor: themeColors.background,
+        ...boxShadow(themeColors.background, {width: 0, height: 2}, 0.2, 8, 5),
+      },
+      drawerActiveBackgroundColor: themeColors.activeBackground,
+      drawerInactiveBackgroundColor: themeColors.inactiveBackground,
+      drawerActiveTintColor: themeColors.activeText,
+      drawerInactiveTintColor: themeColors.text,
+    }),
+    [isDark, themeColors],
+  );
 
   return (
     <Drawer.Navigator
       drawerContent={props => <DrawerComponent {...props} />}
-      screenOptions={{
-        headerShown: false,
-        drawerPosition: 'left',
-        drawerStyle: {
-          width: '75%',
-          ...boxShadow('#fff', {width: 0, height: 2}, 0.3, 6, 5),
-        },
-        drawerType: dimensions.width >= 768 ? 'permanent' : 'slide',
-        drawerActiveBackgroundColor: '#26bd23',
-        drawerActiveTintColor: 'white', // Active text color
-        drawerLabelStyle: {
-          fontSize: textScale(14),
-          fontFamily: fontNames.ROBOTO_FONT_FAMILY_BOLD,
-        },
-      }}
+      screenOptions={screenOptions}
       initialRouteName={NavigationString.ComplainsScreen}>
-      {MAIN_ITEMS.map((item, index) => (
+      {MAIN_ITEMS.map(item => (
         <Drawer.Screen
-          key={`DrawerScreen${index}`}
+          key={item.name}
           name={item.name}
           component={item.component}
-          options={({focused}) => ({
-            drawerLabel: () => null, 
-            drawerIcon: () => renderDrawerIcon(item, theme, focused),
-          })}
+          options={{
+            drawerLabel: () => null,
+            drawerIcon: ({focused}) => (
+              <DrawerItem item={item} focused={focused} />
+            ),
+          }}
         />
       ))}
     </Drawer.Navigator>
@@ -195,14 +163,25 @@ const DrawerScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  titleStyle: {
-    fontSize: textScale(14),
-    fontFamily: fontNames.ROBOTO_FONT_FAMILY_BOLD,
-    paddingHorizontal: spacing.PADDING_12,
-  },
-  iconContainer: {
-    alignItems: 'center',
+  drawerItem: {
     flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+  },
+  activeItem: {
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  itemText: {
+    fontSize: textScale(14),
+    letterSpacing: 0.3,
+    marginLeft: spacing.MARGIN_12,
   },
 });
 

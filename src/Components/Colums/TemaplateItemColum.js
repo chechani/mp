@@ -1,17 +1,12 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {
-  Alert,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import {StyleSheet, TouchableOpacity, View} from 'react-native';
 import {
   useGetAllTempleteQuery,
-  useSendTemplateToMultipleNumberMutation,
+  useSendTemplateMutation,
   useUploadeMediaMutation,
 } from '../../api/store/slice/templeteSlice';
 import * as SvgIcon from '../../assets';
+import {Divider} from '../../styles/commonStyle';
 import {textScale} from '../../styles/responsiveStyles';
 import {spacing} from '../../styles/spacing';
 import {fontNames} from '../../styles/typography';
@@ -21,16 +16,20 @@ import {pickAndSendMediaMessage} from '../../Utils/commonImagePicker';
 import THEME_COLOR from '../../Utils/Constant';
 import {CommonToastMessage} from '../../Utils/helperFunctions';
 import AnimatedComponentToggle from '../Common/AnimatedComponentToggale';
-import AnimatedModal from '../Common/AnimatedModal';
-import BottomComp from '../Common/BottonComp';
+
 import CommonPopupModal from '../Common/CommonPopupModal';
 import CustomBottomSheetFlatList from '../Common/CustomBottomSheetFlatList';
-import RegularText from '../Common/RegularText';
-import {useTheme} from '../hooks';
+import CustomButton from '../Common/CustomButton';
+import CustomInput from '../Common/CustomInput';
 import Loader from '../Common/Loader';
+import TextComponent from '../Common/TextComponent';
+import {useTheme} from '../hooks';
 
 const TemaplateItemColum = ({Mobile_No, templateBottomSheetRef}) => {
+  const UploadedtoMeta = 'Uploaded to Meta';
+  const UploadNow = 'Upload Now';
   const {theme} = useTheme();
+  const isDarkMode = theme === THEME_COLOR;
 
   const secondBottomSheetRef = useRef(null);
   const templateCategoryBottomSheetRef = useRef(null);
@@ -38,12 +37,10 @@ const TemaplateItemColum = ({Mobile_No, templateBottomSheetRef}) => {
   const {data: templeteData, isLoading: isTempleteLoading} =
     useGetAllTempleteQuery();
   const [uploadMidea] = useUploadeMediaMutation();
-  const [sendTemplateToMultiplateNumber] =
-    useSendTemplateToMultipleNumberMutation();
+  const [sendTemplate] = useSendTemplateMutation();
 
   const [mediaModalVisible, setMediaModalVisible] = useState(false);
   const [uploadedHeaderSamples, setUploadedHeaderSamples] = useState([]);
-  const [templateCategories, setTemplateCategories] = useState([]);
   const [templateData, setTemplateData] = useState([]);
   const [filteredTemplates, setFilteredTemplates] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -55,6 +52,7 @@ const TemaplateItemColum = ({Mobile_No, templateBottomSheetRef}) => {
     uploadedMediaId: '',
     selectedUploadedSampleTitle: '',
     headerNames: {},
+    isMediaTypeShowMoadl: false,
   });
   const [uiState, setUiState] = useState({
     selectedCategory: 'All',
@@ -211,8 +209,8 @@ const TemaplateItemColum = ({Mobile_No, templateBottomSheetRef}) => {
 
     try {
       setUiState(prev => ({...prev, isUploading: true}));
-      const res = await sendTemplateToMultiplateNumber(requestParam);
-      console.log('API Response:', res);
+      const res = await sendTemplate(requestParam).unwrap();
+      console.log('API Response:', res.data?.status_code);
 
       if (res?.data?.status_code === 200) {
         CommonToastMessage('success', 'Success', 'Template sent successfully');
@@ -236,7 +234,7 @@ const TemaplateItemColum = ({Mobile_No, templateBottomSheetRef}) => {
       }
     } catch (error) {
       console.error('Error during upload:', error);
-      Alert.alert('Failed to upload file.');
+      CommonToastMessage('error', 'Error', 'Error during upload');
     } finally {
       setUiState(prev => ({...prev, activeTemplateId: null}));
       setUiState(prev => ({...prev, isUploading: false}));
@@ -247,53 +245,32 @@ const TemaplateItemColum = ({Mobile_No, templateBottomSheetRef}) => {
     if (!['VIDEO', 'IMAGE'].includes(item?.header_type)) return null;
 
     return (
-      <>
-        <RegularText
-          style={[
-            styles.headerTypeTitle,
-            {color: theme === THEME_COLOR ? colors.black : colors.white},
-          ]}>
-          Header Type
-        </RegularText>
-        <BottomComp
-          text={item?.header_type}
-          style={styles.headerTypeButton}
-          textStyle={styles.headerTypeButtonText}
-        />
-      </>
+      <CustomInput
+        label="Header Type"
+        placeholder="Header Type"
+        value={item?.header_type}
+        editable={false}
+        inputStyles={{
+          color: isDarkMode ? Colors.dark.black : Colors.light.white,
+        }}
+      />
     );
   };
   const RenderHeaderNameInput = ({item}) => {
     if (!['VIDEO', 'IMAGE'].includes(item?.header_type)) return null;
-
     return (
-      <>
-        <RegularText
-          style={[
-            styles.headerNameTitle,
-            {color: theme === THEME_COLOR ? colors.black : colors.white},
-          ]}>
-          Header Name
-        </RegularText>
-        <TextInput
-          style={[
-            styles.headerNameInput,
-            {
-              borderColor:
-                theme === THEME_COLOR ? colors.grey600 : colors.grey400,
-              color: theme === THEME_COLOR ? colors.black : colors.white,
-            },
-          ]}
-          placeholder="Enter Header Name"
-          placeholderTextColor={
-            theme === THEME_COLOR ? colors.grey400 : colors.grey600
-          }
-          value={templateState.headerNames[templateState.template] || ''}
-          onChangeText={value =>
-            handleHeaderNameChange(templateState.template, value)
-          }
-        />
-      </>
+      <CustomInput
+        label="Header Name"
+        placeholder="Header Name"
+        required={true}
+        value={templateState.headerNames[templateState.template] || ''}
+        onChange={value =>
+          handleHeaderNameChange(templateState.template, value)
+        }
+        inputStyles={{
+          color: isDarkMode ? Colors.dark.black : Colors.light.white,
+        }}
+      />
     );
   };
   const RenderMediaTypeSection = ({item}) => {
@@ -301,40 +278,48 @@ const TemaplateItemColum = ({Mobile_No, templateBottomSheetRef}) => {
 
     return (
       <>
-        <RegularText
-          style={[
-            styles.mediaTypeText,
-            {color: theme === THEME_COLOR ? colors.black : colors.white},
-          ]}>
-          Media Type
-        </RegularText>
-        <BottomComp
-          text={templateState.mediaType || 'Select Media Type'}
-          style={styles.bottomCompStyle}
-          textStyle={styles.bottomCompTextStyle}
-          rightImg={true}
-          source={SvgIcon.DownArrow}
-          onPress={() => setMediaModalVisible(prev => !prev)}
+        <CustomInput
+          required={true}
+          value={templateState.mediaType || 'Select Media Type'}
+          onPressTextInput={() =>
+            setTemplateState(pre => ({
+              ...pre,
+              isMediaTypeShowMoadl: !pre.isMediaTypeShowMoadl,
+            }))
+          }
+          editable={false}
+          inputStyles={{
+            color: isDarkMode ? Colors.dark.black : Colors.light.white,
+          }}
+          label="Media Type"
         />
-
-        <AnimatedModal
-          isVisible={mediaModalVisible}
-          close={() => setMediaModalVisible(false)}
-          animationType="bottom-to-top"
-          bottom={spacing.HEIGHT_50}
-          left={spacing.WIDTH_10}
-          backDropColor="rgba(255,255,255, 0.3)">
-          {['Uploaded at Meta', 'Upload Now'].map(option => (
+        {templateState.isMediaTypeShowMoadl &&
+          [UploadedtoMeta, UploadNow].map(option => (
             <TouchableOpacity
               key={option}
               onPress={() => {
-                setTemplateState(prev => ({...prev, mediaType: option}));
-                setMediaModalVisible(false);
+                setTemplateState(prev => ({
+                  ...prev,
+                  mediaType: option,
+                  isMediaTypeShowMoadl: false,
+                }));
+              }}
+              style={{
+                paddingVertical: spacing.PADDING_8,
+                backgroundColor: Colors.default.accent,
+
+                borderRadius: spacing.RADIUS_6,
+                marginVertical: spacing.MARGIN_6,
               }}>
-              <RegularText style={styles.toggleText}>{option}</RegularText>
+              <TextComponent
+                text={option}
+                color={Colors.light.white}
+                textAlign={'center'}
+                size={textScale(16)}
+                font={fontNames.ROBOTO_FONT_FAMILY_MEDIUM}
+              />
             </TouchableOpacity>
           ))}
-        </AnimatedModal>
       </>
     );
   };
@@ -346,54 +331,41 @@ const TemaplateItemColum = ({Mobile_No, templateBottomSheetRef}) => {
       return null;
 
     return (
-      <>
-        <RegularText style={styles.uploadedHeaderSampleTitle}>
-          {templateState.mediaType === 'Uploaded at Meta'
+      <CustomInput
+        required={true}
+        value={
+          templateState.mediaType === UploadedtoMeta
+            ? templateState.selectedUploadedSampleTitle ||
+              'Select Uploaded Sample'
+            : templateState.selectedMedia?.name || 'Upload File'
+        }
+        onPressTextInput={
+          templateState.mediaType === UploadedtoMeta
+            ? handleUploadHeaderSample
+            : handleUploadHeaderSampleLocally
+        }
+        editable={false}
+        inputStyles={{
+          color: isDarkMode ? Colors.dark.black : Colors.light.white,
+        }}
+        label={
+          templateState.mediaType === UploadedtoMeta
             ? 'Uploaded Header Sample'
-            : 'Header Sample'}
-        </RegularText>
-        <BottomComp
-          text={
-            templateState.mediaType === 'Uploaded at Meta'
-              ? templateState.selectedUploadedSampleTitle ||
-                'Select Uploaded Sample'
-              : templateState.selectedMedia?.name || 'Upload File'
-          }
-          style={
-            templateState.mediaType === 'Uploaded at Meta'
-              ? styles.uploadedSampleButton
-              : styles.uploadNowButton
-          }
-          textStyle={
-            templateState.mediaType === 'Uploaded at Meta'
-              ? styles.uploadedSampleButtonText
-              : styles.uploadNowButtonText
-          }
-          rightImg={templateState.mediaType === 'Uploaded at Meta'}
-          source={
-            templateState.mediaType === 'Uploaded at Meta'
-              ? SvgIcon.DownArrow
-              : null
-          }
-          onPress={
-            templateState.mediaType === 'Uploaded at Meta'
-              ? handleUploadHeaderSample
-              : handleUploadHeaderSampleLocally
-          }
-        />
-      </>
+            : 'Header Sample'
+        }
+      />
     );
   };
   const renderListHeaderComponent = () => (
     <>
       <View style={styles.headerContainer}>
-        <RegularText
-          style={[
-            styles.whatsAppTemplateHeader,
-            {color: theme === THEME_COLOR ? colors.black : colors.white},
-          ]}>
-          WhatsApp Template
-        </RegularText>
+        <TextComponent
+          text={'WhatsApp Template'}
+          color={isDarkMode ? Colors.dark.black : Colors.light.white}
+          size={textScale(18)}
+          font={fontNames.ROBOTO_FONT_FAMILY_BOLD}
+          style={{marginVertical: spacing.MARGIN_6, alignSelf: 'center'}}
+        />
         <View style={{flexDirection: 'row', alignItems: 'center'}}>
           <TouchableOpacity
             style={styles.filterIconContainer}
@@ -401,7 +373,7 @@ const TemaplateItemColum = ({Mobile_No, templateBottomSheetRef}) => {
             <SvgIcon.Filter
               height={spacing.HEIGHT_24}
               width={spacing.WIDTH_24}
-              color={theme === THEME_COLOR ? colors.black : colors.white}
+              color={isDarkMode ? colors.black : colors.white}
             />
           </TouchableOpacity>
           <TouchableOpacity
@@ -409,7 +381,7 @@ const TemaplateItemColum = ({Mobile_No, templateBottomSheetRef}) => {
             <SvgIcon.Wrong
               height={spacing.HEIGHT_24}
               width={spacing.WIDTH_24}
-              color={theme === THEME_COLOR ? colors.black : colors.white}
+              color={isDarkMode ? colors.black : colors.white}
             />
           </TouchableOpacity>
         </View>
@@ -420,19 +392,29 @@ const TemaplateItemColum = ({Mobile_No, templateBottomSheetRef}) => {
     <TouchableOpacity
       style={styles.uploadedSampleItem}
       onPress={() => handleUploadedSampleSelect(item)}>
-      <RegularText style={styles.uploadedSampleItemText}>
-        {item?.title}
-      </RegularText>
+      <TextComponent
+        text={item?.title}
+        font={fontNames.ROBOTO_FONT_FAMILY_MEDIUM}
+      />
     </TouchableOpacity>
   );
+  const renderUploadedSampleListEmpty = () => (
+    <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+      <TextComponent
+        text={'Item Not Found'}
+        size={textScale(20)}
+        color={isDarkMode ? Colors.dark.black : Colors.light.white}
+      />
+    </View>
+  );
   const renderUploadedSampleHeader = () => (
-    <RegularText
-      style={[
-        styles.filterTitle,
-        {color: theme === THEME_COLOR ? colors.black : colors.white},
-      ]}>
-      Uploaded Header Sample
-    </RegularText>
+    <TextComponent
+      text={'Uploaded Header Sample'}
+      color={isDarkMode ? Colors.dark.black : Colors.light.white}
+      size={textScale(18)}
+      style={{alignSelf: 'center'}}
+      font={fontNames.ROBOTO_FONT_FAMILY_MEDIUM}
+    />
   );
   const renderTemplateCategoryItem = ({item}) => {
     if (!item) return;
@@ -443,74 +425,61 @@ const TemaplateItemColum = ({Mobile_No, templateBottomSheetRef}) => {
           selectedCategory === item && styles.selectedTemplateCategory,
         ]}
         onPress={() => handleCategorySelection(item)}>
-        <RegularText
-          style={[
-            styles.categoryTemplateText,
-            {color: selectedCategory === item ? colors.black : colors.white},
-          ]}>
-          {item}
-        </RegularText>
+        <TextComponent
+          text={item}
+          color={
+            selectedCategory === item ? Colors.dark.black : Colors.light.white
+          }
+          style={{textTransform: 'capitalize'}}
+          font={fontNames.ROBOTO_FONT_FAMILY_MEDIUM}
+        />
       </TouchableOpacity>
     );
   };
   const renderTemplateCategoryHeader = () => (
-    <RegularText
-      style={[
-        styles.filterTitle,
-        {color: theme === THEME_COLOR ? colors.black : colors.white},
-      ]}>
-      Select Category
-    </RegularText>
+    <TextComponent
+      text={'Select Category'}
+      color={isDarkMode ? Colors.dark.black : Colors.light.white}
+      size={textScale(18)}
+      style={{alignSelf: 'center'}}
+      font={fontNames.ROBOTO_FONT_FAMILY_MEDIUM}
+    />
   );
 
   const renderTemplateItem = ({item}) => {
     return (
-      <TouchableOpacity
-        style={[
-          styles.whatsAppTemplateContainer,
-          {borderColor: theme === THEME_COLOR ? colors.black : colors.white},
-        ]}
-        activeOpacity={1}>
-        <AnimatedComponentToggle
-          tabName={item?.name.replace(/_/g, ' ').toUpperCase()}
-          isActive={uiState.activeTemplateId === item?.name}
-          containerStyle={{paddingHorizontal: 0}}
-          onPress={() => handleSelectTemplateData(item)}>
-          <View
-            style={[
-              styles.templateContentContainer,
-              {
-                backgroundColor:
-                  theme === THEME_COLOR ? colors.grey900 : colors.white,
-              },
-            ]}>
-            <RegularText
-              style={[
-                styles.templateText,
-                {
-                  color: theme === THEME_COLOR ? colors.white : colors.black,
-                },
-              ]}>
-              {item?.template}
-            </RegularText>
-          </View>
+      <>
+        <TouchableOpacity
+          style={[styles.whatsAppTemplateContainer]}
+          activeOpacity={1}>
+          <AnimatedComponentToggle
+            tabName={item?.name.replace(/_/g, ' ').toUpperCase()}
+            isActive={uiState.activeTemplateId === item?.name}
+            containerStyle={{paddingHorizontal: 0}}
+            onPress={() => handleSelectTemplateData(item)}>
+            <View style={[styles.templateContentContainer]}>
+              <TextComponent
+                text={item?.template}
+                color={Colors.default.black}
+              />
+            </View>
 
-          <View style={styles.templateDetailsContainer}>
-            <RenderHeaderType item={item} />
-            <RenderHeaderNameInput item={item} />
-            <RenderMediaTypeSection item={item} />
-            <RenderUploadedSampleSection item={item} />
-          </View>
-          <BottomComp
-            text="Send"
-            style={styles.submitButton}
-            textStyle={styles.submitButtonText}
-            onPress={handleSubmitTemplate}
-            isLoading={uiState.isUploading}
-            disabled={isDisableTemplateSubmit}
-          />
-        </AnimatedComponentToggle>
-      </TouchableOpacity>
+            <View style={styles.templateDetailsContainer}>
+              <RenderHeaderType item={item} />
+              <RenderHeaderNameInput item={item} />
+              <RenderMediaTypeSection item={item} />
+              <RenderUploadedSampleSection item={item} />
+            </View>
+            <CustomButton
+                title={'Send'}
+                onPress={handleSubmitTemplate}
+                isLoading={uiState.isUploading}
+                disabled={isDisableTemplateSubmit}
+              />
+          </AnimatedComponentToggle>
+        </TouchableOpacity>
+        <Divider />
+      </>
     );
   };
 
@@ -536,6 +505,7 @@ const TemaplateItemColum = ({Mobile_No, templateBottomSheetRef}) => {
         keyExtractor={item => item?.media_id.toString()}
         renderItem={renderUploadedSampleItem}
         ListHeaderComponent={renderUploadedSampleHeader}
+        ListEmptyComponent={renderUploadedSampleListEmpty}
       />
 
       {/* BottomSheet for WhatsApp Template Categories */}
@@ -575,7 +545,6 @@ const styles = StyleSheet.create({
     marginVertical: spacing.MARGIN_6,
     borderRadius: spacing.RADIUS_12,
     flex: 1,
-    borderBottomWidth: 0.2,
   },
   templateContentContainer: {
     padding: spacing.PADDING_16,
@@ -608,9 +577,6 @@ const styles = StyleSheet.create({
     fontFamily: fontNames.POPPINS_FONT_FAMILY_BOLD,
   },
   headerNameTitle: {
-    fontFamily: fontNames.ROBOTO_FONT_FAMILY_REGULAR,
-    fontSize: textScale(18),
-    color: colors.black,
     marginVertical: spacing.MARGIN_6,
   },
   headerNameInput: {

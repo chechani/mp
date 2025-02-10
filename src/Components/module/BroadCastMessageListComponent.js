@@ -1,56 +1,43 @@
 import React from 'react';
-import {FlatList, StyleSheet, TouchableOpacity, View} from 'react-native';
+import {FlatList, StyleSheet, TouchableOpacity} from 'react-native';
 import {useGetBroadCastGroupQuery} from '../../api/store/slice/broadCastGroupSlice';
 import * as SvgIcon from '../../assets/index';
 import NavigationString from '../../Navigations/NavigationString';
-import {useTheme} from '../hooks';
+import {Divider} from '../../styles/commonStyle';
 import {textScale} from '../../styles/responsiveStyles';
 import {spacing} from '../../styles/spacing';
+import Colors from '../../theme/colors';
 import colors from '../../Utils/colors';
 import THEME_COLOR from '../../Utils/Constant';
 import {navigate, openDrawer} from '../../Utils/helperFunctions';
 import CommonHeader from '../Common/CommoneHeader';
 import LoadingScreen from '../Common/Loader';
-import RegularText from '../Common/RegularText';
+import TextComponent from '../Common/TextComponent';
+import {useTheme} from '../hooks';
 
 const BroadCastMessageListComponent = () => {
   const {theme} = useTheme();
-  const {data, isLoading, error, isError, refetch} =
-    useGetBroadCastGroupQuery();
+  const isDarkMode = theme === THEME_COLOR;
+  const {data, isLoading, refetch} = useGetBroadCastGroupQuery();
 
   const renderMessageItem = ({item}) => {
     return (
       <>
         <TouchableOpacity
-          style={[
-            styles.messageCard,
-            {
-              backgroundColor:
-                theme === THEME_COLOR ? colors.white : colors.black,
-            },
-          ]}
+          style={[styles.messageCard]}
           onPress={() =>
             navigate(NavigationString.BroadCastGroupMessageListColumScreen, {
               groupName: item?.name,
             })
           }>
-          <RegularText
-            style={[
-              styles.messageTitle,
-              {color: theme === THEME_COLOR ? colors.black : colors.white},
-            ]}>
-            {item.group_name}
-          </RegularText>
+          <TextComponent
+            text={item.group_name}
+            color={isDarkMode ? Colors.dark.black : Colors.light.white}
+            style={{marginBottom: spacing.MARGIN_4}}
+            size={textScale(18)}
+          />
         </TouchableOpacity>
-        <View
-          style={[
-            styles.divider,
-            {
-              backgroundColor:
-                theme === THEME_COLOR ? colors.grey300 : colors.grey600,
-            },
-          ]}
-        />
+        <Divider />
       </>
     );
   };
@@ -65,38 +52,25 @@ const BroadCastMessageListComponent = () => {
         rightIcons={[SvgIcon.ReloadIcon]}
         onRightIconPress={() => refetch()}
       />
-      <View
-        style={[
-          styles.container,
-          {
-            backgroundColor:
-              theme === THEME_COLOR ? colors.white : colors.black,
-          },
-        ]}>
-        {isLoading ? (
-          <LoadingScreen color={colors.green} />
-        ) : isError ? (
-          <RegularText style={styles.errorText}>
-            {error?.data?.message || error?.error || 'Something went wrong'}
-          </RegularText>
-        ) : (
-          <FlatList
-            data={data?.data}
-            keyExtractor={item => item?.name?.toString()}
-            renderItem={renderMessageItem}
-            contentContainerStyle={styles.listContent}
-            ListEmptyComponent={
-              <RegularText
-                style={[
-                  styles.emptyContainer,
-                  {color: theme === THEME_COLOR ? colors.white : colors.black},
-                ]}>
-                {data?.message || 'No data found'}
-              </RegularText>
-            }
-          />
-        )}
-      </View>
+
+      {isLoading ? (
+        <LoadingScreen />
+      ) : (
+        <FlatList
+          data={data?.data}
+          keyExtractor={item => item?.name?.toString()}
+          renderItem={renderMessageItem}
+          contentContainerStyle={styles.listContent}
+          ListEmptyComponent={
+            <TextComponent
+              text={data?.message || 'No data found'}
+              color={isDarkMode ? Colors.light.white : Colors.dark.black}
+              textAlign={'center'}
+              style={{marginTop: spacing.MARGIN_20}}
+            />
+          }
+        />
+      )}
     </>
   );
 };
@@ -106,10 +80,6 @@ export default BroadCastMessageListComponent;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9f9f9',
-  },
-  loader: {
-    marginTop: spacing.MARGIN_20,
   },
   errorText: {
     color: colors.red600,
@@ -121,17 +91,12 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.PADDING_20,
   },
   messageCard: {
-    backgroundColor: colors.white,
     padding: spacing.PADDING_12,
   },
   messageTitle: {
     fontSize: textScale(18),
     marginBottom: spacing.MARGIN_4,
     color: '#040303',
-  },
-  divider: {
-    height: 0.5,
-    backgroundColor: colors.grey300,
   },
   emptyContainer: {
     textAlign: 'center',

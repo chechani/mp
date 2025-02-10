@@ -1,7 +1,7 @@
-import {FlashList} from '@shopify/flash-list';
-import React, {memo, useCallback, useEffect, useState} from 'react';
+import React, {memo, useCallback, useEffect, useMemo, useState} from 'react';
 import {
   ActivityIndicator,
+  FlatList,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
@@ -12,39 +12,50 @@ import * as SvgIcon from '../../assets';
 import NavigationString from '../../Navigations/NavigationString';
 import {textScale} from '../../styles/responsiveStyles';
 import {spacing} from '../../styles/spacing';
+import Colors from '../../theme/colors';
 import colors from '../../Utils/colors';
 import THEME_COLOR from '../../Utils/Constant';
-import {navigate, openDrawer} from '../../Utils/helperFunctions';
+import {debounce, navigate, openDrawer} from '../../Utils/helperFunctions';
 import AllGetMessageListColum from '../Colums/AllGetMessageListColum';
 import CommoneHeader from '../Common/CommoneHeader';
-import RegularText from '../Common/RegularText';
-import {useTheme} from '../hooks';
 import LoadingScreen from '../Common/Loader';
+import TextComponent from '../Common/TextComponent';
+import {useTheme} from '../hooks';
+
+const ITEM_HEIGHT = 80;
+const PAGE_SIZE = 20;
 
 const GetAllMessageComponent = () => {
   const {theme} = useTheme();
+  const isDarkMode = theme === THEME_COLOR;
+
   const [selectedFilter, setSelectedFilter] = useState('All');
   const [messages, setMessages] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [isLoading, setIsLoading] = useState('initial');
+  const [loadingStates, setLoadingStates] = useState({
+    initial: true,
+    refresh: false,
+    loadMore: false,
+  });
 
   const [triggerGetMessages] = useLazyGetAllMessageListQuery();
 
   const fetchMessages = useCallback(
-    async (currentPage, reset = false, loadingState = 'none') => {
-      setIsLoading(loadingState);
+    async (currentPage, reset = false, loadingType = 'initial') => {
+      // Update loading state
+      setLoadingStates(prev => ({...prev, [loadingType]: true}));
+
       try {
         const response = await triggerGetMessages({
           page: currentPage,
-          page_size: 20,
+          page_size: PAGE_SIZE,
         }).unwrap();
 
         const chats = response?.message?.chats || [];
         const apiTotalPages = response?.message?.total_pages || 0;
 
         setHasMore(currentPage < apiTotalPages);
-
         setMessages(prevMessages =>
           reset ? chats : [...prevMessages, ...chats],
         );
@@ -52,14 +63,19 @@ const GetAllMessageComponent = () => {
         console.error('Failed to fetch messages:', error);
         setHasMore(false);
       } finally {
-        setIsLoading('none');
+        // Reset loading state
+        setLoadingStates(prev => ({
+          ...prev,
+          initial: false,
+          [loadingType]: false,
+        }));
       }
     },
     [triggerGetMessages],
   );
 
   useEffect(() => {
-    fetchMessages(1, true, 'initial');
+    fetchMessages(1, true);
   }, []);
 
   const handleFilterChange = useCallback(
@@ -67,70 +83,73 @@ const GetAllMessageComponent = () => {
       setSelectedFilter(filter);
       setPage(1);
       setHasMore(true);
-      fetchMessages(1, true, 'initial');
+      fetchMessages(1, true);
     },
     [fetchMessages],
   );
 
   const handleRefresh = useCallback(() => {
-    if (isLoading !== 'none') return;
+    if (loadingStates.refresh) return;
     setPage(1);
     setHasMore(true);
-    fetchMessages(1, true, 'refreshing');
-  }, [fetchMessages, isLoading]);
+    fetchMessages(1, true, 'refresh');
+  }, [fetchMessages, loadingStates.refresh]);
 
-  const loadMoreMessages = useCallback(() => {
-    if (!hasMore || isLoading !== 'none') return;
-    const nextPage = page + 1;
-    setPage(nextPage);
-    fetchMessages(nextPage, false, 'loadingMore');
-  }, [hasMore, page, fetchMessages, isLoading]);
+  const loadMoreMessages = useCallback(
+    debounce(() => {
+      if (!hasMore || loadingStates.loadMore) return;
+      const nextPage = page + 1;
+      setPage(nextPage);
+      fetchMessages(nextPage, false, 'loadMore');
+    }, 300),
+    [hasMore, page, fetchMessages, loadingStates.loadMore],
+  );
 
-  const filteredData = messages.filter(message => {
-    switch (selectedFilter) {
-      case 'Unread':
-        return message.unread_messages > 0;
-      case 'All':
-        return true;
-      case 'Favourites':
-        return message.is_favourite;
-      case 'Archived':
-        return message.is_archived;
-      default:
-        return false;
-    }
-  });
+  // Memoized filtered data
+  const filteredData = useMemo(() => {
+    return messages.filter(message => {
+      switch (selectedFilter) {
+        case 'Unread':
+          return message.unread_messages > 0;
+        case 'All':
+          return true;
+        case 'Favourites':
+          return message.is_favourite;
+        case 'Archived':
+          return message.is_archived;
+        default:
+          return false;
+      }
+    });
+  }, [messages, selectedFilter]);
 
   const handleCommonBarRightIconPress = index => {
     const actions = {
       0: () => navigate(NavigationString.searchMessage),
       1: () => handleRefresh(),
     };
-
-    if (actions[index]) {
-      actions[index]();
-    }
+    actions[index]?.();
   };
 
   const FilterButton = memo(({filter, selectedFilter, onPress}) => (
     <TouchableOpacity
       onPress={onPress}
-      hitSlop={{top: 10, bottom: 10, left: 10, right: 10}} // Reduced hitSlop
+      hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
       style={[
         styles.filterButton,
         selectedFilter === filter ? styles.selectedButton : null,
       ]}>
-      <RegularText
-        style={{
-          color: selectedFilter === filter ? colors.white : colors.black,
-        }}>
-        {filter}
-      </RegularText>
+      <TextComponent
+        text={filter}
+        color={
+          selectedFilter === filter ? Colors.light.white : Colors.dark.black
+        }
+      />
     </TouchableOpacity>
   ));
 
   const renderFooter = () => {
-    if (isLoading === 'loadingMore') {
+    if (loadingStates.loadMore) {
       return (
         <View style={styles.footerLoadingContainer}>
           <ActivityIndicator size="large" color={colors.green600} />
@@ -142,7 +161,11 @@ const GetAllMessageComponent = () => {
 
   const renderListEmptyComponent = () => (
     <View style={styles.emptyListContainer}>
-      <RegularText style={styles.emptyListText}>No messages found</RegularText>
+      <TextComponent
+        text={'No messages found'}
+        size={textScale(16)}
+        color={isDarkMode ? Colors.dark.black : Colors.light.white}
+      />
     </View>
   );
 
@@ -157,44 +180,37 @@ const GetAllMessageComponent = () => {
         rightIcons={[SvgIcon.Search, SvgIcon.ReloadIcon]}
         onRightIconPress={handleCommonBarRightIconPress}
       />
-      <View
-        style={[
-          styles.container,
-          {
-            backgroundColor:
-              theme === THEME_COLOR ? colors.white : colors.black,
-          },
-        ]}>
-        {isLoading === 'initial' ? (
+      <View style={styles.container}>
+        {loadingStates.initial ? (
           <LoadingScreen />
         ) : (
-          <FlashList
+          <FlatList
             data={filteredData}
-            estimatedItemSize={72}
             keyExtractor={item => item?.message_id?.toString()}
             renderItem={({item}) => <AllGetMessageListColum item={item} />}
             onEndReached={loadMoreMessages}
-            onEndReachedThreshold={0.5} // Increased threshold slightly
+            onEndReachedThreshold={0.5}
             ListFooterComponent={renderFooter}
             ListEmptyComponent={renderListEmptyComponent}
-            contentContainerStyle={styles.listContentContainer} // Added content container style
-            refreshing={isLoading === 'refreshing'}
+            contentContainerStyle={styles.listContentContainer}
+            refreshing={loadingStates.refresh}
             onRefresh={handleRefresh}
+            removeClippedSubviews={true}
+            maxToRenderPerBatch={10}
+            windowSize={21}
+            getItemLayout={(data, index) => ({
+              length: ITEM_HEIGHT,
+              offset: ITEM_HEIGHT * index,
+              index,
+            })}
             ListHeaderComponent={
               <View style={styles.listContainer}>
                 <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={styles.scrollContainer}>
-                  <View
-                    style={[
-                      styles.filterContainer,
-                      {
-                        backgroundColor:
-                          theme === THEME_COLOR ? colors.white : colors.black,
-                      },
-                    ]}>
-                    {['All', 'Unread', 'Favourites', 'Archived'].map(filter => (
+                  <View style={styles.filterContainer}>
+                    {['All', 'Unread'].map(filter => (
                       <FilterButton
                         key={filter}
                         filter={filter}
@@ -247,6 +263,7 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     flexGrow: 1,
+    marginVertical: spacing.MARGIN_4,
   },
   emptyListContainer: {
     flex: 1,

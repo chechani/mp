@@ -1,17 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import { FlatList, StyleSheet, View } from 'react-native';
-import { useLazyGetAllInCompleteFromQuery } from '../../api/store/slice/formSlice';
+import React, {useEffect, useState} from 'react';
+import {FlatList, StyleSheet, View} from 'react-native';
+import {useLazyGetAllInCompleteFromQuery} from '../../api/store/slice/formSlice';
 import * as SvgIcon from '../../assets';
-import { textScale } from '../../styles/responsiveStyles';
-import { spacing } from '../../styles/spacing';
-import { fontNames } from '../../styles/typography';
+import {textScale} from '../../styles/responsiveStyles';
+import {spacing} from '../../styles/spacing';
+import {fontNames} from '../../styles/typography';
+import Colors from '../../theme/colors';
 import colors from '../../Utils/colors';
 import THEME_COLOR from '../../Utils/Constant';
-import { goBack, truncateText } from '../../Utils/helperFunctions';
+import {goBack, truncateText} from '../../Utils/helperFunctions';
 import AnimatedComponentToggle from '../Common/AnimatedComponentToggale';
 import CommoneHeader from '../Common/CommoneHeader';
-import RegularText from '../Common/RegularText';
-import { useTheme } from '../hooks';
+import TextComponent from '../Common/TextComponent';
+import {useTheme} from '../hooks';
 
 const FormResponseInCompletedScreen = ({route}) => {
   const {theme} = useTheme();
@@ -77,17 +78,16 @@ const FormResponseInCompletedScreen = ({route}) => {
             fontSize: textScale(16),
             fontFamily: fontNames?.ROBOTO_FONT_FAMILY_MEDIUM,
           }}>
-          <RegularText
-            style={[
-              styles.timestampText,
-              {color: isDarkMode ? colors.grey700 : colors.grey300},
-            ]}>
-            Received At: {item?.timestamp_sending}
-          </RegularText>
-          {/* <View style={styles.recordDetails}>
-            <RegularText style={styles.detailText}>Flow Name: {item.contact}</RegularText>
-            <RegularText style={styles.detailText}>timestamp: {item.timestamp_sending}</RegularText>
-          </View> */}
+          <TextComponent
+            text={`Received At: ${item?.timestamp_sending}`}
+            color={isDarkMode ? Colors.dark.black : Colors.light.white}
+            size={textScale(12)}
+            style={{
+              marginBottom: spacing.MARGIN_12,
+              paddingHorizontal: spacing.PADDING_16,
+              opacity: 0.8,
+            }}
+          />
         </AnimatedComponentToggle>
       </View>
     );
@@ -111,15 +111,14 @@ const FormResponseInCompletedScreen = ({route}) => {
         contentContainerStyle={styles.listContentContainer}
         ListEmptyComponent={() => (
           <View style={[styles.noDataContainer]}>
-            <RegularText
-              style={[
-                styles.noDataText,
-                {
-                  color: isDarkMode ? colors.black : colors.white,
-                },
-              ]}>
-              No records found for the specified date range and flow name.
-            </RegularText>
+            <TextComponent
+              text={
+                'No records found for the specified date range and flow name.'
+              }
+              color={isDarkMode ? Colors.dark.black : Colors.light.white}
+              size={textScale(18)}
+              textAlign={'center'}
+            />
           </View>
         )}
       />

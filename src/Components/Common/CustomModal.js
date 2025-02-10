@@ -1,8 +1,8 @@
 import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import Modal from 'react-native-modal';
-import {useTheme} from '../hooks';
 import THEMR_COLRO from '../../Utils/Constant';
+import {useTheme} from '../hooks';
 
 const CustomModal = ({visible, onClose, title, children}) => {
   const {theme} = useTheme();

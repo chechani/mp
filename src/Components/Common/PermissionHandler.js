@@ -1,4 +1,4 @@
-import { PermissionsAndroid, Platform, Alert, Linking } from 'react-native';
+import {Alert, Linking, PermissionsAndroid, Platform} from 'react-native';
 
 // Function to request Android-specific permissions
 const requestAndroidPermission = async (permission, permissionName) => {
@@ -15,9 +15,9 @@ const requestAndroidPermission = async (permission, permissionName) => {
         `${permissionName} Permission Required`,
         `You have permanently denied ${permissionName.toLowerCase()} permission. Please enable it in settings.`,
         [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Open Settings', onPress: () => Linking.openSettings() },
-        ]
+          {text: 'Cancel', style: 'cancel'},
+          {text: 'Open Settings', onPress: () => Linking.openSettings()},
+        ],
       );
       return false;
     }
@@ -28,56 +28,56 @@ const requestAndroidPermission = async (permission, permissionName) => {
 };
 
 // Function to handle iOS permission alerts
-const showIOSPermissionAlert = (permissionName) => {
+const showIOSPermissionAlert = permissionName => {
   Alert.alert(
     `${permissionName} Permission Required`,
     `This app needs access to your ${permissionName.toLowerCase()} to provide enhanced services. Please enable it in settings.`,
     [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Open Settings', onPress: () => Linking.openSettings() },
-    ]
+      {text: 'Cancel', style: 'cancel'},
+      {text: 'Open Settings', onPress: () => Linking.openSettings()},
+    ],
   );
 };
 
 // Main permission handler function
-export const requestPermission = async (permissionType) => {
+export const requestPermission = async permissionType => {
   if (Platform.OS === 'android') {
     // Android-specific permissions
     switch (permissionType) {
       case 'location':
         return await requestAndroidPermission(
           PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-          'Location'
+          'Location',
         );
       case 'contacts':
         return await requestAndroidPermission(
           PermissionsAndroid.PERMISSIONS.READ_CONTACTS,
-          'Contacts'
+          'Contacts',
         );
       case 'camera':
         return await requestAndroidPermission(
           PermissionsAndroid.PERMISSIONS.CAMERA,
-          'Camera'
+          'Camera',
         );
       case 'microphone':
         return await requestAndroidPermission(
           PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
-          'Microphone'
+          'Microphone',
         );
       case 'storage':
         return await requestAndroidPermission(
           PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-          'Storage'
+          'Storage',
         );
       case 'readStorage':
         return await requestAndroidPermission(
           PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-          'Read Storage'
+          'Read Storage',
         );
       case 'sms':
         return await requestAndroidPermission(
           PermissionsAndroid.PERMISSIONS.READ_SMS,
-          'SMS'
+          'SMS',
         );
       default:
         return false;

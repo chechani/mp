@@ -1,25 +1,18 @@
-import React from 'react'
-import { StyleSheet, View } from 'react-native'
-import AnimatedComponentToggle from '../Common/AnimatedComponentToggale'
-import RegularText from '../Common/RegularText'
+import React from 'react';
+import {View} from 'react-native';
+import AnimatedComponentToggle from '../Common/AnimatedComponentToggale';
+import TextComponent from '../Common/TextComponent';
 
-const ContactListDetailsColum = ({ item }) => {
+const ContactListDetailsColum = ({item}) => {
   return (
-    <>
-      <AnimatedComponentToggle tabName={item.key}>
-        {item.data.map((detail, index) => (
-          <View key={index} style={styles.contentRow}>
-            <RegularText>{`${detail.label}: ${detail.value}`}</RegularText>
-          </View>
-        ))}
-      </AnimatedComponentToggle>
+    <AnimatedComponentToggle tabName={item.key}>
+      {item.data.map((detail, index) => (
+        <View key={index} style={styles.contentRow}>
+          <TextComponent text={`${detail.label}: ${detail.value}`} />
+        </View>
+      ))}
+    </AnimatedComponentToggle>
+  );
+};
 
-
-    </>
-  )
-}
-
-export default ContactListDetailsColum
-
-const styles = StyleSheet.create({
-})
+export default ContactListDetailsColum;

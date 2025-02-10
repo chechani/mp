@@ -1,20 +1,20 @@
-import React, {useEffect, useRef, useState} from 'react';
-import {FlatList, StyleSheet, View} from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { FlatList, StyleSheet, View } from 'react-native';
 import THEME_COLOR from '../../Utils/Constant';
 import colors from '../../Utils/colors';
-import {goBack, truncateText} from '../../Utils/helperFunctions';
-import {useLazyGetAllCompleteFromQuery} from '../../api/store/slice/formSlice';
+import { goBack, truncateText } from '../../Utils/helperFunctions';
+import { useLazyGetAllCompleteFromQuery } from '../../api/store/slice/formSlice';
 import * as SvgIcon from '../../assets';
-import {textScale} from '../../styles/responsiveStyles';
-import {spacing} from '../../styles/spacing';
-import {fontNames} from '../../styles/typography';
+import { textScale } from '../../styles/responsiveStyles';
+import { spacing } from '../../styles/spacing';
+import { fontNames } from '../../styles/typography';
+import Colors from '../../theme/colors';
 import AnimatedComponentToggle from '../Common/AnimatedComponentToggale';
 import CommoneHeader from '../Common/CommoneHeader';
 import CustomBottomSheet from '../Common/CustomBottomSheet';
 import LoadingScreen from '../Common/Loader';
-import RegularText from '../Common/RegularText';
-import {useTheme} from '../hooks';
-import Colors from '../../theme/colors';
+import TextComponent from '../Common/TextComponent';
+import { useTheme } from '../hooks';
 
 const FormResponseCompleteScreen = ({route}) => {
   const {Flow_name} = route?.params;
@@ -87,14 +87,17 @@ const FormResponseCompleteScreen = ({route}) => {
             fontSize: textScale(16),
             fontFamily: fontNames.ROBOTO_FONT_FAMILY_MEDIUM,
           }}>
-          <RegularText
-            style={[
-              styles.timestampText,
-              {color: isDarkMode ? colors.grey500 : colors.grey200},
-            ]}>
-            Received At: {item['Timestamp Sending'] || 'Unknown'}
-          </RegularText>
-
+          <TextComponent
+            text={`Received At: ${item['Timestamp Sending'] || 'Unknown'}`}
+            color={isDarkMode ? Colors.dark.black : Colors.light.white}
+            size={textScale(16)}
+            style={{
+              opacity: 0.8,
+              marginBottom: spacing.MARGIN_12,
+              paddingHorizontal: spacing.PADDING_16,
+            }}
+            font={fontNames.ROBOTO_FONT_FAMILY_MEDIUM}
+          />
           {/* Dynamically render each field */}
           {Object.entries(item).map(([key, value], index) => {
             if (Array.isArray(value)) {
@@ -110,33 +113,38 @@ const FormResponseCompleteScreen = ({route}) => {
                       return (
                         <View key={idx} style={styles.sectionItem}>
                           {Object.entries(val).map(([docKey, docValue]) => (
-                            <RegularText
+                            <TextComponent
+                              text={`${docKey}: ${docValue}`}
                               key={docKey}
-                              style={[
-                                styles.sectionItem,
-                                {
-                                  color: isDarkMode
-                                    ? colors.grey200
-                                    : colors.grey900,
-                                },
-                              ]}>
-                              {docKey}: {docValue}
-                            </RegularText>
+                              color={
+                                isDarkMode
+                                  ? Colors.light.white
+                                  : Colors.dark.black
+                              }
+                              size={textScale(14)}
+                              style={{
+                                paddingHorizontal: spacing.PADDING_16,
+                                paddingVertical: spacing.PADDING_2,
+                              }}
+                            />
                           ))}
                         </View>
                       );
                     }
                     return (
-                      <RegularText
+                      <TextComponent
+                        text={`- ${val}`}
                         key={idx}
-                        style={[
-                          styles.sectionItem,
-                          {
-                            color: isDarkMode ? colors.grey700 : colors.grey400,
-                          },
-                        ]}>
-                        - {val}
-                      </RegularText>
+                        color={
+                          isDarkMode ? Colors.dark.black : Colors.light.white
+                        }
+                        size={textScale(14)}
+                        style={{
+                          paddingHorizontal: spacing.PADDING_16,
+                          paddingVertical: spacing.PADDING_2,
+                          opacity: 0.8,
+                        }}
+                      />
                     );
                   })}
                 </AnimatedComponentToggle>
@@ -149,16 +157,19 @@ const FormResponseCompleteScreen = ({route}) => {
                   tabName={key}
                   tabNameStyle={{color: colors.grey700}}>
                   {Object.entries(value).map(([nestedKey, nestedValue]) => (
-                    <RegularText
+                    <TextComponent
+                      text={`${nestedKey}: ${nestedValue}`}
                       key={nestedKey}
-                      style={[
-                        styles.sectionItem,
-                        {
-                          color: isDarkMode ? colors.grey700 : colors.grey400,
-                        },
-                      ]}>
-                      {nestedKey}: {nestedValue}
-                    </RegularText>
+                      color={
+                        isDarkMode ? Colors.dark.black : Colors.light.white
+                      }
+                      style={{
+                        opacity: 0.7,
+                        paddingHorizontal: spacing.PADDING_16,
+                        paddingVertical: spacing.PADDING_2,
+                      }}
+                      size={textScale(14)}
+                    />
                   ))}
                 </AnimatedComponentToggle>
               );
@@ -166,24 +177,18 @@ const FormResponseCompleteScreen = ({route}) => {
               // Handle primitive values (string, number, boolean)
               return (
                 <View key={index} style={styles.infoRow}>
-                  <RegularText
-                    style={[
-                      styles.detailsText,
-                      {
-                        color: isDarkMode ? colors.grey700 : colors.grey400,
-                      },
-                    ]}>
-                    {key?.replace(/_/g, ' ')}
-                  </RegularText>
-                  <RegularText
-                    style={[
-                      styles.detailsValue,
-                      {
-                        color: isDarkMode ? colors.grey700 : colors.grey400,
-                      },
-                    ]}>
-                    {value?.toString()}
-                  </RegularText>
+                  <TextComponent
+                    text={key?.replace(/_/g, ' ')}
+                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
+                    style={{opacity: 0.8}}
+                    size={textScale(14)}
+                  />
+                  <TextComponent
+                    text={value?.toString()}
+                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
+                    style={{opacity: 0.8}}
+                    size={textScale(14)}
+                  />
                 </View>
               );
             }
@@ -235,15 +240,14 @@ const FormResponseCompleteScreen = ({route}) => {
           contentContainerStyle={styles.listContentContainer}
           ListEmptyComponent={() => (
             <View style={[styles.noDataContainer]}>
-              <RegularText
-                style={[
-                  styles.noDataText,
-                  {
-                    color: isDarkMode ? colors.black : colors.white,
-                  },
-                ]}>
-                No records found for the specified date range and flow name.
-              </RegularText>
+              <TextComponent
+                text={
+                  'No records found for the specified date range and flow name.'
+                }
+                color={isDarkMode ? Colors.dark.black : Colors.light.white}
+                size={textScale(18)}
+                textAlign={'center'}
+              />
             </View>
           )}
         />

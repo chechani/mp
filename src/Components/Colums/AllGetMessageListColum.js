@@ -7,16 +7,18 @@ import {
 } from 'react-native';
 import * as SvgIcon from '../../assets';
 import navigationString from '../../Navigations/NavigationString';
+import {Divider} from '../../styles/commonStyle';
 import {textScale} from '../../styles/responsiveStyles';
 import {spacing} from '../../styles/spacing';
 import {fontNames} from '../../styles/typography';
+import Colors from '../../theme/colors';
 import colors from '../../Utils/colors';
 import {
   formatTimestampForMessageList,
   getColorForParticipant,
   navigate,
 } from '../../Utils/helperFunctions';
-import RegularText from '../Common/RegularText';
+import TextComponent from '../Common/TextComponent';
 import {useTheme} from '../hooks';
 
 const AllGetMessageListColum = ({item}) => {
@@ -56,9 +58,7 @@ const AllGetMessageListColum = ({item}) => {
 
     return (
       <View style={[styles.userDPStyle, {backgroundColor}]}>
-        <RegularText style={{fontSize: textScale(15), color: textColor}}>
-          {contactInitial}
-        </RegularText>
+        <TextComponent text={contactInitial} color={textColor} />
       </View>
     );
   };
@@ -76,89 +76,88 @@ const AllGetMessageListColum = ({item}) => {
   };
 
   return (
-    <TouchableOpacity
-      style={[styles.messageListContainer, isTablet && styles.tabletContainer]}
-      onPress={() =>
-        navigate(navigationString.ChatScreen, {
-          Mobile_No: item?.mobile_no,
-          title: item?.contact || item?.mobile_no,
-          unreadMessages: item?.unread_messages,
-          contact: item?.contact,
-        })
-      }
-      activeOpacity={0.8}>
-      <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-        <View style={{flexDirection: 'row', flex: 1}}>
-          {renderAvatar()}
-          <View style={{flex: 1}}>
-            <RegularText
-              style={[
-                styles.contactNameTextStyle,
-                isTablet && styles.tabletContactName,
-                {color: theme === commonColor ? colors.black : colors.white},
-              ]}
-              numberOfLines={1}
-              ellipsizeMode="tail">
-              {item?.contact || item?.mobile_no?.replace(/\D/g, '').slice(-10)}
-            </RegularText>
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              {statusIcon && isOutgoing && statusIcon.type === 'svg' && (
-                <StatusIconComponent
-                  color={statusIcon.color}
-                  width={spacing.WIDTH_20}
-                  height={spacing.HEIGHT_20}
+    <>
+      <TouchableOpacity
+        style={[
+          styles.messageListContainer,
+          isTablet && styles.tabletContainer,
+        ]}
+        onPress={() =>
+          navigate(navigationString.ChatScreen, {
+            Mobile_No: item?.mobile_no,
+            title: item?.contact || item?.mobile_no,
+            unreadMessages: item?.unread_messages,
+            contact: item?.contact,
+          })
+        }
+        activeOpacity={0.8}>
+        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+          <View style={{flexDirection: 'row', flex: 1}}>
+            {renderAvatar()}
+            <View style={{flex: 1}}>
+              <TextComponent
+                text={
+                  item?.contact ||
+                  item?.mobile_no?.replace(/\D/g, '').slice(-10)
+                }
+                color={theme === commonColor ? colors.black : colors.white}
+                numberOfLines={1}
+                size={isTablet ? textScale(18) : textScale(14)}
+              />
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                {statusIcon && isOutgoing && statusIcon.type === 'svg' && (
+                  <StatusIconComponent
+                    color={statusIcon.color}
+                    width={spacing.WIDTH_20}
+                    height={spacing.HEIGHT_20}
+                  />
+                )}
+                <TextComponent
+                  text={renderMessagePreview()}
+                  color={
+                    theme === commonColor
+                      ? Colors.dark.black
+                      : Colors.light.grey
+                  }
+                  size={textScale(12)}
+                  style={{opacity: 0.8}}
                 />
-              )}
-              <RegularText
-                style={[
-                  styles.messageDescriptionStyle,
-                  {
-                    color:
-                      theme === commonColor ? colors.black : colors.grey400,
-                  },
-                ]}>
-                {renderMessagePreview()}
-              </RegularText>
+              </View>
             </View>
           </View>
+          <View style={styles.timestampContainer}>
+            <TextComponent
+              text={formatTimestampForMessageList(item?.creation)}
+              color={
+                theme === commonColor ? Colors.dark.black : Colors.light.grey
+              }
+              size={textScale(12)}
+              font={fontNames.ROBOTO_FONT_FAMILY_MEDIUM}
+            />
+            {item?.unread_messages > 0 && (
+              <View
+                style={{
+                  backgroundColor: colors.green700,
+                  borderRadius: spacing.WIDTH_18 / 2,
+                  width: spacing.WIDTH_18,
+                  height: spacing.WIDTH_18,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                <TextComponent
+                  text={item.unread_messages}
+                  textAlign={'center'}
+                  color={Colors.default.white}
+                  size={textScale(10)}
+                  font={fontNames.ROBOTO_FONT_FAMILY_MEDIUM}
+                />
+              </View>
+            )}
+          </View>
         </View>
-        <View style={styles.timestampContainer}>
-          <RegularText
-            style={[
-              styles.formatTimestampStyle,
-              {
-                color: theme === commonColor ? colors.black : colors.grey500,
-              },
-            ]}>
-            {formatTimestampForMessageList(item?.creation)}
-          </RegularText>
-          {item?.unread_messages > 0 && (
-            <View
-              style={{
-                backgroundColor: colors.green700,
-                borderRadius: spacing.WIDTH_18 / 2,
-                width: spacing.WIDTH_18,
-                height: spacing.WIDTH_18,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-              <RegularText style={styles.unreadMessagesStyle}>
-                {item.unread_messages}
-              </RegularText>
-            </View>
-          )}
-        </View>
-      </View>
-      <View
-        style={[
-          styles.divider,
-          {
-            backgroundColor:
-              theme === commonColor ? colors.grey300 : colors.grey600,
-          },
-        ]}
-      />
-    </TouchableOpacity>
+      </TouchableOpacity>
+      <Divider />
+    </>
   );
 };
 
@@ -166,7 +165,8 @@ export default AllGetMessageListColum;
 
 const styles = StyleSheet.create({
   messageListContainer: {
-    marginHorizontal:spacing.MARGIN_8
+    marginHorizontal: spacing.MARGIN_8,
+    paddingVertical:spacing.PADDING_6
   },
   tabletContainer: {
     paddingHorizontal: spacing.PADDING_20,
@@ -183,12 +183,12 @@ const styles = StyleSheet.create({
   messageDescriptionStyle: {
     fontFamily: fontNames.ROBOTO_FONT_FAMILY_MEDIUM,
     fontSize: textScale(12),
-    color:colors.white
+    color: colors.white,
   },
   formatTimestampStyle: {
     fontFamily: fontNames.ROBOTO_FONT_FAMILY_MEDIUM,
     fontSize: textScale(12),
-    color:colors.white
+    color: colors.white,
   },
   userDPStyle: {
     width: spacing.HEIGHT_40,
@@ -209,8 +209,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   divider: {
-    height: .5,
+    height: 0.5,
     marginVertical: spacing.MARGIN_6,
-    backgroundColor:colors.grey300
+    backgroundColor: colors.grey300,
   },
 });

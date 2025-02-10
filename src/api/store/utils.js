@@ -11,9 +11,9 @@ const createBaseQuery = selectedDomain => {
       try {
         const token = await AsyncStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
         if (token) {
-          headers.set('Authorization', `Bearer ${token}`);
+          headers.set('Authorization', `${token}`);
         }
-        // console.log(token);
+        // console.log("token",token);
 
         return headers;
       } catch (error) {
@@ -27,6 +27,7 @@ const createBaseQuery = selectedDomain => {
 export const customBaseQuery = async (args, api, extraOptions) => {
   const state = api.getState();
   const selectedDomain = state?.domains?.selectedDomain?.domain;
+
 
   if (!selectedDomain) {
     console.warn('Selected domain is not defined');

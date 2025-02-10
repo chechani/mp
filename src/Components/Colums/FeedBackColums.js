@@ -52,7 +52,7 @@ const customOrder = ['custom_mobile', 'village', 'creation'];
 const formatKey = key =>
   key.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
 
-const FeedBackColums = ({item, fetchData}) => {
+const FeedBackColums = ({item}) => {
   const {theme} = useTheme();
   const selectedDomain = useAppSelector(
     state => state.domains?.selectedDomain?.domain,
@@ -95,16 +95,20 @@ const FeedBackColums = ({item, fetchData}) => {
         ticket_name: item?.name,
         status: newStatus,
       }).unwrap();
-
-      setSelectedStatus(newStatus);
-      Toast.show({
-        text1: 'Success',
-        text2: response?.message || 'Status updated successfully!',
-        type: 'success',
-      });
-
-      setModalVisible(false);
-      fetchData(1); // Refresh data
+      if (response?.status_code === 200) {
+        setSelectedStatus(newStatus);
+        Toast.show({
+          text1: 'Success',
+          text2: response?.message || 'Status updated successfully!',
+          type: 'success',
+        });
+      } else if (response?.status_code === 500) {
+        Toast.show({
+          text1: 'warning',
+          text2: response?.message,
+          type: 'warning',
+        });
+      }
     } catch (error) {
       console.error('Failed to update status:', error);
       Toast.show({
@@ -114,6 +118,7 @@ const FeedBackColums = ({item, fetchData}) => {
       });
     } finally {
       setCurrentUpdatingStatus(null);
+      setModalVisible(false);
     }
   };
 

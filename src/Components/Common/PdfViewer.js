@@ -1,6 +1,8 @@
-import { Linking } from 'react-native';
+import {Linking} from 'react-native';
 
-const openPDFFile = async (fileUrl) => {
+const openPDFFile = async fileUrl => {
+  console.log('fileUrl', fileUrl);
+
   // try {
   //   // Ensure the URL starts with "http://" or "https://"
   //   if (fileUrl && (fileUrl.startsWith('http://') || fileUrl.startsWith('https://'))) {
@@ -26,11 +28,17 @@ const openPDFFile = async (fileUrl) => {
 
   try {
     // Ensure the URL starts with "http://" or "https://"
-    if (fileUrl && (fileUrl.startsWith('http://') || fileUrl.startsWith('https://'))) {
+    if (
+      fileUrl &&
+      (fileUrl.startsWith('http://') || fileUrl.startsWith('https://'))
+    ) {
       // Open the PDF URL in the browser
       await Linking.openURL(fileUrl);
     } else {
-      Alert.alert('Invalid URL', 'Please provide a valid URL starting with http:// or https://');
+      Alert.alert(
+        'Invalid URL',
+        'Please provide a valid URL starting with http:// or https://',
+      );
       console.error('Invalid file URL:', fileUrl);
     }
   } catch (error) {

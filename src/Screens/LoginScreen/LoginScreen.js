@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, {useEffect, useState} from 'react';
 import {StyleSheet, TouchableOpacity, View} from 'react-native';
 import Toast from 'react-native-toast-message';
@@ -12,11 +11,9 @@ import * as SvgIcon from '../../assets/index';
 import ContainerComponent from '../../Components/Common/ContainerComponent';
 import CustomButton from '../../Components/Common/CustomButton';
 import CustomInput from '../../Components/Common/CustomInput';
-import TextComponent from '../../Components/Common/TextComponent';
 import {useAppDispatch, useAppSelector, useTheme} from '../../Components/hooks';
 import NavigationString from '../../Navigations/NavigationString';
 
-import {textScale} from '../../styles/responsiveStyles';
 import {spacing} from '../../styles/spacing';
 import Colors from '../../theme/colors';
 
@@ -47,12 +44,14 @@ const LoginScreen = () => {
 
   const onPressLogin = async () => {
     const data = {usr: email.trim(), pwd: password.trim()};
+
     try {
       setIsLoading(true);
       const res = await dispatch(loginUser(data)).unwrap();
-      if (res?.key_details?.auth_token) {
-        await AsyncStorage.setItem('@rememberMe', 'true');
-      }
+
+      // if (res?.key_details?.auth_token) {
+      //   await AsyncStorage.setItem('@rememberMe', 'true');
+      // }
       if (res?.message) {
         Toast.show({
           type: 'info',
@@ -140,10 +139,11 @@ const LoginScreen = () => {
         <View style={styles.logoContainer}>
           <SvgIcon.Logo height={spacing.HEIGHT_105} width={spacing.WIDTH_105} />
         </View>
+
         <View style={styles.loginContainer}>
           <CustomInput
             value={updatedDomain}
-            onChange={e => setUpdatedDomain(e)}
+            onChange={value => setUpdatedDomain(value)}
             label="Domain"
             required={true}
             editable={isEditing}
@@ -183,9 +183,7 @@ const LoginScreen = () => {
             showFirstChildren={true}
             FirstChildren={
               <View style={{marginRight: 8}}>
-                <SvgIcon.EmailIcon
-                  color={isDarkMode ? Colors.default.grey : Colors.default.grey}
-                />
+                <SvgIcon.EmailIcon color={Colors.default.grey} />
               </View>
             }
             inputStyles={{
@@ -202,9 +200,7 @@ const LoginScreen = () => {
             showFirstChildren={true}
             FirstChildren={
               <View style={{marginRight: 8}}>
-                <SvgIcon.PasswordIcon
-                  color={isDarkMode ? Colors.default.grey : Colors.default.grey}
-                />
+                <SvgIcon.PasswordIcon color={Colors.default.grey} />
               </View>
             }
             inputStyles={{
@@ -213,44 +209,16 @@ const LoginScreen = () => {
           />
 
           <CustomButton
-            title={'Login'}
+            title="Login"
             onPress={onPressLogin}
             isLoading={loading}
             disabled={!isLoginEnabled}
           />
+        </View>
 
-          <View style={styles.otherOptions}>
-            <View
-              style={[
-                styles.line,
-                {
-                  backgroundColor: isDarkMode
-                    ? Colors.dark.black
-                    : Colors.light.white,
-                },
-              ]}
-            />
-            <TextComponent
-              text={'or'}
-              size={textScale(18)}
-              fontWeight="600"
-              style={{
-                color: isDarkMode ? Colors.dark.black : Colors.light.white,
-              }}
-            />
-            <View
-              style={[
-                styles.line,
-                {
-                  backgroundColor: isDarkMode
-                    ? Colors.dark.black
-                    : Colors.light.white,
-                },
-              ]}
-            />
-          </View>
+        <View style={styles.bottomButtonContainer}>
           <CustomButton
-            title={'Change Domain'}
+            title={updatedDomain ? 'Change Domain' : 'Set Domain'}
             onPress={() => replace(NavigationString.InitialScreen)}
           />
         </View>
@@ -262,31 +230,26 @@ const LoginScreen = () => {
 export default LoginScreen;
 
 const styles = StyleSheet.create({
-  line: {
-    height: 2,
-    width: '35%',
-    backgroundColor: Colors.default.grey,
-  },
-  otherOptions: {
-    flexDirection: 'row',
-    gap: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginVertical: 10,
-  },
   childContainer: {
-    height: '85%',
-    width: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
     flex: 1,
+    width: '100%',
+    alignItems: 'center',
   },
   logoContainer: {
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: 40,
+    marginBottom: 20,
   },
   loginContainer: {
     width: '100%',
+    paddingHorizontal: spacing.PADDING_16,
+  },
+  bottomButtonContainer: {
+    position: 'absolute',
+    bottom: 16,
+    left: 0,
+    right: 0,
     paddingHorizontal: spacing.PADDING_16,
   },
 });

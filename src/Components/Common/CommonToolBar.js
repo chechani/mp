@@ -1,13 +1,15 @@
 import React, {useEffect} from 'react';
 import {StatusBar, StyleSheet, TouchableOpacity, View} from 'react-native';
-import {useTheme} from '../hooks';
 import THEME_COLOR from '../../Utils/Constant';
 import colors from '../../Utils/colors';
+import {Divider} from '../../styles/commonStyle';
 import {textScale} from '../../styles/responsiveStyles';
 import {spacing} from '../../styles/spacing';
 import {fontNames} from '../../styles/typography';
+import Colors from '../../theme/colors';
+import {useTheme} from '../hooks';
 import {registerBackHandler, unregisterBackHandler} from './BackHandlerManager';
-import RegularText from './RegularText';
+import TextComponent from './TextComponent';
 
 const CommonToolBar = ({
   title,
@@ -22,7 +24,7 @@ const CommonToolBar = ({
   onTitlePress,
 }) => {
   const {theme} = useTheme();
-  const commonColor = THEME_COLOR;
+  const isDarkMode = theme === THEME_COLOR;
 
   useEffect(() => {
     const handleBackPress = () => {
@@ -53,11 +55,11 @@ const CommonToolBar = ({
           key={index}
           onPress={handlePress}
           hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
-          style={{marginLeft: spacing.MARGIN_10}}>
+          style={{margin: spacing.MARGIN_10}}>
           <IconComponent
             width={spacing.WIDTH_24}
             height={spacing.HEIGHT_24}
-            color={theme === commonColor ? colors.grey700 : colors.grey300}
+            color={isDarkMode ? Colors.dark.grey : Colors.light.grey}
           />
         </TouchableOpacity>
       );
@@ -74,61 +76,63 @@ const CommonToolBar = ({
         <Icon
           width={spacing.WIDTH_24}
           height={spacing.HEIGHT_24}
-          color={theme === commonColor ? colors.black : colors.white}
+          color={isDarkMode ? Colors.dark.grey : Colors.light.grey}
         />
       </TouchableOpacity>
     ));
   };
 
   return (
-    <View
-      style={[
-        styles.topBar,
-        {
-          backgroundColor: theme === commonColor ? colors.white : colors.black,
-          borderColor: theme === commonColor ? colors.grey300 : colors.grey500,
-        },
-      ]}>
-      <StatusBar
-        backgroundColor={
-          theme === THEME_COLOR ? colors.white : colors.black
-        }
-        barStyle={theme === THEME_COLOR ? 'dark-content' : 'light-content'}
-      />
-      {/* Left Section */}
-      <View style={styles.leftContainer}>
-        {showLeftIcons && renderLeftIcons()}
-        {count !== undefined && (
-          <RegularText
-            style={[
-              styles.selectedMessageCountStyle,
-              {color: theme === commonColor ? colors.grey800 : colors.grey200},
-            ]}>
-            {count}
-          </RegularText>
-        )}
-      </View>
+    <>
+      <View
+        style={[
+          styles.topBar,
+          {
+            backgroundColor: isDarkMode
+              ? Colors.light.white
+              : Colors.dark.black,
+          },
+        ]}>
+        <StatusBar
+          backgroundColor={isDarkMode ? Colors.light.white : Colors.dark.black}
+          barStyle={isDarkMode ? 'dark-content' : 'light-content'}
+        />
+        {/* Left Section */}
+        <View style={styles.leftContainer}>
+          {showLeftIcons && renderLeftIcons()}
+          {count !== undefined && (
+            <TextComponent
+              text={count}
+              color={isDarkMode ? Colors.dark.black : Colors.light.white}
+              size={textScale(16)}
+              font={fontNames.ROBOTO_FONT_FAMILY_BOLD}
+              style={{marginLeft: spacing.MARGIN_16}}
+            />
+          )}
+        </View>
 
-      {/* Title Section */}
-      <View style={styles.titleContainer}>
-        {title && (
-          <TouchableOpacity onPress={onTitlePress}>
-            <RegularText
-              style={[
-                styles.titleStyle,
-                {color: theme === commonColor ? colors.black : colors.white},
-              ]}>
-              {title}
-            </RegularText>
-          </TouchableOpacity>
-        )}
-      </View>
+        {/* Title Section */}
+        <View style={styles.titleContainer}>
+          {title && (
+            <TouchableOpacity onPress={onTitlePress}>
+              <TextComponent
+                text={title}
+                color={isDarkMode ? Colors.dark.black : Colors.light.white}
+                size={textScale(16)}
+                font={fontNames.ROBOTO_FONT_FAMILY_MEDIUM}
+                style={{textTransform: 'capitalize'}}
+              />
+            </TouchableOpacity>
+          )}
+        </View>
 
-      {/* Right Section */}
-      <View style={styles.rightContainer}>
-        {showRightIcons && renderRightIcons()}
+        {/* Right Section */}
+        <View style={styles.rightContainer}>
+          {showRightIcons && renderRightIcons()}
+        </View>
       </View>
-    </View>
+      <Divider />
+    </>
   );
 };
 
@@ -139,7 +143,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderBottomWidth: 0.5,
     height: spacing.HEIGHT_60,
   },
   leftContainer: {

@@ -1,12 +1,12 @@
-import React, { forwardRef, useState } from 'react';
-import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import React, {forwardRef, useState} from 'react';
+import {StyleSheet, TextInput, TouchableOpacity, View} from 'react-native';
 import THEME_COLOR from '../../Utils/Constant';
 import * as SvgIcon from '../../assets';
-import { textScale } from '../../styles/responsiveStyles';
-import { spacing } from '../../styles/spacing';
-import { fontNames } from '../../styles/typography';
+import {textScale} from '../../styles/responsiveStyles';
+import {spacing} from '../../styles/spacing';
+import {fontNames} from '../../styles/typography';
 import Colors from '../../theme/colors';
-import { useTheme } from '../hooks';
+import {useTheme} from '../hooks';
 import TextComponent from './TextComponent';
 
 const CustomInput = forwardRef((props, ref) => {
@@ -38,6 +38,7 @@ const CustomInput = forwardRef((props, ref) => {
     FirstChildren,
     SecondChildren,
     onPressTextInput,
+    onLayout,
   } = props;
 
   const [isShowPass, setIsShowPass] = useState(isSecure);
@@ -72,7 +73,7 @@ const CustomInput = forwardRef((props, ref) => {
               ? Colors.default.error
               : isFocused
               ? Colors.default.accent
-              :Colors.default.grey,
+              : '#5f5e5e',
             backgroundColor: editable
               ? bgColor
               : isDarkMode
@@ -83,7 +84,8 @@ const CustomInput = forwardRef((props, ref) => {
           styles,
         ]}
         onPress={onPressTextInput}
-        activeOpacity={0.8}>
+        activeOpacity={0.8}
+        onLayout={onLayout}>
         {showFirstChildren && FirstChildren}
         <TextInput
           allowFontScaling={false}
@@ -165,7 +167,6 @@ const style = StyleSheet.create({
     paddingVertical: spacing.PADDING_6,
     paddingHorizontal: spacing.PADDING_12,
     borderWidth: 1,
-    borderRadius: 1,
     height: spacing.HEIGHT_46,
     borderColor: Colors.default.grey,
   },
@@ -179,7 +180,7 @@ const style = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 2,
-    marginLeft:spacing.MARGIN_4
+    marginLeft: spacing.MARGIN_4,
   },
 });
 

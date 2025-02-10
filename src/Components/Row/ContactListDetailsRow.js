@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {ActivityIndicator, FlatList, StyleSheet, View} from 'react-native';
-import {useApiURLs} from '../../Config/url';
+import {FlatList, StyleSheet, View} from 'react-native';
 import NavigationString from '../../Navigations/NavigationString';
 import THEME_COLOR from '../../Utils/Constant';
 import colors from '../../Utils/colors';
@@ -13,13 +12,14 @@ import {
 import {useLazyContactDetailsQuery} from '../../api/store/slice/contactSlice';
 import {textScale} from '../../styles/responsiveStyles';
 import {spacing} from '../../styles/spacing';
-import AnimatedComponentToggle from '../Common/AnimatedComponentToggale';
-import BottonComp from '../Common/BottonComp';
-import CommoneHeader from '../Common/CommoneHeader';
-import RegularText from '../Common/RegularText';
-import {useTheme} from '../hooks';
-import LoadingScreen from '../Common/Loader';
 import Colors from '../../theme/colors';
+import AnimatedComponentToggle from '../Common/AnimatedComponentToggale';
+import CommoneHeader from '../Common/CommoneHeader';
+import ContainerComponent from '../Common/ContainerComponent';
+import CustomButton from '../Common/CustomButton';
+import LoadingScreen from '../Common/Loader';
+import TextComponent from '../Common/TextComponent';
+import {useTheme} from '../hooks';
 
 const ContactListDetailsRow = ({route}) => {
   const {contactName, mobileNo} = route.params;
@@ -50,7 +50,7 @@ const ContactListDetailsRow = ({route}) => {
 
   const ListEmptyComponent = () => (
     <View style={styles.noDataContainer}>
-      <RegularText style={styles.noDataText}>Data not found</RegularText>
+      <TextComponent text={'Data not found'} size={textScale(16)} />
     </View>
   );
 
@@ -111,13 +111,11 @@ const ContactListDetailsRow = ({route}) => {
       return (
         <AnimatedComponentToggle tabName={item?.key}>
           <View style={styles.noDataContainer}>
-            <RegularText
-              style={[
-                styles.noDataText,
-                {color: isDarkMode ? colors.black : colors.white},
-              ]}>
-              No details available for this section
-            </RegularText>
+            <TextComponent
+              text={'No details available for this section'}
+              color={isDarkMode ? Colors.dark.black : Colors.light.white}
+              size={textScale(16)}
+            />
           </View>
         </AnimatedComponentToggle>
       );
@@ -127,20 +125,14 @@ const ContactListDetailsRow = ({route}) => {
       <AnimatedComponentToggle tabName={item?.key}>
         {item.data.map((detail, index) => (
           <View key={index} style={styles.contentRow}>
-            <RegularText
-              style={[
-                styles.detailLabel,
-                {color: isDarkMode ? colors.black : colors.white},
-              ]}>
-              {detail?.label}
-            </RegularText>
-            <RegularText
-              style={[
-                styles.detailValue,
-                {color: isDarkMode ? colors.black : colors.white},
-              ]}>
-              {detail?.value}
-            </RegularText>
+            <TextComponent
+              text={detail?.label}
+              color={isDarkMode ? Colors.dark.black : Colors.light.white}
+            />
+            <TextComponent
+              text={detail?.value}
+              color={isDarkMode ? Colors.dark.black : Colors.light.white}
+            />
           </View>
         ))}
       </AnimatedComponentToggle>
@@ -148,21 +140,30 @@ const ContactListDetailsRow = ({route}) => {
   };
 
   return (
-    <>
+    <ContainerComponent
+      noPadding
+      useScrollView={false}
+      bottomComponent={
+        <CustomButton
+          title={'Send Message'}
+          onPress={() =>
+            navigate(NavigationString.ChatScreen, {
+              Mobile_No: mobileNo,
+              title: contactName,
+            })
+          }
+          borderRadius={0}
+        />
+      }>
       <CommoneHeader
         title={`${truncateText(contactName, 50)}`}
         showLeftIcon={true}
         onLeftIconPress={() => goBack()}
       />
-      <View
-        style={[
-          styles.container,
-          {
-            backgroundColor: isDarkMode ? colors.white : colors.black,
-          },
-        ]}>
+
+      <View style={{flex: 1, paddingHorizontal: spacing.PADDING_16}}>
         {isLoading ? (
-          <LoadingScreen color={Colors.default.primaryText} />
+          <LoadingScreen />
         ) : (
           <FlatList
             data={detailsData}
@@ -173,18 +174,7 @@ const ContactListDetailsRow = ({route}) => {
           />
         )}
       </View>
-      <BottonComp
-        text="Send Message"
-        style={styles.sendMessageBtn}
-        textStyle={{color: colors.white, fontSize: textScale(16)}}
-        onPress={() =>
-          navigate(NavigationString.ChatScreen, {
-            Mobile_No: mobileNo,
-            title: contactName,
-          })
-        }
-      />
-    </>
+    </ContainerComponent>
   );
 };
 
@@ -193,7 +183,6 @@ export default ContactListDetailsRow;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.white,
     paddingHorizontal: spacing.PADDING_16,
   },
   loadingContainer: {

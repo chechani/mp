@@ -1,17 +1,16 @@
-import { createApi } from '@reduxjs/toolkit/query/react';
-import { SEARCH_CONTACT, SEARCH_MESSAGE } from '../../../Config/url';
-import { customBaseQuery } from '../utils';
+import {createApi} from '@reduxjs/toolkit/query/react';
+import {SEARCH_CONTACT, SEARCH_MESSAGE} from '../../../Config/url';
+import {customBaseQuery} from '../utils';
 
 export const SearchApiSlices = createApi({
   reducerPath: 'SearchApiSlices',
   baseQuery: customBaseQuery,
   tagTypes: ['search'],
   endpoints: builder => ({
-    
     // search message
     searchMessage: builder.query({
-      query: ({search_query}) => ({
-        url: `${SEARCH_MESSAGE}?search_query=${search_query}`,
+      query: ({search_query, action, status_date}) => ({
+        url: `${SEARCH_MESSAGE}?search_query=${search_query}&action=${action}&status_date=${status_date}`,
         method: 'GET',
       }),
     }),
@@ -22,8 +21,8 @@ export const SearchApiSlices = createApi({
         method: 'GET',
       }),
     }),
-   
   }),
 });
 
-export const {useLazySearchMessageQuery,useLazySearchConatctQuery} = SearchApiSlices;
+export const {useLazySearchMessageQuery, useLazySearchConatctQuery} =
+  SearchApiSlices;

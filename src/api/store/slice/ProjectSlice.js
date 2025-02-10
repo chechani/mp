@@ -1,6 +1,20 @@
-import {createApi} from '@reduxjs/toolkit/query/react';
-import {customBaseQuery} from '../utils';
-import {CREATE_PROJECT, CREATE_PROJECT_SCHEME, GET_PROJECT, GET_PROJECT_ALL_PANCHAYAT, GET_PROJECT_ALL_VILLAAGES, GET_PROJECT_PANCHAYAT, GET_PROJECT_SCHEME, GET_PROJECT_STATUS, GET_PROJECT_TEHSIL, GET_PROJECT_TYPE, GET_PROJECT_VILLAGES, Update_PROJECT_Details, UPDATE_PROJECT_STATUS} from '../../../Config/url';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import {
+  CREATE_PROJECT,
+  CREATE_PROJECT_SCHEME,
+  GET_PROJECT,
+  GET_PROJECT_ALL_PANCHAYAT,
+  GET_PROJECT_ALL_VILLAAGES,
+  GET_PROJECT_PANCHAYAT,
+  GET_PROJECT_SCHEME,
+  GET_PROJECT_STATUS,
+  GET_PROJECT_TEHSIL,
+  GET_PROJECT_TYPE,
+  GET_PROJECT_VILLAGES,
+  Update_PROJECT_Details,
+  UPDATE_PROJECT_STATUS,
+} from '../../../Config/url';
+import { customBaseQuery } from '../utils';
 
 export const ProjectSlice = createApi({
   reducerPath: 'ProjectSlice',
@@ -18,7 +32,6 @@ export const ProjectSlice = createApi({
           tehsil,
           status,
         });
-
         return {
           url: `${GET_PROJECT}?${params.toString()}`,
           method: 'GET',
@@ -81,16 +94,16 @@ export const ProjectSlice = createApi({
     }),
     // Get all Panchayat
     GetProjectAllPanchayat: builder.query({
-      query: ({tehsil}) => ({
-        url: `${GET_PROJECT_ALL_PANCHAYAT}?tehsil=${tehsil}`,
+      query: () => ({
+        url: `${GET_PROJECT_ALL_PANCHAYAT}`,
         method: 'GET',
       }),
     }),
 
     // Get All Villages
     GetProjectAllVillages: builder.query({
-      query: ({panchayat}) => ({
-        url: `${GET_PROJECT_ALL_VILLAAGES}?panchayat=${panchayat}`,
+      query: () => ({
+        url: `${GET_PROJECT_ALL_VILLAAGES}`,
         method: 'GET',
       }),
     }),
@@ -115,38 +128,10 @@ export const ProjectSlice = createApi({
 
     // update project Details
     updateProjectDetails: builder.mutation({
-      query: ({
-        name,
-        project_type,
-        project_code,
-        project_scheme,
-        status,
-        estimated_cost,
-        allocated_cost,
-        actual_cost,
-        project_description,
-        start_date,
-        end_date,
-        actual_start_date,
-        actual_end_date,
-      }) => ({
+      query: (payload) => ({
         url: `${Update_PROJECT_Details}`,
         method: 'PUT',
-        body: {
-          name,
-          project_type,
-          project_code,
-          project_scheme,
-          status,
-          estimated_cost,
-          allocated_cost,
-          actual_cost,
-          project_description,
-          start_date,
-          end_date,
-          actual_start_date,
-          actual_end_date,
-        },
+        body: payload,
       }),
     }),
   }),
@@ -160,7 +145,7 @@ export const {
   useLazyGetAllProjectQuery,
   useCreateProjectMutation,
   useLazyGetProjectTypeQuery,
-  useLazyGetProjectAllPanchayatQuery,
+  useLazyGetProjectAllPanchayatQuery, 
   useLazyGetProjectAllVillagesQuery,
   useLazyGetProjectSchemeQuery,
   useCreateProjectSchemeMutation,

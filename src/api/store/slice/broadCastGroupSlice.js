@@ -3,6 +3,10 @@ import {
   ADD_MEMBER_IN_GROUP,
   CREATE_NEW_GROUP,
   GET_BROADCAST_GROUP,
+  GET_CRITERIA,
+  GET_LOGICAL_OPERATOR,
+  GET_OPERATOR,
+  UPDATE_BROADCAST_GROUP_MEMEBER,
 } from '../../../Config/url';
 import {customBaseQuery} from '../utils';
 
@@ -12,10 +16,11 @@ export const BroadCastGroupApiSlices = createApi({
   tagTypes: ['BroadCastGroup'],
   endpoints: builder => ({
     // Fetch search BroadCast group Member
-    SearchBroadCastGroupMember: builder.query({
-      query: ({name, search_query}) => ({
-        url: `api/method/frappe_whatsapp.broadcasting.search_contact_in_broadcast_group?name=${name}&search_query=${search_query}`,
-        method: 'GET',
+    SearchBroadCastGroupMember: builder.mutation({
+      query: payload => ({
+        url: `api/method/frappe_whatsapp.broadcasting.search_contact_in_broadcast_group`,
+        method: 'POST',
+        body: payload,
       }),
     }),
 
@@ -45,6 +50,15 @@ export const BroadCastGroupApiSlices = createApi({
         },
       }),
     }),
+
+    addMemberInGroupMultiple: builder.mutation({
+      query: payload => ({
+        url: `${UPDATE_BROADCAST_GROUP_MEMEBER}`,
+        method: 'POST',
+        body: payload,
+      }),
+    }),
+
     // Get BroadCast group
     createNewGroup: builder.mutation({
       query: payload => ({
@@ -53,13 +67,39 @@ export const BroadCastGroupApiSlices = createApi({
         body: payload,
       }),
     }),
+
+    // Get CRITERIA 
+    getCriteria: builder.query({
+      query: () => ({
+        url: `${GET_CRITERIA}`,
+        method: 'GET',
+      }),
+    }),
+    // Get OPERATOR 
+    getOperator: builder.query({
+      query: () => ({
+        url: `${GET_OPERATOR}`,
+        method: 'GET',
+      }),
+    }),
+    // Get LOGICAL OPERATOR 
+    getLogicalQperator: builder.query({
+      query: () => ({
+        url: `${GET_LOGICAL_OPERATOR}`,
+        method: 'GET',
+      }),
+    }),
   }),
 });
 
 export const {
-  useSearchBroadCastGroupMemberQuery,
+  useSearchBroadCastGroupMemberMutation,
   useFetchBroadCastGroupDetailsQuery,
   useGetBroadCastGroupQuery,
   useAddMemberInGroupMutation,
-  useCreateNewGroupMutation
+  useCreateNewGroupMutation,
+  useAddMemberInGroupMultipleMutation,
+  useLazyGetCriteriaQuery,
+  useLazyGetOperatorQuery,
+  useLazyGetLogicalQperatorQuery
 } = BroadCastGroupApiSlices;

@@ -12,7 +12,7 @@ export const FormApiSlices = createApi({
   tagTypes: ['Form'],
   endpoints: builder => ({
     // get whatsapp form data
-    GetAllFromDat: builder.query({
+    GetAllFromData: builder.query({
       query: () => ({
         url: `${GET_WHATSAPP_FLOW_DATA}`,
         method: 'GET',
@@ -38,6 +38,6 @@ export const FormApiSlices = createApi({
 
 export const {
   useLazyGetAllCompleteFromQuery,
-  useGetAllFromDatQuery,
+  useGetAllFromDataQuery,
   useLazyGetAllInCompleteFromQuery,
 } = FormApiSlices;

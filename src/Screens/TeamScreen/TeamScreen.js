@@ -1,10 +1,10 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import CommoneHeader from '../../Components/Common/CommoneHeader';
-import RegularText from '../../Components/Common/RegularText';
-import { openDrawer } from '../../Utils/helperFunctions';
+import TextComponent from '../../Components/Common/TextComponent';
+import {openDrawer} from '../../Utils/helperFunctions';
 import * as SvgIcon from '../../assets';
-import { textScale } from '../../styles/responsiveStyles';
+import {textScale} from '../../styles/responsiveStyles';
 
 const TeamScreen = () => {
   return (
@@ -16,7 +16,7 @@ const TeamScreen = () => {
         onPressLeftIcon={() => openDrawer()}
       />
       <View style={{alignItems: 'center', justifyContent: 'center', flex: 1}}>
-        <RegularText style={styles.textStyle}>TeamScreen</RegularText>
+        <TextComponent text={'TeamScreen'} />
       </View>
     </View>
   );

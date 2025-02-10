@@ -1,10 +1,10 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect } from 'react';
-import { useAppDispatch, useAppSelector } from '../Components/hooks';
-import { STORAGE_KEYS } from '../api/store/slice/authSlice';
+import {useEffect} from 'react';
+import {useAppDispatch, useAppSelector} from '../Components/hooks';
+import {disconnectSocket, initializeSocket} from '../api/SocketManager';
 import {
-  disconnectSocket,
-  initializeSocket,
+  setConnected,
+  setDisconnected,
+  setError,
 } from '../api/store/slice/socketSlice';
 
 const SocketInitializer = () => {
@@ -12,26 +12,21 @@ const SocketInitializer = () => {
   const domainState = useAppSelector(
     state => state.domains.selectedDomain?.domain,
   );
-  const { isAuthenticated } = useAppSelector(state => state.auth);
+  const token = useAppSelector(state => state.auth.user?.authToken);
 
   useEffect(() => {
-    const initializeSocketConnection = async () => {
+    if (domainState && token) {
       try {
-        const token = await AsyncStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
-        if (domainState && token) {
-          console.log('Initializing socket...');
-          dispatch(initializeSocket({ domainState, token }));
-        } else {
-          console.log('Disconnecting socket due to missing token or domain...');
-          dispatch(disconnectSocket());
-        }
+        initializeSocket({domainState, token});
+        dispatch(setConnected());
       } catch (error) {
-        console.error('Error initializing socket:', error);
+        dispatch(setError(error.message));
       }
-    };
-
-    initializeSocketConnection();
-  }, [domainState, dispatch, isAuthenticated]);
+    } else {
+      disconnectSocket();
+      dispatch(setDisconnected());
+    }
+  }, [domainState, token, dispatch]);
 
   return null;
 };

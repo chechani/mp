@@ -1,6 +1,7 @@
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
+  BottomSheetModalProvider,
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import PropTypes from 'prop-types';
@@ -78,23 +79,25 @@ const CustomBottomSheet = forwardRef(
     };
 
     return (
-      <BottomSheetModal
-        ref={ref}
-        snapPoints={memoizedSnapPoints}
-        onDismiss={handleDismiss}
-        onChange={index => setIsModalOpen(index >= 0)} 
-        backdropComponent={renderBackdrop}
-        handleIndicatorStyle={styles.handleIndicator}
-        backgroundStyle={[
-          styles.background,
-          backgroundStyle,
-          {backgroundColor: theme === THEME_COLOR ? colors.white : '#151414'},
-        ]}
-        style={[styles.modal, modalStyle]}
-        enablePanDownToClose={true}
-        {...otherProps}>
-        <BottomSheetView>{children}</BottomSheetView>
-      </BottomSheetModal>
+      <BottomSheetModalProvider>
+        <BottomSheetModal
+          ref={ref}
+          snapPoints={memoizedSnapPoints}
+          onDismiss={handleDismiss}
+          onChange={index => setIsModalOpen(index >= 0)}
+          backdropComponent={renderBackdrop}
+          handleIndicatorStyle={styles.handleIndicator}
+          backgroundStyle={[
+            styles.background,
+            backgroundStyle,
+            {backgroundColor: theme === THEME_COLOR ? colors.white : '#212020'},
+          ]}
+          style={[styles.modal, modalStyle]}
+          enablePanDownToClose={true}
+          {...otherProps}>
+          <BottomSheetView>{children}</BottomSheetView>
+        </BottomSheetModal>
+      </BottomSheetModalProvider>
     );
   },
 );

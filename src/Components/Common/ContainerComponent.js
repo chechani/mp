@@ -1,10 +1,11 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {
+  Dimensions,
+  FlatList,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
-  ScrollView,
   StatusBar,
   StyleSheet,
   TouchableWithoutFeedback,
@@ -15,23 +16,21 @@ import {
   SafeAreaProvider,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
-import { spacing } from '../../styles/spacing';
-import Colors, { gradientColorTokensMap } from '../../theme/colors';
+import Colors, {gradientColorTokensMap} from '../../theme/colors';
 import THEME_COLOR from '../../Utils/Constant';
-import { useTheme } from '../hooks';
-import Header from './HeaderComponent';
+import {useTheme} from '../hooks';
 
 const ContainerComponent = ({
   children,
   useScrollView = true,
   style,
   keyboardAvoidingViewProps = {},
-  scrollViewProps = {},
+  flatListProps = {},
   safeAreaViewProps = {},
   containerStyle = {},
   keyboardAvoidingStyle = {},
   rightComponent,
-  scrollViewStyle = {},
+  flatListStyle = {},
   safeAreaStyle = {},
   showHeader = false,
   headerTitle = '',
@@ -40,32 +39,68 @@ const ContainerComponent = ({
   headerOnPress,
   statusBarBackgroundColor,
   headerBackgroundColor,
+  onPress,
+  bottomComponent,
   ...rest
 }) => {
   const insets = useSafeAreaInsets();
   const {theme} = useTheme();
   const isDarkMode = theme === THEME_COLOR;
 
+  // Handle screen dimensions and orientation changes
+  const [dimensions, setDimensions] = useState(Dimensions.get('window'));
+  const [orientation, setOrientation] = useState('portrait');
+
+  useEffect(() => {
+    const subscription = Dimensions.addEventListener('change', ({window}) => {
+      setDimensions(window);
+      setOrientation(window.width > window.height ? 'landscape' : 'portrait');
+    });
+
+    return () => subscription?.remove();
+  }, []);
+
+  // Calculate dynamic padding based on device size
+  const getDynamicPadding = () => {
+    const {width, height} = dimensions;
+    const baseSize = Math.min(width, height);
+    return baseSize * 0.03; // 3% of screen size
+  };
+
+  // Calculate bottom padding to account for bottom component
+  const getBottomPadding = () => {
+    if (bottomComponent) {
+      return Platform.select({
+        ios: insets.bottom + 70, // Adjust for iOS devices with home indicator
+        android: 70, // Standard padding for Android
+      });
+    }
+    return insets.bottom;
+  };
+
   const content = (
     <View
       style={[
         styles.container,
+        {
+          padding: noPadding ? 0 : getDynamicPadding(),
+          paddingBottom: getBottomPadding(),
+          backgroundColor: isDarkMode ? Colors.light.white : Colors.dark.black,
+          minHeight: dimensions.height - insets.top - insets.bottom,
+        },
         containerStyle,
         style,
-        noPadding && {padding: 0},
-        {
-          backgroundColor: isDarkMode
-            ? Colors.light.white
-            : Colors.dark.black,
-        },
       ]}
       {...rest}>
       {children}
     </View>
   );
 
+  const listData = [{key: 'content', content}];
+  const renderItem = ({item}) => item.content;
+
   return (
-    <SafeAreaProvider>
+    <SafeAreaProvider style={styles.provider}>
       <StatusBar
         barStyle={isDarkMode ? 'dark-content' : 'light-content'}
         backgroundColor={
@@ -81,52 +116,53 @@ const ContainerComponent = ({
         }
         start={{x: 0, y: 0}}
         end={{x: 1, y: 0}}
-        style={[{flex: 1, paddingTop: insets.top}, style]}>
+        style={[styles.gradient, {paddingTop: insets.top}]}>
         <SafeAreaView
-          style={[styles.safeArea, safeAreaStyle, safeAreaViewProps.style]}
+          style={[styles.safeArea, safeAreaStyle]}
+          edges={['left', 'right']}
           {...safeAreaViewProps}>
           <KeyboardAvoidingView
-            style={[
-              styles.keyboardAvoiding,
-              keyboardAvoidingStyle,
-              keyboardAvoidingViewProps.style,
-            ]}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={[styles.keyboardAvoiding, keyboardAvoidingStyle]}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
             {...keyboardAvoidingViewProps}>
-            {showHeader && (
-              <Header
-                leftComponent={headerLeft}
-                headerBackgroundColor={
-                  headerBackgroundColor ||
-                  (isDarkMode
-                    ? Colors.light.white : Colors.dark.black)
-                }
-                title={headerTitle}
-                rightComponent={rightComponent}
-                onPress={headerOnPress}
-              />
-            )}
             {useScrollView ? (
-              <ScrollView
+              <FlatList
+                data={listData}
+                renderItem={renderItem}
+                keyExtractor={item => item.key}
                 keyboardShouldPersistTaps="handled"
+                contentContainerStyle={[
+                  styles.flatListContent,
+                  orientation === 'landscape' && styles.landscapeContent,
+                ]}
                 style={[
-                  styles.scrollView,
-                  scrollViewStyle,
-                  scrollViewProps.style,
+                  styles.flatList,
                   {
                     backgroundColor: isDarkMode
-                      ? Colors.light.white : Colors.dark.black,
+                      ? Colors.light.white
+                      : Colors.dark.black,
                   },
+                  flatListStyle,
                 ]}
-                {...scrollViewProps}>
-                {content}
-              </ScrollView>
+                {...flatListProps}
+              />
             ) : (
-              <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+              <TouchableWithoutFeedback
+                onPress={() => {
+                  Keyboard.dismiss();
+                  if (onPress) onPress();
+                }}>
                 {content}
               </TouchableWithoutFeedback>
             )}
           </KeyboardAvoidingView>
+          {bottomComponent && (
+            <View
+              style={[styles.bottomComponent, {paddingBottom: insets.bottom}]}>
+              {bottomComponent}
+            </View>
+          )}
         </SafeAreaView>
       </LinearGradient>
     </SafeAreaProvider>
@@ -134,18 +170,38 @@ const ContainerComponent = ({
 };
 
 const styles = StyleSheet.create({
+  provider: {
+    flex: 1,
+  },
+  gradient: {
+    flex: 1,
+  },
   safeArea: {
     flex: 1,
   },
   keyboardAvoiding: {
     flex: 1,
   },
-  scrollView: {
+  flatList: {
     flex: 1,
+  },
+  flatListContent: {
+    flexGrow: 1,
+  },
+  landscapeContent: {
+    maxWidth: 800,
+    alignSelf: 'center',
+    width: '100%',
   },
   container: {
     flex: 1,
-    padding: spacing.PADDING_12,
+  },
+  bottomComponent: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'transparent',
   },
 });
 

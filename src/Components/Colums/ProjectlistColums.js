@@ -1,27 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Modal,
-  StyleSheet,
-  View
-} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {ActivityIndicator, Modal, StyleSheet, View} from 'react-native';
 import Toast from 'react-native-toast-message';
 import THEME_COLOR from '../../Utils/Constant';
 import colors from '../../Utils/colors';
-import { formatTimestampWithoutModifying } from '../../Utils/helperFunctions';
+import {formatTimestampWithoutModifying} from '../../Utils/helperFunctions';
 import {
   useLazyGetProjectStatusQuery,
   useUpdateProjectStatusMutation,
 } from '../../api/store/slice/ProjectSlice';
-import { textScale } from '../../styles/responsiveStyles';
-import { spacing } from '../../styles/spacing';
-import { fontNames } from '../../styles/typography';
+import {textScale} from '../../styles/responsiveStyles';
+import {spacing} from '../../styles/spacing';
+import {fontNames} from '../../styles/typography';
 import AnimatedComponentToggle from '../Common/AnimatedComponentToggale';
 import CustomButton from '../Common/CustomButton';
 import RegularText from '../Common/RegularText';
-import { useTheme } from '../hooks';
+import {useTheme} from '../hooks';
 
-const ProjectlistColums = ({item, fetchData, setSelectTicket}) => {
+const ProjectlistColums = ({item,setSelectTicket}) => {
   const {theme} = useTheme();
   const isDarkMode = theme === THEME_COLOR;
   const [modalVisible, setModalVisible] = useState(false);
@@ -107,16 +102,20 @@ const ProjectlistColums = ({item, fetchData, setSelectTicket}) => {
         project_name: item?.name,
         project_status: newStatus,
       }).unwrap();
-
-      setSelectedStatus(newStatus);
-      Toast.show({
-        text1: 'Success',
-        text2: response?.message || 'Status updated successfully!',
-        type: 'success',
-      });
-
-      setModalVisible(false);
-      fetchData(1); // Refresh data
+      if (response?.status_code === 200) {
+        setSelectedStatus(newStatus);
+        Toast.show({
+          text1: 'Success',
+          text2: response?.message || 'Status updated successfully!',
+          type: 'success',
+        });
+      } else if (response?.status_code === 500) {
+        Toast.show({
+          text1: 'warning',
+          text2: response?.message,
+          type: 'warning',
+        });
+      }
     } catch (error) {
       console.error('Failed to update status:', error);
       Toast.show({
@@ -126,6 +125,7 @@ const ProjectlistColums = ({item, fetchData, setSelectTicket}) => {
       });
     } finally {
       setCurrentUpdatingStatus(null);
+      setModalVisible(false);
     }
   };
 
@@ -142,13 +142,13 @@ const ProjectlistColums = ({item, fetchData, setSelectTicket}) => {
         <AnimatedComponentToggle
           tabName={header.replace(/_/g, ' ').toUpperCase()}
           descrption={item?.project_name}
-          btnText={item?.status}
+          btnText={selectedStatus}
           extraBtnStyle={{
             borderRadius: spacing.RADIUS_8,
             width: '60%',
             maxWidth: '70%',
           }}
-          gradientColors={statusColors[item?.status]}
+          gradientColors={statusColors[selectedStatus]}
           containerStyle={{paddingHorizontal: 0}}
           extraBtnStyleText={{color: colors.white}}
           extraBtnStyleonPress={() => setModalVisible(true)}

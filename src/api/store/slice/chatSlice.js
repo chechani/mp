@@ -1,8 +1,11 @@
 import {createApi} from '@reduxjs/toolkit/query/react';
 import {
+  ADD_ACTION_TO_WA_MESSAGE,
+  CREATE_NEW_ACTION,
   DELETE_ALL_CHAT,
   DELETE_CHAT,
   GET_CHAT_WITH_WHATSAPP_NUMBER,
+  GET_NEXT_ACTIONS,
   LIST_WHATSAPP_FLOWS,
   LIST_WHATSAPP_INTERACTIVE_MESSAGES,
   LIST_WHATSAPP_KEYWORD_MESSAGES,
@@ -99,11 +102,36 @@ export const ChatApiSlices = createApi({
         body: contacts,
       }),
     }),
+    // all Delete Chats
+    AddActionToWaMessage: builder.mutation({
+      query: (payload) => ({
+        url: `${ADD_ACTION_TO_WA_MESSAGE}`,
+        method: 'POST',
+        body: payload,
+      }),
+    }),
+    
+    // get next actions
+    GetNextActions: builder.query({
+      query: () => ({
+        url: `${GET_NEXT_ACTIONS}`,
+        method: 'GET',
+      }),
+    }),
+
+    // create new action
+    CreateNewAction: builder.mutation({
+      query: (payload) => ({
+        url: `${CREATE_NEW_ACTION}`,
+        method: 'POST',
+        body: payload,
+      }),
+    }),
   }),
 });
 
 export const {
-  useLazyGetAllChatQuery,
+  useGetAllChatQuery,
   useLazyGetWhatsAppMessageKeywordListQuery,
   useLazyGetWhatsAppFlowsQuery,
   useLazyGetWhatsAppInteractiveMessagesQuery,
@@ -114,4 +142,7 @@ export const {
   useLazyChatMarkAsReadQuery,
   useDeleteChatsMutation,
   useAlldeleteChatMutation,
+  useAddActionToWaMessageMutation,
+  useLazyGetNextActionsQuery,
+  useCreateNewActionMutation,
 } = ChatApiSlices;

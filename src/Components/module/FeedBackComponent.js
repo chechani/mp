@@ -1,12 +1,10 @@
-import {FlashList} from '@shopify/flash-list';
 import React, {useCallback, useEffect, useState} from 'react';
 import {
   ActivityIndicator,
-  Button,
+  FlatList,
   Modal,
   ScrollView,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -19,22 +17,18 @@ import {
   useLazyGetAllVillagesQuery,
 } from '../../api/store/slice/feedBackSlice';
 import * as SvgIcon from '../../assets';
-import {useTheme} from '../hooks';
 import {textScale} from '../../styles/responsiveStyles';
 import {spacing} from '../../styles/spacing';
-import {fontNames} from '../../styles/typography';
-import colors from '../../Utils/colors';
+import Colors from '../../theme/colors';
 import THEME_COLOR from '../../Utils/Constant';
 import {openDrawer} from '../../Utils/helperFunctions';
 import FeedBackColums from '../Colums/FeedBackColums';
 import CommoneHeader from '../Common/CommoneHeader';
-import LoadingScreen from '../Common/Loader';
-import RegularText from '../Common/RegularText';
 import CustomButton from '../Common/CustomButton';
-import TextComponent from '../Common/TextComponent';
 import CustomInput from '../Common/CustomInput';
-import Colors from '../../theme/colors';
-import CustomModal from '../Common/CustomModal';
+import LoadingScreen from '../Common/Loader';
+import TextComponent from '../Common/TextComponent';
+import {useTheme} from '../hooks';
 
 const ComplainsComponent = () => {
   const {theme} = useTheme();
@@ -179,14 +173,14 @@ const ComplainsComponent = () => {
     setModalVisible({key, visible: true});
     setIsFetchingFilterData(true);
     switch (key) {
-      case 'society':
+      case 'village':
         triggerGetAllVillages({
           panchayat: filters.panchayat,
           tehsil: filters.tehsil,
         });
         break;
-      case 'Ward':
-        triggerGetAllPanchayat({tehsil: 'Indore'});
+      case 'panchayat':
+        triggerGetAllPanchayat({tehsil: filters.tehsil});
         break;
       case 'tehsil':
         triggerGetAllTehsil();
@@ -231,8 +225,8 @@ const ComplainsComponent = () => {
   ]);
 
   const filterData = {
-    society: villages,
-    Ward: panchayats,
+    village: villages,
+    panchayat: panchayats,
     tehsil: tehsils,
     profession: professions,
     status: statuses,
@@ -240,8 +234,8 @@ const ComplainsComponent = () => {
 
   const areAllFiltersSelected = () => {
     return (
-      filters.society !== '' ||
-      filters.society !== '' ||
+      filters.village !== '' ||
+      filters.panchayat !== '' ||
       filters.tehsil !== '' ||
       filters.profession !== '' ||
       filters.status !== '' ||
@@ -250,233 +244,295 @@ const ComplainsComponent = () => {
   };
 
   return (
-    <View style={{flex: 1}}>
-      <CommoneHeader
-        title="FeedBack"
-        showLeftIcon={true}
-        leftIcon={SvgIcon.MenuIcon}
-        onLeftIconPress={() => openDrawer()}
-        showRightIcons={true}
-        rightIcons={[SvgIcon.ReloadIcon]}
-      />
-
-      <View style={styles.filterContainer}>
-        {/* Filter dropdown buttons */}
-        {['Ward', 'society', 'profession', 'status'].map(key => {
-          let displayValue = '';
-
-          switch (key) {
-            case 'Ward':
-              displayValue = filters.panchayat
-                ? filterData?.panchayat?.data?.find(
-                    item => item.name === filters.name,
-                  )?.panchayat
-                : '';
-              break;
-
-            case 'society':
-              displayValue = filters.village
-                ? filterData?.village?.data?.find(
-                    item => item.name === filters.village,
-                  )?.village_name
-                : '';
-              break;
-            case 'profession':
-              displayValue = filters.profession
-                ? filterData.profession?.data?.find(
-                    item => item.name === filters.profession,
-                  )?.profession
-                : '';
-              break;
-            case 'status':
-              displayValue = filters.status ? filters.status : '';
-              break;
-            default:
-              displayValue = filters[key] || '';
-              break;
-          }
-          return (
-            <TouchableOpacity
-              key={key}
-              style={[
-                styles.filterItem,
-                {
-                  backgroundColor: !isDarkMode
-                    ? Colors.dark.grey
-                    : Colors.light.grey,
-                },
-              ]}
-              onPress={() => openModal(key)}>
-              <TextComponent
-                text={
-                  displayValue
-                    ? displayValue
-                    : `${key.charAt(0).toUpperCase() + key.slice(1)}`
-                }
-                color={isDarkMode ? Colors.dark.black : Colors.light.white}
-              />
-            </TouchableOpacity>
-          );
-        })}
-
-        <CustomInput
-          styles={styles.mobileInput}
-          placeholder="Mobile"
-          value={filters.mobile}
-          onChange={handleMobileChange}
-          maxLength={10}
-          inputStyles={{
-            color: isDarkMode ? Colors.dark.white : Colors.light.white,
-          }}
+    <>
+      <View style={{flex: 1}}>
+        <CommoneHeader
+          title="FeedBack"
+          showLeftIcon={true}
+          leftIcon={SvgIcon.MenuIcon}
+          onLeftIconPress={() => openDrawer()}
+          showRightIcons={true}
+          rightIcons={[SvgIcon.ReloadIcon]}
         />
-      </View>
 
-      <View style={{alignItems: 'flex-end'}}>
-        {/* Reset Filters Button */}
-        <CustomButton
-          title="Reset"
-          onPress={handleResetFilters}
-          disabled={!areAllFiltersSelected()}
-          style={{
-            width: '30%',
-            marginRight: spacing.MARGIN_8,
-          }}
-          textStyle={{fontSize: textScale(12)}}
-        />
-      </View>
+        <View style={styles.filterContainer}>
+          {/* Filter dropdown buttons */}
+          {['tehsil', 'panchayat', 'village', 'profession', 'status'].map(
+            key => {
+              let displayValue = '';
 
-      {isRefreshing ? (
-        <LoadingScreen />
-      ) : (
-        <FlashList
-          data={complaintsData}
-          renderItem={({item}) => (
-            <FeedBackColums
-              item={item}
-              fetchData={() => fetchComplaintsData(1)}
-            />
+              switch (key) {
+                case 'tehsil':
+                  displayValue = filters.tehsil
+                    ? filterData.tehsil?.data?.find(
+                        item => item.name === filters.tehsil,
+                      )?.tehsil
+                    : '';
+                  break;
+                case 'panchayat':
+                  displayValue = filters.panchayat
+                    ? filterData.panchayat?.data?.find(
+                        item => item.name === filters.panchayat,
+                      )?.panchayat
+                    : '';
+                  break;
+                case 'village':
+                  displayValue = filters.village
+                    ? filterData.village?.data?.find(
+                        item => item.name === filters.village,
+                      )?.village_name
+                    : '';
+                  break;
+                case 'profession':
+                  displayValue = filters.profession
+                    ? filterData.profession?.data?.find(
+                        item => item.name === filters.profession,
+                      )?.profession
+                    : '';
+                  break;
+                case 'status':
+                  displayValue = filters.status ? filters.status : '';
+                  break;
+                default:
+                  displayValue = filters[key] || '';
+                  break;
+              }
+
+              return (
+                <TouchableOpacity
+                  key={key}
+                  style={[
+                    styles.filterItem,
+                    {
+                      backgroundColor: !isDarkMode
+                        ? Colors.dark.grey
+                        : Colors.light.grey,
+                    },
+                  ]}
+                  onPress={() => openModal(key)}>
+                  <TextComponent
+                    text={
+                      displayValue
+                        ? displayValue
+                        : `${key.charAt(0).toUpperCase() + key.slice(1)}`
+                    }
+                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
+                  />
+                </TouchableOpacity>
+              );
+            },
           )}
-          estimatedItemSize={100}
-          onEndReached={loadMoreData}
-          onEndReachedThreshold={0.1}
-          ListFooterComponent={RenderFooter}
-          refreshing={isRefreshing}
-          onRefresh={refreshData}
-          ListEmptyComponent={
-            !isFetching &&
-            complaintsData.length === 0 && (
-              <TextComponent
-                text={'No complaints available'}
-                size={textScale(16)}
-                style={{
-                  color: isDarkMode ? Colors.dark.black : Colors.light.white,
-                  textAlign: 'center',
-                }}
-              />
-            )
-          }
-        />
-      )}
 
-      <CustomModal
-        visible={modalVisible.visible}
-        onClose={() => setModalVisible({key: null, visible: false})}
-        title={`Select ${modalVisible.key}`}>
-        {isFetchingFilterData ? (
-          <ActivityIndicator size="large" color={Colors.default.primaryText} />
-        ) : isDataAvailable ? (
-          <ScrollView style={styles.modalScrollView}>
-            {modalVisible.key === 'status' ? (
-              filterData[modalVisible.key]?.data?.length > 0 ? (
-                filterData[modalVisible.key]?.data?.map((item, index) => {
-                  return (
-                    <TouchableOpacity
-                      key={index}
-                      style={styles.modalItem}
-                      onPress={() =>
-                        handleFilterChange(modalVisible.key, item)
-                      }>
-                      <TextComponent
-                        text={item}
-                        size={textScale(16)}
-                        color={
-                          isDarkMode ? Colors.dark.black : Colors.light.white
-                        }
-                      />
-                    </TouchableOpacity>
-                  );
-                })
-              ) : (
-                <TextComponent
-                  text={'No options available'}
-                  size={textScale(16)}
-                  color={isDarkMode ? Colors.dark.black : Colors.light.white}
+          {/* Mobile Input (Optional) */}
+          <CustomInput
+            styles={styles.mobileInput}
+            placeholder="Mobile"
+            value={filters.mobile}
+            onChange={handleMobileChange}
+            maxLength={10}
+          />
+        </View>
+
+        {/* Apply Filters Button */}
+        <View style={{alignItems: 'flex-end'}}>
+          <View style={{flexDirection: 'row'}}>
+            {/* Reset Filters Button */}
+            <CustomButton
+              title="Reset"
+              onPress={handleResetFilters}
+              disabled={!areAllFiltersSelected()}
+              style={{
+                width: '30%',
+                marginRight: spacing.MARGIN_8,
+              }}
+              textStyle={{fontSize: textScale(12)}}
+            />
+          </View>
+        </View>
+
+        {isRefreshing ? (
+          <LoadingScreen color={Colors.default.primaryText} />
+        ) : (
+          <>
+            <FlatList
+              data={complaintsData}
+              renderItem={({item}) => (
+                <FeedBackColums
+                  item={item}
+                  fetchData={() => fetchComplaintsData(1)}
                 />
-              )
-            ) : Array.isArray(filterData[modalVisible.key]?.data) &&
-              filterData[modalVisible.key]?.data?.length > 0 ? (
-              filterData[modalVisible.key]?.data?.map((item, index) => {
-                let label = '';
-                let value = '';
+              )}
+              onEndReached={loadMoreData}
+              onEndReachedThreshold={0.1}
+              ListFooterComponent={RenderFooter}
+              refreshing={isRefreshing}
+              onRefresh={refreshData}
+              ListEmptyComponent={
+                !isFetching && complaintsData.length === 0 ? (
+                  <TextComponent
+                    text={'No FeedBacks available'}
+                    size={textScale(16)}
+                    fontWeight="600"
+                    style={{
+                      color: isDarkMode
+                        ? Colors.dark.black
+                        : Colors.light.white,
+                      textAlign: 'center',
+                    }}
+                  />
+                ) : null
+              }
+            />
+          </>
+        )}
+      </View>
 
-                switch (modalVisible.key) {
-                  case 'society':
-                    label = item.village_name || 'Unnamed Society';
-                    value = item.name;
-                    break;
-                  case 'ward':
-                    label = item.panchayat || 'Unnamed Ward';
-                    value = item.name;
-                    break;
-                  case 'tehsil':
-                    label = item.tehsil_name_hindi || 'Unnamed Tehsil';
-                    value = item.name;
-                    break;
-                  case 'profession':
-                    label = item.profession_hindi || 'Unnamed Profession';
-                    value = item.name;
-                    break;
-                  default:
-                    label = item.name;
-                    value = item.name;
-                    break;
-                }
-                return (
-                  <TouchableOpacity
-                    key={value}
-                    style={styles.modalItem}
-                    onPress={() => handleFilterChange(modalVisible.key, value)}>
+      <Modal
+        transparent={true}
+        visible={modalVisible.visible}
+        animationType="slide"
+        onRequestClose={() => setModalVisible({key: null, visible: false})}>
+        {/* Backdrop Overlay */}
+        <TouchableOpacity
+          style={styles.modalBackdrop}
+          activeOpacity={1}
+          onPress={() => setModalVisible({key: null, visible: false})}
+        />
+
+        {/* Modal Content */}
+        <View style={styles.modalOverlay}>
+          <View
+            style={[
+              styles.modalContainer,
+              {
+                backgroundColor: isDarkMode
+                  ? Colors.light.white
+                  : Colors.dark.black,
+              },
+            ]}>
+            <TextComponent
+              text={`Select ${modalVisible.key}`}
+              size={textScale(14)}
+              style={{
+                color: isDarkMode ? Colors.dark.black : Colors.light.white,
+              }}
+            />
+
+            {isFetchingFilterData ? (
+              <ActivityIndicator
+                size="large"
+                color={Colors.default.primaryText}
+              />
+            ) : isDataAvailable ? (
+              <ScrollView style={styles.modalScrollView}>
+                {modalVisible.key === 'status' ? (
+                  filterData[modalVisible.key]?.data?.length > 0 ? (
+                    filterData[modalVisible.key]?.data?.map((item, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        style={styles.modalItem}
+                        onPress={() =>
+                          handleFilterChange(modalVisible.key, item)
+                        }>
+                        <TextComponent
+                          text={item}
+                          size={textScale(16)}
+                          style={{
+                            color: isDarkMode
+                              ? Colors.dark.black
+                              : Colors.light.white,
+                          }}
+                        />
+                      </TouchableOpacity>
+                    ))
+                  ) : (
                     <TextComponent
-                      text={label}
+                      text={'No options available'}
                       size={textScale(16)}
-                      color={
-                        isDarkMode ? Colors.dark.black : Colors.light.white
-                      }
+                      style={{
+                        color: isDarkMode
+                          ? Colors.dark.black
+                          : Colors.light.white,
+                      }}
                     />
-                  </TouchableOpacity>
-                );
-              })
+                  )
+                ) : Array.isArray(filterData[modalVisible.key]?.data) &&
+                  filterData[modalVisible.key]?.data?.length > 0 ? (
+                  filterData[modalVisible.key]?.data?.map(item => {
+                    let label = '';
+                    let value = '';
+
+                    switch (modalVisible.key) {
+                      case 'village':
+                        label = item.village_name_hindi;
+                        value = item.name;
+                        break;
+                      case 'panchayat':
+                        label = item.abbreviated_name_hindi;
+                        value = item.name;
+                        break;
+                      case 'tehsil':
+                        label = item.tehsil_name_hindi;
+                        value = item.name;
+                        break;
+                      case 'profession':
+                        label = item.profession_hindi;
+                        value = item.name;
+                        break;
+                      default:
+                        label = item.name;
+                        value = item.name;
+                        break;
+                    }
+
+                    return (
+                      <TouchableOpacity
+                        key={value}
+                        style={styles.modalItem}
+                        onPress={() =>
+                          handleFilterChange(modalVisible.key, value)
+                        }>
+                        <TextComponent
+                          text={label}
+                          size={textScale(16)}
+                          style={{
+                            color: isDarkMode
+                              ? Colors.dark.black
+                              : Colors.light.white,
+                          }}
+                        />
+                      </TouchableOpacity>
+                    );
+                  })
+                ) : (
+                  <TextComponent
+                    text={'No options available'}
+                    size={textScale(16)}
+                    style={{
+                      color: isDarkMode
+                        ? Colors.dark.black
+                        : Colors.light.white,
+                    }}
+                  />
+                )}
+              </ScrollView>
             ) : (
               <TextComponent
                 text={'No options available'}
                 size={textScale(16)}
-                color={isDarkMode ? Colors.dark.black : Colors.light.white}
+                style={{
+                  color: isDarkMode ? Colors.dark.black : Colors.light.white,
+                }}
               />
             )}
-          </ScrollView>
-        ) : (
-          <TextComponent
-            text={'No options available'}
-            size={textScale(16)}
-            color={isDarkMode ? Colors.dark.black : Colors.light.white}
-          />
-        )}
-        <CustomButton
-          title={'Close'}
-          onPress={() => setModalVisible({key: null, visible: false})}
-        />
-      </CustomModal>
-    </View>
+            <CustomButton
+              title={'Close'}
+              onPress={() => setModalVisible({key: null, visible: false})}
+            />
+          </View>
+        </View>
+      </Modal>
+    </>
   );
 };
 

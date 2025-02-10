@@ -1,4 +1,3 @@
-
 export const gradientColorTokensMap = {
   // Light Mode Gradients
   HomeGR: [
@@ -16,6 +15,8 @@ export const gradientColorTokensMap = {
 
 const Colors = {
   default: {
+    primaryColor: '#008000', // Green
+
     background: 'rgba(236, 229, 221, 1)', // Light Beige
     backgroundTransparent: 'rgba(236, 229, 221, 0.5)', // Light Beige (50% opacity)
 
@@ -39,6 +40,28 @@ const Colors = {
 
     white: 'rgba(255, 255, 255, 1)', // Pure White
     black: 'rgba(33, 33, 33, 1)', // Dark Charcoal
+
+    blue: 'rgb(76, 59, 207)',
+    blueLight:'#d7d7f8',
+
+    redLight:'#feded9',
+
+    // Light mode message colors
+    messageIncoming: '#FFFFFF',          // White for incoming
+    messageOutgoing: '#E7FFDB',         // WhatsApp light green for outgoing
+    messageIncomingDark: '#202C33',     // WhatsApp dark mode incoming
+    messageOutgoingDark: '#005C4B',     // WhatsApp dark mode outgoing
+    messageSelected: 'rgba(0, 150, 136, 0.2)', // Selection color
+    
+    // Message text colors
+    messageTextIncoming: '#111B21',      // WhatsApp dark gray
+    messageTextOutgoing: '#111B21',      // Same dark gray for outgoing
+    messageTextDark: '#E9EDEF',         // WhatsApp dark mode text
+    
+    // Timestamp colors
+    messageTimestamp: '#667781',        // WhatsApp timestamp gray
+    messageTimestampDark: '#8696A0',  
+    
   },
 
   light: {

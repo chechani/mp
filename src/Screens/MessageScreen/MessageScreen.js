@@ -1,7 +1,6 @@
 import React from 'react';
-import {StyleSheet, View} from 'react-native';
-import GetAllMessageComponent from '../../Components/module/GetAllMessageComponent';
 import ContainerComponent from '../../Components/Common/ContainerComponent';
+import GetAllMessageComponent from '../../Components/module/GetAllMessageComponent';
 
 const MessageScreen = () => {
   return (
@@ -12,9 +11,3 @@ const MessageScreen = () => {
 };
 
 export default MessageScreen;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});

@@ -1,13 +1,14 @@
-import React, { forwardRef, useState } from 'react';
-import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import React, {forwardRef, useState} from 'react';
+import {StyleSheet, TextInput, TouchableOpacity, View} from 'react-native';
 import * as SvgIcon from '../../assets/index';
-import { textScale } from '../../styles/responsiveStyles';
-import { spacing } from '../../styles/spacing';
-import { fontNames } from '../../styles/typography';
+import {textScale} from '../../styles/responsiveStyles';
+import {spacing} from '../../styles/spacing';
+import {fontNames} from '../../styles/typography';
+import Colors from '../../theme/colors';
 import colors from '../../Utils/colors';
 import THEME_COLOR from '../../Utils/Constant';
-import { useTheme } from '../hooks';
-import RegularText from './RegularText';
+import {useTheme} from '../hooks';
+import TextComponent from './TextComponent';
 
 const TextInputComp = forwardRef(
   (
@@ -32,13 +33,16 @@ const TextInputComp = forwardRef(
     },
     ref,
   ) => {
-    const { theme } = useTheme();
-    const [isSecureTextVisible, setIsSecureTextVisible] = useState(secureTextEntry);
+    const {theme} = useTheme();
+    const [isSecureTextVisible, setIsSecureTextVisible] =
+      useState(secureTextEntry);
 
-    const LeftComponent = istextInputLeftIcon && textInputLeftIcon ? textInputLeftIcon : null;
+    const LeftComponent =
+      istextInputLeftIcon && textInputLeftIcon ? textInputLeftIcon : null;
     const RightComponent = isRightIcon && rightIcon ? rightIcon : null;
 
-    const calculatedPlaceholderTextColor = placeholderTextColor || (editable ? colors.grey600 : colors.white);
+    const calculatedPlaceholderTextColor =
+      placeholderTextColor || (editable ? colors.grey600 : colors.white);
 
     return (
       <View style={[styles.container, containerStyle]}>
@@ -51,9 +55,7 @@ const TextInputComp = forwardRef(
             },
           ]}
           activeOpacity={1}
-          onPress={onPressContainer}
-          >
-          
+          onPress={onPressContainer}>
           {LeftComponent && (
             <LeftComponent
               width={spacing.WIDTH_24}
@@ -67,12 +69,14 @@ const TextInputComp = forwardRef(
             style={[
               styles.textStyle,
               textStyle,
-              { color: theme === THEME_COLOR ? colors.black : colors.white },
+              {color: theme === THEME_COLOR ? colors.black : colors.white},
             ]}
             value={value}
             onChangeText={onChangeText}
             placeholder={placeholder}
-            placeholderTextColor={error ? colors.red900 : calculatedPlaceholderTextColor}
+            placeholderTextColor={
+              error ? colors.red900 : calculatedPlaceholderTextColor
+            }
             editable={editable}
             secureTextEntry={secureTextEntry && isSecureTextVisible}
             autoCorrect={false}
@@ -83,18 +87,22 @@ const TextInputComp = forwardRef(
           {secureTextEntry && (
             <TouchableOpacity
               onPress={() => setIsSecureTextVisible(!isSecureTextVisible)}
-              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}>
+              hitSlop={{top: 15, bottom: 15, left: 15, right: 15}}>
               {isSecureTextVisible ? (
                 <SvgIcon.Eye
                   width={spacing.WIDTH_24}
                   height={spacing.WIDTH_24}
-                  color={theme === THEME_COLOR ? colors.grey700 : colors.grey400}
+                  color={
+                    theme === THEME_COLOR ? colors.grey700 : colors.grey400
+                  }
                 />
               ) : (
                 <SvgIcon.CloseEye
                   width={spacing.WIDTH_24}
                   height={spacing.WIDTH_24}
-                  color={theme === THEME_COLOR ? colors.grey700 : colors.grey400}
+                  color={
+                    theme === THEME_COLOR ? colors.grey700 : colors.grey400
+                  }
                 />
               )}
             </TouchableOpacity>
@@ -103,7 +111,7 @@ const TextInputComp = forwardRef(
           {RightComponent && (
             <TouchableOpacity
               onPress={rightIconPress}
-              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}>
+              hitSlop={{top: 15, bottom: 15, left: 15, right: 15}}>
               <RightComponent
                 width={spacing.WIDTH_22}
                 height={spacing.WIDTH_22}
@@ -113,7 +121,13 @@ const TextInputComp = forwardRef(
           )}
         </TouchableOpacity>
 
-        {error && <RegularText style={styles.errorText}>{error}</RegularText>}
+        {error && (
+          <TextComponent
+            text={error}
+            style={{marginTop: spacing.MARGIN_4, marginLeft: spacing.MARGIN_4}}
+            color={Colors.default.error}
+          />
+        )}
       </View>
     );
   },

@@ -1,9 +1,8 @@
-import DateTimePicker from '@react-native-community/datetimepicker';
-import {FlashList} from '@shopify/flash-list';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {
   ActivityIndicator,
   Alert,
+  FlatList,
   Modal,
   Platform,
   ScrollView,
@@ -34,6 +33,10 @@ import Colors from '../../theme/colors';
 import colors from '../../Utils/colors';
 import THEME_COLOR from '../../Utils/Constant';
 import {openDrawer} from '../../Utils/helperFunctions';
+import EditProjectForm from '../Colums/ProjectList/EditProjectForm';
+import NestedProjectSelector from '../Colums/ProjectList/NestedProjectSelector';
+import ProjectAddForm from '../Colums/ProjectList/ProjectAddForm';
+import ProjectFilters from '../Colums/ProjectList/ProjectFilters';
 import ProjectlistColums from '../Colums/ProjectlistColums';
 import CommoneHeader from '../Common/CommoneHeader';
 import CustomBottomSheet from '../Common/CustomBottomSheet';
@@ -124,7 +127,7 @@ const ProjectsComponent = () => {
     const month = (parsedDate.getMonth() + 1).toString().padStart(2, '0');
     const year = parsedDate.getFullYear().toString();
 
-    return `${day}-${month}-${year}`;
+    return `${year}-${month}-${day}`;
   };
 
   useEffect(() => {
@@ -155,11 +158,11 @@ const ProjectsComponent = () => {
         start_date: formatDate(selectTicket.item?.start_date),
         end_date: formatDate(selectTicket.item?.end_date),
       });
-      setEditProjectCode(selectTicket.item?.project_code);
+      setEditProjectCode(selectTicket.item?.project_code ? false : true);
     }
   }, [selectTicket]);
 
-  const [isEditProjectCode, setEditProjectCode] = useState(true);
+  const [isEditProjectCode, setEditProjectCode] = useState(false);
 
   const [hasMoreData, setHasMoreData] = useState(true);
   const [isFetching, setIsFetching] = useState(false);
@@ -201,7 +204,7 @@ const ProjectsComponent = () => {
     useCreateProjectMutation();
   const [createProjectScheme, {isLoading: isLoadingcreateProjectScheme}] =
     useCreateProjectSchemeMutation();
-  const [EditProject, {isLoading: isLoadingEditProject}] =
+  const [updateProjectDetails, {isLoading: isLoadingEditProject}] =
     useUpdateProjectDetailsMutation();
 
   const fetchProjectData = async currentPage => {
@@ -351,7 +354,33 @@ const ProjectsComponent = () => {
 
   const handleCommonBarRightIconPress = index => {
     const actions = {
-      0: () => projectAddRef.current?.present(),
+      0: () => {
+        projectAddRef.current?.present(),
+          setFormState({
+            project_name: '',
+            project_code: '',
+            project_type: '',
+            project_scheme: '',
+            status: '',
+            village: '',
+            estimated_cost: '',
+            allocated_cost: '',
+            actual_cost: '',
+            project_description: '',
+            actual_end_date: '',
+            actual_start_date: '',
+            start_date: '',
+            end_date: '',
+          });
+        setFormStateDisplay({
+          end_date: '',
+          project_scheme: '',
+          project_type: '',
+          start_date: '',
+          status: '',
+          village: '',
+        });
+      },
       1: () => fetchProjectData,
     };
 
@@ -614,6 +643,7 @@ const ProjectsComponent = () => {
     try {
       const res = await createProjectScheme({scheme_name: scheme});
       if (res?.data?.status_code === 200) {
+        triggerGetProjectScheme();
         Toast.show({
           type: 'success',
           text1: 'success',
@@ -668,38 +698,19 @@ const ProjectsComponent = () => {
     console.log(payload);
 
     try {
-      const res = await EditProject(payload);
+      const res = await updateProjectDetails(payload);
+      if (res?.data?.status_code === 200) {
+        editProjectRef.current?.dismiss();
+        Toast.show({
+          type: 'success',
+          text1: 'success',
+          text2: res?.data?.message,
+        });
+      }
       console.log(res);
     } catch (error) {
       console.log(error);
     }
-  };
-
-  const projectAddOnDismiss = () => {
-    setFormState({
-      project_name: '',
-      project_code: '',
-      project_type: '',
-      project_scheme: '',
-      status: '',
-      village: '',
-      estimated_cost: '',
-      allocated_cost: '',
-      actual_cost: '',
-      project_description: '',
-      actual_end_date: '',
-      actual_start_date: '',
-      start_date: '',
-      end_date: '',
-    });
-    setFormStateDisplay({
-      end_date: '',
-      project_scheme: '',
-      project_type: '',
-      start_date: '',
-      status: '',
-      village: '',
-    });
   };
 
   return (
@@ -713,85 +724,22 @@ const ProjectsComponent = () => {
         rightIcons={[SvgIcon.AddICon, SvgIcon.ReloadIcon]}
         onRightIconPress={handleCommonBarRightIconPress}
       />
-      <View style={styles.filterContainer}>
-        {/* Filter dropdown buttons */}
-        {['tehsil', 'panchayat', 'village', 'status'].map(key => {
-          let displayValue = '';
 
-          switch (key) {
-            case 'tehsil':
-              displayValue = filters.tehsil
-                ? filterData.tehsil?.data?.find(
-                    item => item.name === filters.tehsil,
-                  )?.tehsil
-                : '';
-              break;
-            case 'panchayat':
-              displayValue = filters.panchayat
-                ? filterData.panchayat?.data?.find(
-                    item => item.name === filters.panchayat,
-                  )?.panchayat
-                : '';
-              break;
-            case 'village':
-              displayValue = filters.village
-                ? filterData.village?.data?.find(
-                    item => item.name === filters.village,
-                  )?.village_name
-                : '';
-              break;
-            case 'status':
-              displayValue = filters.status ? filters.status : '';
-              break;
-            default:
-              displayValue = filters[key] || '';
-              break;
-          }
-
-          return (
-            <TouchableOpacity
-              key={key}
-              style={[
-                styles.filterItem,
-                {
-                  backgroundColor: !isDarkMode
-                    ? Colors.dark.grey
-                    : Colors.light.grey,
-                },
-              ]}
-              onPress={() => openModal(key)}>
-              <RegularText
-                style={[
-                  styles.dropdownText,
-                  {color: isDarkMode ? colors.black : colors.white},
-                ]}>
-                {displayValue
-                  ? displayValue
-                  : `${key.charAt(0).toUpperCase() + key.slice(1)}`}
-              </RegularText>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-
-      <View style={{alignItems: 'flex-end'}}>
-        <CustomButton
-          title="Reset"
-          onPress={handleResetFilters}
-          disabled={!areAllFiltersSelected()}
-          style={{
-            width: '30%',
-            marginRight: spacing.MARGIN_8,
-          }}
-          textStyle={{fontSize: textScale(12)}}
-        />
-      </View>
+      <ProjectFilters
+        filters={filters}
+        setFilters={setFilters}
+        handleResetFilters={handleResetFilters}
+        openModal={openModal}
+        isDarkMode={isDarkMode}
+        filterData={filterData}
+        areAllFiltersSelected={areAllFiltersSelected}
+      />
 
       {isRefreshing ? (
         <LoadingScreen color={Colors.default.primaryText} />
       ) : (
         <>
-          <FlashList
+          <FlatList
             data={projectData}
             renderItem={({item}) => (
               <ProjectlistColums
@@ -800,7 +748,6 @@ const ProjectsComponent = () => {
                 setSelectTicket={handleLongPress}
               />
             )}
-            estimatedItemSize={100}
             onEndReached={loadMoreData}
             onEndReachedThreshold={0.1}
             ListFooterComponent={RenderFooter}
@@ -968,514 +915,74 @@ const ProjectsComponent = () => {
       <CustomBottomSheetFlatList
         ref={projectAddRef}
         snapPoints={['100%']}
-        onDismiss={projectAddOnDismiss}
         keyExtractor={index => index.toString()}
         data={[1]}
         renderItem={() => (
-          <View
-            style={{
-              flexGrow: 1,
-              paddingVertical: spacing.PADDING_16,
-              paddingHorizontal: spacing.PADDING_10,
-            }}>
-            <TextComponent
-              text={' Create Project'}
-              size={textScale(16)}
-              style={{
-                color: isDarkMode ? Colors.dark.black : Colors.light.white,
-                marginBottom: spacing.MARGIN_10,
-              }}
-              textAlign={'center'}
-            />
-
-            <CustomInput
-              placeholder="Project Name"
-              value={formState.project_name}
-              onChange={text => handleInputChange('project_name', text)}
-              inputStyles={{
-                color: isDarkMode ? Colors.dark.black : Colors.light.white,
-              }}
-              showSecondChildren={formState.project_name}
-              SecondChildren={
-                <TouchableOpacity
-                  onPress={() => {
-                    setFormState(preState => ({
-                      ...preState,
-                      project_name: '',
-                    }));
-                  }}>
-                  <SvgIcon.Wrong
-                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
-                  />
-                </TouchableOpacity>
-              }
-            />
-
-            {/* Project Code */}
-            <CustomInput
-              placeholder="Project Code"
-              value={formState.project_code}
-              onChange={text => handleInputChange('project_code', text)}
-              inputStyles={{
-                color: isDarkMode ? Colors.dark.black : Colors.light.white,
-              }}
-              showSecondChildren={formState.project_code}
-              SecondChildren={
-                <TouchableOpacity
-                  onPress={() => {
-                    setFormState(preState => ({
-                      ...preState,
-                      project_code: '',
-                    }));
-                  }}>
-                  <SvgIcon.Wrong
-                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
-                  />
-                </TouchableOpacity>
-              }
-            />
-
-            {/* Project Type */}
-            <CustomInput
-              placeholder="Project Type"
-              value={formStateDisplay.project_type}
-              onPressTextInput={() =>
-                openNestedBottomSheet('project_type', triggerGetProjectType)
-              }
-              editable={false}
-              inputStyles={{
-                color: isDarkMode ? Colors.dark.black : Colors.light.white,
-              }}
-              showSecondChildren={true}
-              SecondChildren={
-                editFormState.project_type ? (
-                  <TouchableOpacity
-                    onPress={() => (
-                      setFormState(preState => ({
-                        ...preState,
-                        project_type: '',
-                      })),
-                      setFormStateDisplay(preState => ({
-                        ...preState,
-                        project_type: '',
-                      }))
-                    )}>
-                    <SvgIcon.Wrong
-                      color={
-                        isDarkMode ? Colors.dark.black : Colors.light.white
-                      }
-                    />
-                  </TouchableOpacity>
-                ) : (
-                  <TouchableOpacity
-                    onPress={() =>
-                      openNestedBottomSheet(
-                        'project_type',
-                        triggerGetProjectType,
-                      )
-                    }>
-                    <SvgIcon.RightArrowIcon
-                      color={
-                        isDarkMode ? Colors.dark.black : Colors.light.white
-                      }
-                    />
-                  </TouchableOpacity>
-                )
-              }
-            />
-
-            {/* Project Scheme */}
-            <CustomInput
-              placeholder="Project Scheme"
-              value={formStateDisplay.project_scheme}
-              onPressTextInput={() =>
-                openNestedBottomSheet('project_scheme', triggerGetProjectScheme)
-              }
-              editable={false}
-              inputStyles={{
-                color: isDarkMode ? Colors.dark.black : Colors.light.white,
-              }}
-              showSecondChildren={true}
-              SecondChildren={
-                editFormState.project_scheme ? (
-                  <TouchableOpacity
-                    onPress={() => {
-                      setFormStateDisplay(preState => ({
-                        ...preState,
-                        project_scheme: '',
-                      })),
-                        setFormState(preState => ({
-                          ...preState,
-                          project_scheme: '',
-                        }));
-                    }}>
-                    <SvgIcon.Wrong
-                      color={
-                        isDarkMode ? Colors.dark.black : Colors.light.white
-                      }
-                    />
-                  </TouchableOpacity>
-                ) : (
-                  <TouchableOpacity
-                    onPress={() =>
-                      openNestedBottomSheet(
-                        'project_scheme',
-                        triggerGetProjectScheme,
-                      )
-                    }>
-                    <SvgIcon.RightArrowIcon
-                      color={
-                        isDarkMode ? Colors.dark.black : Colors.light.white
-                      }
-                    />
-                  </TouchableOpacity>
-                )
-              }
-            />
-
-            {/* Status */}
-            <CustomInput
-              placeholder="Status"
-              value={formState.status}
-              onPressTextInput={() =>
-                openNestedBottomSheet('status', triggerGetAllStatus)
-              }
-              editable={false}
-              inputStyles={{
-                color: isDarkMode ? Colors.dark.black : Colors.light.white,
-              }}
-              showSecondChildren={true}
-              SecondChildren={
-                formState.status ? (
-                  <TouchableOpacity
-                    onPress={() => {
-                      setFormState(preState => ({
-                        ...preState,
-                        status: '',
-                      }));
-                    }}>
-                    <SvgIcon.Wrong
-                      color={
-                        isDarkMode ? Colors.dark.black : Colors.light.white
-                      }
-                    />
-                  </TouchableOpacity>
-                ) : (
-                  <TouchableOpacity
-                    onPress={() =>
-                      openNestedBottomSheet('status', triggerGetAllStatus)
-                    }>
-                    <SvgIcon.RightArrowIcon
-                      color={
-                        isDarkMode ? Colors.dark.black : Colors.light.white
-                      }
-                    />
-                  </TouchableOpacity>
-                )
-              }
-            />
-            {/* Village */}
-            <CustomInput
-              placeholder="Village"
-              value={formStateDisplay.village}
-              onPressTextInput={() => {
-                openNestedBottomSheet('tehsil', triggerGetAllTehsil);
-              }}
-              inputStyles={{
-                color: isDarkMode ? Colors.dark.black : Colors.light.white,
-              }}
-              editable={false}
-              showSecondChildren={true}
-              SecondChildren={
-                formStateDisplay.village ? (
-                  <TouchableOpacity
-                    onPress={() => {
-                      setFormStateDisplay(preState => ({
-                        ...preState,
-                        village: '',
-                      })),
-                        setFormState(preState => ({
-                          ...preState,
-                          village: '',
-                        }));
-                    }}>
-                    <SvgIcon.Wrong
-                      color={
-                        isDarkMode ? Colors.dark.black : Colors.light.white
-                      }
-                    />
-                  </TouchableOpacity>
-                ) : (
-                  <TouchableOpacity
-                    onPress={() =>
-                      openNestedBottomSheet('tehsil', triggerGetAllTehsil)
-                    }>
-                    <SvgIcon.RightArrowIcon
-                      color={
-                        isDarkMode ? Colors.dark.black : Colors.light.white
-                      }
-                    />
-                  </TouchableOpacity>
-                )
-              }
-            />
-            {/* Cost Fields */}
-            <CustomInput
-              placeholder="Estimated Cost"
-              value={formState.estimated_cost}
-              onChange={text => handleInputChange('estimated_cost', text)}
-              inputStyles={{
-                color: isDarkMode ? Colors.dark.black : Colors.light.white,
-              }}
-              type={'numeric'}
-              showSecondChildren={formState.estimated_cost}
-              SecondChildren={
-                <TouchableOpacity
-                  onPress={() =>
-                    setFormState(preState => ({
-                      ...preState,
-                      estimated_cost: '',
-                    }))
-                  }>
-                  <SvgIcon.Wrong
-                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
-                  />
-                </TouchableOpacity>
-              }
-            />
-            <CustomInput
-              placeholder="Allocated Cost"
-              value={formState.allocated_cost}
-              onChange={text => handleInputChange('allocated_cost', text)}
-              inputStyles={{
-                color: isDarkMode ? Colors.dark.black : Colors.light.white,
-              }}
-              type={'numeric'}
-              showSecondChildren={formState.allocated_cost}
-              SecondChildren={
-                <TouchableOpacity
-                  onPress={() =>
-                    setFormState(preState => ({
-                      ...preState,
-                      allocated_cost: '',
-                    }))
-                  }>
-                  <SvgIcon.Wrong
-                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
-                  />
-                </TouchableOpacity>
-              }
-            />
-            <CustomInput
-              placeholder="Actual Cost"
-              value={formState.actual_cost}
-              type={'numeric'}
-              onChange={text => handleInputChange('actual_cost', text)}
-              inputStyles={{
-                color: isDarkMode ? Colors.dark.black : Colors.light.white,
-              }}
-              showSecondChildren={formState.actual_cost}
-              SecondChildren={
-                <TouchableOpacity
-                  onPress={() =>
-                    setFormState(preState => ({
-                      ...preState,
-                      actual_cost: '',
-                    }))
-                  }>
-                  <SvgIcon.Wrong
-                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
-                  />
-                </TouchableOpacity>
-              }
-            />
-
-            {/* start date */}
-            <CustomInput
-              placeholder="Start Date"
-              value={formStateDisplay.start_date}
-              editable={false}
-              inputStyles={{
-                color: isDarkMode ? Colors.dark.black : Colors.light.white,
-              }}
-              onPressTextInput={() => setShowStartPicker(true)}
-              showSecondChildren={formState.start_date}
-              SecondChildren={
-                <TouchableOpacity
-                  onPress={() => {
-                    setFormState(prevState => ({
-                      ...prevState,
-                      start_date: '',
-                    })),
-                      setFormStateDisplay(prevState => ({
-                        ...prevState,
-                        start_date: '',
-                      }));
-                  }}>
-                  <SvgIcon.Wrong
-                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
-                  />
-                </TouchableOpacity>
-              }
-            />
-            {Platform.OS === 'android' && showStartPicker && (
-              <DateTimePicker
-                value={getValidDate(formState.start_date)}
-                mode="date"
-                is24Hour={false}
-                display="spinner"
-                onChange={(event, selectedDate) =>
-                  handleDateChange('start', event, selectedDate)
-                }
-              />
-            )}
-            <CustomInput
-              placeholder="End Date"
-              value={formStateDisplay.end_date}
-              editable={false}
-              inputStyles={{
-                color: isDarkMode ? Colors.dark.black : Colors.light.white,
-              }}
-              showSecondChildren={editFormState.end_date}
-              onPressTextInput={() => setShowEndPicker(true)}
-              SecondChildren={
-                <TouchableOpacity
-                  onPress={() => {
-                    setFormState(prevState => ({
-                      ...prevState,
-                      end_date: '',
-                    })),
-                      setFormStateDisplay(prevState => ({
-                        ...prevState,
-                        end_date: '',
-                      }));
-                  }}>
-                  <SvgIcon.Wrong
-                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
-                  />
-                </TouchableOpacity>
-              }
-            />
-            {Platform.OS === 'android' && showEndPicker && (
-              <DateTimePicker
-                value={getValidDate(formState.end_date)}
-                mode="date"
-                is24Hour={false}
-                display="spinner"
-                onChange={(event, selectedDate) =>
-                  handleDateChange('end', event, selectedDate)
-                }
-              />
-            )}
-
-            {/* Description */}
-            <CustomInput
-              placeholder="Project Description"
-              value={formState.project_description}
-              onChange={text => handleInputChange('project_description', text)}
-              styles={[styles.descriptionInput]}
-              inputStyles={{
-                color: isDarkMode ? Colors.dark.black : Colors.light.white,
-              }}
-              multiline
-              showSecondChildren={formState.project_description}
-              SecondChildren={
-                <TouchableOpacity
-                  onPress={() =>
-                    setFormState(preState => ({
-                      ...preState,
-                      project_description: '',
-                    }))
-                  }>
-                  <SvgIcon.Wrong
-                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
-                  />
-                </TouchableOpacity>
-              }
-            />
-
-            {/* Submit Button */}
-            <CustomButton
-              title="Create Project"
-              onPress={handleCreateProject}
-              isLoading={isLoadingCreateProject}
-              disabled={isDisableCreateProjectBtn}
-            />
-          </View>
+          <ProjectAddForm
+            formState={formState}
+            formStateDisplay={formStateDisplay}
+            handleInputChange={handleInputChange}
+            handleCreateProject={handleCreateProject}
+            isLoadingCreateProject={isLoadingCreateProject}
+            isDarkMode={isDarkMode}
+            showStartPicker={showStartPicker}
+            setShowStartPicker={setShowStartPicker}
+            showEndPicker={showEndPicker}
+            setShowEndPicker={setShowEndPicker}
+            handleDateChange={handleDateChange}
+            getValidDate={getValidDate}
+            isDisableCreateProjectBtn={isDisableCreateProjectBtn}
+            openNestedBottomSheet={openNestedBottomSheet}
+            triggerGetProjectType={triggerGetProjectType}
+            triggerGetProjectScheme={triggerGetProjectScheme}
+            triggerGetAllStatus={triggerGetAllStatus}
+            triggerGetAllTehsil={triggerGetAllTehsil}
+          />
         )}
       />
 
       <CustomBottomSheetFlatList
-        ref={nestedprojectBottomSheetRef}
-        snapPoints={['50%']}
-        data={getCurrentFieldData()}
-        keyExtractor={(item, index) => `Project_${index.toString()}`}
-        renderItem={({item}) => {
-          if (!item || !(item.name || item)) {
-            return null;
-          }
-          return (
-            <TouchableOpacity
-              onPress={() => handleNestedSelection(item)}
-              style={{
-                padding: 10,
-                borderBottomWidth: 1,
-                borderBottomColor: themeColors.borderColor,
-              }}>
-              <RegularText
-                style={{
-                  color: themeColors.textColor,
-                  fontSize: textScale(18),
-                  fontFamily: fontNames.ROBOTO_FONT_FAMILY_MEDIUM,
-                }}>
-                {getDisplayValue(item)}
-              </RegularText>
-            </TouchableOpacity>
-          );
-        }}
-        ListEmptyComponent={
-          <RegularText
-            style={{textAlign: 'center', color: themeColors.textColor}}>
-            No data available
-          </RegularText>
-        }
-        ListHeaderComponent={
-          <View
-            style={{
-              position: 'relative',
-              alignItems: 'center',
-              paddingVertical: 10,
-            }}>
-            {/* Centered Text */}
-            {currentField ? (
-              <RegularText
-                style={{
-                  textAlign: 'center',
-                  color: themeColors.textColor,
-                  fontSize: textScale(18),
-                  fontFamily: fontNames.ROBOTO_FONT_FAMILY_BOLD,
-                }}>
-                {currentField.replace(/_/g, ' ').toLocaleUpperCase()}
-              </RegularText>
-            ) : null}
-
-            {/* Right-Aligned Icon */}
-            {currentField === 'project_scheme' && (
-              <TouchableOpacity
-                style={{
-                  position: 'absolute',
-                  right: 10,
-                  top: '50%',
-                }}
-                onPress={() => schemeBottonSheetRef.current.present()}>
-                <SvgIcon.AddICon
-                  color={isDarkMode ? colors.black : colors.white}
-                />
-              </TouchableOpacity>
-            )}
-          </View>
-        }
+        ref={editProjectRef}
+        snapPoints={['100%']}
+        keyExtractor={index => index.toString()}
+        onDismiss={handleCloseSheet}
+        data={[1]}
+        renderItem={() => (
+          <EditProjectForm
+            editFormState={editFormState}
+            editFormStateDisplay={editFormStateDisplay}
+            handleEditInputChange={handleEditInputChange}
+            handleEditProject={handleEditProject}
+            isLoadingEditProject={isLoadingEditProject}
+            isDarkMode={isDarkMode}
+            setShowStartPicker={setShowStartPicker}
+            setShowEndPicker={setShowEndPicker}
+            showStartPicker={showStartPicker}
+            showEndPicker={showEndPicker}
+            handleDateChange={handleDateChange}
+            getValidDate={getValidDate}
+            openNestedBottomSheet={openNestedBottomSheet}
+            triggerGetProjectType={triggerGetProjectType}
+            triggerGetProjectScheme={triggerGetProjectScheme}
+            triggerGetAllStatus={triggerGetAllStatus}
+            triggerGetAllTehsil={triggerGetAllTehsil}
+            setEditFormState={setEditFormState}
+            setEditFormStateDisplay={setEditFormStateDisplay}
+            isEditProjectCode={isEditProjectCode}
+          />
+        )}
       />
+
+      <NestedProjectSelector
+        nestedprojectBottomSheetRef={nestedprojectBottomSheetRef}
+        currentField={currentField}
+        getCurrentFieldData={getCurrentFieldData}
+        handleNestedSelection={handleNestedSelection}
+        themeColors={themeColors}
+        isDarkMode={isDarkMode}
+        schemeBottonSheetRef={schemeBottonSheetRef}
+      />
+
       <CustomBottomSheet ref={schemeBottonSheetRef} snapPoints={['40%']}>
         <View style={{paddingHorizontal: spacing.PADDING_16}}>
           <RegularText
@@ -1505,405 +1012,6 @@ const ProjectsComponent = () => {
           />
         </View>
       </CustomBottomSheet>
-
-      <CustomBottomSheetFlatList
-        ref={editProjectRef}
-        snapPoints={['100%']}
-        keyExtractor={index => index.toString()}
-        onDismiss={handleCloseSheet}
-        data={[1]}
-        renderItem={() => (
-          <View
-            style={{
-              flexGrow: 1,
-              paddingVertical: spacing.PADDING_16,
-              paddingHorizontal: spacing.PADDING_10,
-            }}>
-            <RegularText
-              style={[styles.header, {color: themeColors.textColor}]}>
-              Edit Project
-            </RegularText>
-            <CustomInput
-              placeholder="Project Name"
-              value={editFormState.project_name}
-              inputStyles={{
-                color: isDarkMode ? Colors.dark.black : Colors.light.white,
-              }}
-              editable={false}
-            />
-
-            {/* Project Code */}
-            <CustomInput
-              placeholder="Project Code"
-              value={editFormState.project_code}
-              onChange={text => {
-                handleEditInputChange('project_code', text);
-              }}
-              inputStyles={{
-                color: isDarkMode ? Colors.dark.black : Colors.light.white,
-              }}
-              editable={!isEditProjectCode}
-              showSecondChildren={
-                !!editFormState.project_code && !isEditProjectCode
-              }
-              SecondChildren={
-                <TouchableOpacity
-                  onPress={() => {
-                    if (editFormState.project_code) {
-                      setEditFormState(prevState => ({
-                        ...prevState,
-                        project_code: '',
-                      }));
-                      setEditProjectCode(false);
-                    }
-                  }}>
-                  <SvgIcon.Wrong
-                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
-                  />
-                </TouchableOpacity>
-              }
-            />
-
-            {/* Project Type */}
-            <CustomInput
-              placeholder="Project Type"
-              value={editFormStateDisplay.project_type}
-              onPressTextInput={() =>
-                openNestedBottomSheet('project_type', triggerGetProjectType)
-              }
-              editable={false}
-              inputStyles={{
-                color: isDarkMode ? Colors.dark.black : Colors.light.white,
-              }}
-              showSecondChildren={true}
-              SecondChildren={
-                editFormState.project_type ? (
-                  <TouchableOpacity
-                    onPress={() => (
-                      setEditFormState(preState => ({
-                        ...preState,
-                        project_type: '',
-                      })),
-                      setEditFormStateDisplay(preState => ({
-                        ...preState,
-                        project_type: '',
-                      }))
-                    )}>
-                    <SvgIcon.Wrong
-                      color={
-                        isDarkMode ? Colors.dark.black : Colors.light.white
-                      }
-                    />
-                  </TouchableOpacity>
-                ) : (
-                  <TouchableOpacity
-                    onPress={() =>
-                      openNestedBottomSheet(
-                        'project_type',
-                        triggerGetProjectType,
-                      )
-                    }>
-                    <SvgIcon.RightArrowIcon
-                      color={
-                        isDarkMode ? Colors.dark.black : Colors.light.white
-                      }
-                    />
-                  </TouchableOpacity>
-                )
-              }
-            />
-
-            {/* Project Scheme */}
-            <CustomInput
-              placeholder="Project Scheme"
-              value={editFormStateDisplay.project_scheme}
-              onPressTextInput={() =>
-                openNestedBottomSheet('project_scheme', triggerGetProjectScheme)
-              }
-              editable={true}
-              inputStyles={{
-                color: isDarkMode ? Colors.dark.black : Colors.light.white,
-              }}
-              showSecondChildren={true}
-              SecondChildren={
-                editFormState.project_scheme ? (
-                  <TouchableOpacity
-                    onPress={() => {
-                      setEditFormStateDisplay(preState => ({
-                        ...preState,
-                        project_scheme: '',
-                      }));
-                      setEditFormState(preState => ({
-                        ...preState,
-                        project_scheme: '',
-                      }));
-                    }}>
-                    <SvgIcon.Wrong
-                      color={
-                        isDarkMode ? Colors.dark.black : Colors.light.white
-                      }
-                    />
-                  </TouchableOpacity>
-                ) : (
-                  <TouchableOpacity
-                    onPress={() =>
-                      openNestedBottomSheet(
-                        'project_scheme',
-                        triggerGetProjectScheme,
-                      )
-                    }>
-                    <SvgIcon.RightArrowIcon
-                      color={
-                        isDarkMode ? Colors.dark.black : Colors.light.white
-                      }
-                    />
-                  </TouchableOpacity>
-                )
-              }
-            />
-
-            {/* Status */}
-            <CustomInput
-              placeholder="Status"
-              value={editFormState.status}
-              onPressTextInput={() =>
-                openNestedBottomSheet('status', triggerGetAllStatus)
-              }
-              editable={true}
-              inputStyles={{
-                color: isDarkMode ? Colors.dark.black : Colors.light.white,
-              }}
-              showSecondChildren={editFormState.status}
-              SecondChildren={
-                editFormState.status ? (
-                  <TouchableOpacity
-                    onPress={() =>
-                      setEditFormState(preState => ({
-                        ...preState,
-                        status: '',
-                      }))
-                    }>
-                    <SvgIcon.Wrong
-                      color={
-                        isDarkMode ? Colors.dark.black : Colors.light.white
-                      }
-                    />
-                  </TouchableOpacity>
-                ) : (
-                  <TouchableOpacity
-                    onPress={() =>
-                      openNestedBottomSheet('status', triggerGetAllStatus)
-                    }>
-                    <SvgIcon.RightArrowIcon
-                      color={
-                        isDarkMode ? Colors.dark.black : Colors.light.white
-                      }
-                    />
-                  </TouchableOpacity>
-                )
-              }
-            />
-
-            {/* Village */}
-            <CustomInput
-              placeholder="Village"
-              value={editFormStateDisplay.village}
-              editable={false}
-              inputStyles={{
-                color: isDarkMode ? Colors.dark.black : Colors.light.white,
-              }}
-            />
-
-            {/* Cost Fields */}
-            <CustomInput
-              placeholder="Estimated Cost"
-              value={editFormState.estimated_cost?.toString()}
-              type={'numeric'}
-              onChange={text => handleEditInputChange('estimated_cost', text)}
-              inputStyles={{
-                color: isDarkMode ? Colors.dark.black : Colors.light.white,
-              }}
-              showSecondChildren={editFormState.estimated_cost}
-              SecondChildren={
-                <TouchableOpacity
-                  onPress={() =>
-                    setEditFormState(preState => ({
-                      ...preState,
-                      estimated_cost: '',
-                    }))
-                  }>
-                  <SvgIcon.Wrong
-                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
-                  />
-                </TouchableOpacity>
-              }
-            />
-
-            <CustomInput
-              placeholder="Allocated Cost"
-              value={editFormState.allocated_cost?.toString()}
-              type={'numeric'}
-              onChange={text => handleEditInputChange('allocated_cost', text)}
-              inputStyles={{
-                color: isDarkMode ? Colors.dark.black : Colors.light.white,
-              }}
-              showSecondChildren={editFormState.allocated_cost}
-              SecondChildren={
-                <TouchableOpacity
-                  onPress={() =>
-                    setEditFormState(preState => ({
-                      ...preState,
-                      allocated_cost: '',
-                    }))
-                  }>
-                  <SvgIcon.Wrong
-                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
-                  />
-                </TouchableOpacity>
-              }
-            />
-
-            <CustomInput
-              placeholder="Actual Cost"
-              value={editFormState.actual_cost?.toString()}
-              type={'numeric'}
-              onChange={text => handleEditInputChange('actual_cost', text)}
-              inputStyles={{
-                color: isDarkMode ? Colors.dark.black : Colors.light.white,
-              }}
-              showSecondChildren={editFormState.actual_cost}
-              SecondChildren={
-                <TouchableOpacity
-                  onPress={() =>
-                    setEditFormState(preState => ({
-                      ...preState,
-                      actual_cost: '',
-                    }))
-                  }>
-                  <SvgIcon.Wrong
-                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
-                  />
-                </TouchableOpacity>
-              }
-            />
-
-            {/* start date */}
-            <CustomInput
-              placeholder="Start Date"
-              value={editFormStateDisplay.start_date}
-              inputStyles={{
-                color: isDarkMode ? Colors.dark.black : Colors.light.white,
-              }}
-              editable={false}
-              onPressTextInput={() => setShowStartPicker(true)}
-              showSecondChildren={editFormState.start_date}
-              SecondChildren={
-                <TouchableOpacity
-                  onPress={() => {
-                    setEditFormState(prevState => ({
-                      ...prevState,
-                      start_date: '',
-                    })),
-                      setEditFormStateDisplay(prevState => ({
-                        ...prevState,
-                        start_date: '',
-                      }));
-                  }}>
-                  <SvgIcon.Wrong
-                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
-                  />
-                </TouchableOpacity>
-              }
-            />
-            {Platform.OS === 'android' && showStartPicker && (
-              <DateTimePicker
-                value={getValidDate(editFormState.start_date)}
-                mode="date"
-                is24Hour={false}
-                display="spinner"
-                onChange={(event, selectedDate) =>
-                  handleDateChange('start', event, selectedDate)
-                }
-              />
-            )}
-
-            <CustomInput
-              placeholder="End Date"
-              value={editFormStateDisplay.end_date}
-              inputStyles={{
-                color: isDarkMode ? Colors.dark.black : Colors.light.white,
-              }}
-              editable={false}
-              onPressTextInput={() => setShowEndPicker(true)}
-              showSecondChildren={editFormState.end_date}
-              SecondChildren={
-                <TouchableOpacity
-                  onPress={() => {
-                    setEditFormState(prevState => ({
-                      ...prevState,
-                      end_date: '',
-                    })),
-                      setEditFormStateDisplay(prevState => ({
-                        ...prevState,
-                        end_date: '',
-                      }));
-                  }}>
-                  <SvgIcon.Wrong
-                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
-                  />
-                </TouchableOpacity>
-              }
-            />
-
-            {Platform.OS === 'android' && showEndPicker && (
-              <DateTimePicker
-                value={getValidDate(editFormState.end_date)}
-                mode="date"
-                is24Hour={false}
-                display="spinner"
-                onChange={(event, selectedDate) =>
-                  handleDateChange('end', event, selectedDate)
-                }
-              />
-            )}
-
-            {/* Description */}
-            <CustomInput
-              placeholder="Project Description"
-              value={editFormState.project_description}
-              onChange={text =>
-                handleEditInputChange('project_description', text)
-              }
-              styles={[styles.descriptionInput]}
-              inputStyles={{
-                color: isDarkMode ? Colors.dark.black : Colors.light.white,
-              }}
-              multiline
-              showSecondChildren={editFormState.project_description}
-              SecondChildren={
-                <TouchableOpacity
-                  onPress={() =>
-                    setEditFormState(preState => ({
-                      ...preState,
-                      project_description: '',
-                    }))
-                  }>
-                  <SvgIcon.Wrong
-                    color={isDarkMode ? Colors.dark.black : Colors.light.white}
-                  />
-                </TouchableOpacity>
-              }
-            />
-
-            {/* Submit Button */}
-            <CustomButton
-              title="Edit Project"
-              onPress={handleEditProject}
-              isLoading={isLoadingEditProject}
-            />
-          </View>
-        )}
-      />
     </>
   );
 };

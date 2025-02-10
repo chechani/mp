@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
+import React, {useEffect} from 'react';
+import {StyleSheet, View} from 'react-native';
 import Animated, {
   Easing,
   cancelAnimation,
@@ -12,7 +12,7 @@ import Colors from '../../theme/colors';
 
 const CustomLoader = ({
   size = 40,
-  color = Colors.default.white,  
+  color = Colors.default.white,
   style,
   strokeWidth = 4,
 }) => {
@@ -24,8 +24,8 @@ const CustomLoader = ({
         duration: 1000,
         easing: Easing.linear,
       }),
-      -1,  // Infinite repeat
-      false
+      -1, // Infinite repeat
+      false,
     );
 
     return () => {
@@ -34,11 +34,11 @@ const CustomLoader = ({
   }, []);
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${rotation.value}deg` }],
+    transform: [{rotate: `${rotation.value}deg`}],
   }));
 
   return (
-    <View style={[styles.container, style, { width: size, height: size }]}>
+    <View style={[styles.container, style, {width: size, height: size}]}>
       {/* Background Circle */}
       <View style={styles.backgroundCircle}>
         <View
@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
     borderRightColor: 'transparent',
     borderBottomColor: 'transparent',
     borderLeftColor: 'transparent',
-    transform: [{ rotate: '45deg' }],
+    transform: [{rotate: '45deg'}],
   },
 });
 

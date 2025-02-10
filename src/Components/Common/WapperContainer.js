@@ -1,10 +1,10 @@
-import { SafeAreaView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import React from 'react';
+import {SafeAreaView, StatusBar, StyleSheet, View} from 'react-native';
 import colors from '../../Utils/colors';
 
-const WapperContainer = ({ style = {}, children }) => {
+const WapperContainer = ({style = {}, children}) => {
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{flex: 1}}>
       <StatusBar backgroundColor={'gray'} />
       <View
         style={{

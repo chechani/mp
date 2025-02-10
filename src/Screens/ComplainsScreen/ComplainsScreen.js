@@ -12,5 +12,3 @@ const ComplainsScreen = () => {
 };
 
 export default ComplainsScreen;
-
-const styles = StyleSheet.create({});

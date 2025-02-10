@@ -1,9 +1,9 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import * as SvgIcon from '../../assets';
 import CommoneHeader from '../../Components/Common/CommoneHeader';
-import RegularText from '../../Components/Common/RegularText';
-import { openDrawer } from '../../Utils/helperFunctions';
+import TextComponent from '../../Components/Common/TextComponent';
+import {openDrawer} from '../../Utils/helperFunctions';
 
 const UserDetailScreen = () => {
   return (
@@ -14,7 +14,7 @@ const UserDetailScreen = () => {
         headerLeftIconSource={SvgIcon.MenuIcon}
         onPressLeftIcon={() => openDrawer()}
       />
-      <RegularText>UserDetailScreen</RegularText>
+      <TextComponent text={'UserDetailScreen'} />
     </View>
   );
 };

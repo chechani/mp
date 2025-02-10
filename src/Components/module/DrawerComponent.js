@@ -12,15 +12,16 @@ import commonStyle, {APP_PADDING_HORIZONTAL} from '../../styles/commonStyle';
 import {textScale} from '../../styles/responsiveStyles';
 import {spacing} from '../../styles/spacing';
 import {fontNames} from '../../styles/typography';
+import Colors from '../../theme/colors';
 import colors from '../../Utils/colors';
 import THEME_COLOR from '../../Utils/Constant';
 import {closeDrawer} from '../../Utils/helperFunctions';
-import RegularText from '../Common/RegularText';
+import TextComponent from '../Common/TextComponent';
 import {useAppDispatch, useTheme} from '../hooks';
 
 const DrawerComponent = props => {
   const {theme, toggleTheme} = useTheme();
-
+  const isDarkMode = theme === THEME_COLOR;
   const dispatch = useAppDispatch();
 
   const [userInfo, setUserInfo] = useState({
@@ -93,18 +94,14 @@ const DrawerComponent = props => {
     <View style={styles.subContainer}>
       <View style={{marginTop: spacing.MARGIN_12, flex: 1}}>
         {['userName', 'companyName', 'number'].map(field => (
-          <RegularText
+          <TextComponent
+            text={userInfo[field]}
             key={field}
-            style={[
-              styles.userInfoTextStyle,
-              field === 'userName' && styles.userNameTextStyle,
-              {
-                flexWrap: 'wrap',
-                color: theme === THEME_COLOR ? colors.black : colors.white,
-              },
-            ]}>
-            {userInfo[field]}
-          </RegularText>
+            font={fontNames.ROBOTO_FONT_FAMILY_MEDIUM}
+            color={isDarkMode ? Colors.dark.black : Colors.light.white}
+            style={{marginBottom: spacing.MARGIN_4, flexWrap: 'wrap'}}
+            size={textScale(18)}
+          />
         ))}
       </View>
       <TouchableOpacity
@@ -114,7 +111,7 @@ const DrawerComponent = props => {
         <SvgIcon.Wrong
           width={spacing.WIDTH_30}
           height={spacing.HEIGHT_30}
-          color={theme === THEME_COLOR ? colors.black : colors.white}
+          color={isDarkMode ? colors.black : colors.white}
         />
       </TouchableOpacity>
     </View>
@@ -124,25 +121,6 @@ const DrawerComponent = props => {
   const renderLogoutButton = () => {
     return (
       <View>
-        {/* Logout Button */}
-        <TouchableOpacity
-          style={styles.logoutContainer}
-          onPress={handleLogout}
-          hitSlop={{left: 20, right: 20, top: 20, bottom: 20}}>
-          <SvgIcon.LogoutIcon
-            width={spacing.WIDTH_24}
-            height={spacing.HEIGHT_24}
-            color={theme === THEME_COLOR ? colors.black : colors.white}
-          />
-          <RegularText
-            style={[
-              styles.menuItemContainer_title,
-              {color: theme === THEME_COLOR ? colors.black : colors.white},
-            ]}>
-            Logout
-          </RegularText>
-        </TouchableOpacity>
-
         {/* Radio Buttons for Theme Selection */}
         <View style={styles.radioContainer}>
           <TouchableOpacity
@@ -161,13 +139,11 @@ const DrawerComponent = props => {
                 },
               ]}
             />
-            <RegularText
-              style={[
-                styles.radioLabel,
-                {color: theme === 'light' ? colors.black : colors.white},
-              ]}>
-              Light Mode
-            </RegularText>
+            <TextComponent
+              text={'Light Mode'}
+              color={theme === 'light' ? Colors.dark.black : Colors.light.white}
+              size={textScale(16)}
+            />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -186,13 +162,11 @@ const DrawerComponent = props => {
                 },
               ]}
             />
-            <RegularText
-              style={[
-                styles.radioLabel,
-                {color: theme === 'dark' ? colors.white : colors.black},
-              ]}>
-              Dark Mode
-            </RegularText>
+            <TextComponent
+              text={'Dark Mode'}
+              color={theme === 'dark' ? Colors.light.white : Colors.dark.black}
+              size={textScale(16)}
+            />
           </TouchableOpacity>
         </View>
       </View>
@@ -200,22 +174,30 @@ const DrawerComponent = props => {
   };
 
   return (
-    <View
-      style={[
-        styles.mainContainer,
-        {
-          backgroundColor: theme === THEME_COLOR ? colors.white : '#000000ef',
-        },
-      ]}>
+    <View style={[styles.mainContainer]}>
       <StatusBar
-        backgroundColor={theme === THEME_COLOR ? colors.white : '#000000ef'}
-        barStyle={theme === THEME_COLOR ? 'dark-content' : 'light-content'}
+        backgroundColor={isDarkMode ? colors.white : '#000000ef'}
+        barStyle={isDarkMode ? 'dark-content' : 'light-content'}
       />
       {renderDrawerHeader()}
       <DrawerContentScrollView {...props}>
         <DrawerItemList {...props} />
+        {renderLogoutButton()}
       </DrawerContentScrollView>
-      {renderLogoutButton()}
+      <TouchableOpacity
+        style={styles.logoutContainer}
+        onPress={handleLogout}
+        hitSlop={{left: 20, right: 20, top: 20, bottom: 20}}>
+        <SvgIcon.LogoutIcon
+          width={spacing.WIDTH_24}
+          height={spacing.HEIGHT_24}
+          color={isDarkMode ? colors.black : colors.white}
+        />
+        <TextComponent
+          text={'Logout'}
+          color={isDarkMode ? Colors.dark.black : Colors.light.white}
+        />
+      </TouchableOpacity>
     </View>
   );
 };
@@ -235,7 +217,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.MARGIN_12,
     paddingVertical: spacing.PADDING_14,
-    paddingLeft: spacing.PADDING_20,
+    paddingHorizontal:spacing.PADDING_36,
     alignItems: 'center',
   },
   subContainer: {
@@ -263,7 +245,7 @@ const styles = StyleSheet.create({
   },
   radioContainer: {
     marginVertical: spacing.MARGIN_20,
-    paddingLeft: spacing.PADDING_20,
+    paddingLeft: spacing.PADDING_24,
   },
   radioButton: {
     flexDirection: 'row',

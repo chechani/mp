@@ -5,6 +5,7 @@ import {
   GET_BROADCAST_MESSAGE_TEMPLATE,
   GET_CONTACTS_BY_BROADCAST_STATUS,
   GET_SENT_BROADCASTED_MESSAGE,
+  GET_UPLOADED_MEDIA,
 } from '../../../Config/url';
 import {customBaseQuery} from '../utils';
 
@@ -51,6 +52,14 @@ export const BroadCastMessageApiSlices = createApi({
         method: 'GET',
       }),
     }),
+
+    // Uploade media
+    UploadeMedia: builder.query({
+      query: ({header_type}) => ({
+        url: `${GET_UPLOADED_MEDIA}?header_type=${header_type}`,
+        method: 'GET',
+      }),
+    }),
   }),
 });
 
@@ -60,4 +69,5 @@ export const {
   useFetchContactsByStatusQuery,
   useSendBroadCastMessageMutation,
   useLazyFetchBroadCastMessageTemplateQuery,
+  useLazyUploadeMediaQuery,
 } = BroadCastMessageApiSlices;

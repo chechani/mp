@@ -16,8 +16,8 @@ export const contactApiSlices = createApi({
   endpoints: builder => ({
     // Fetch All Contacts
     GetAllContact: builder.query({
-      query: ({page, limit}) => ({
-        url: `${GET_WHATSAPP_CONTACTS}?page=${page}&limit=${limit}`,
+      query: ({page, limit, category}) => ({
+        url: `${GET_WHATSAPP_CONTACTS}?page=${page}&limit=${limit}&category=${category}`,
         method: 'GET',
       }),
     }),

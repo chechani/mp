@@ -25,6 +25,7 @@ import {
   useLazyGetWhatsAppContactCategoryQuery,
 } from '../../api/store/slice/contactSlice';
 import * as SvgIcon from '../../assets';
+import { Divider } from '../../styles/commonStyle';
 import { textScale } from '../../styles/responsiveStyles';
 import { spacing } from '../../styles/spacing';
 import { fontNames } from '../../styles/typography';
@@ -37,7 +38,6 @@ import CustomBottomSheetFlatList from '../Common/CustomBottomSheetFlatList';
 import CustomButton from '../Common/CustomButton';
 import CustomInput from '../Common/CustomInput';
 import LoadingScreen from '../Common/Loader';
-import RegularText from '../Common/RegularText';
 import TextComponent from '../Common/TextComponent';
 import { useTheme } from '../hooks';
 
@@ -47,7 +47,7 @@ const ContactListComponent = () => {
   const [contacts, setContacts] = useState([]);
   const [filteredContacts, setFilteredContacts] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [loading, setLoading] = useState(true);
   const [isCreateContact, setIsCreateContact] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -74,11 +74,6 @@ const ContactListComponent = () => {
   const [createContact] = useCreateContactMutation();
   const [deleteContact] = useDeleteContactMutation();
 
-  // Fetch categories on component mount
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
   // Fetch contacts when category changes
   useEffect(() => {
     setPage(1);
@@ -103,6 +98,7 @@ const ContactListComponent = () => {
   const fetchCategories = async () => {
     try {
       const categoryResponse = await featchConatctCategory();
+
       const contactCategories = categoryResponse?.data?.message;
       if (contactCategories) {
         setCategories(contactCategories);
@@ -114,19 +110,17 @@ const ContactListComponent = () => {
     }
   };
 
-  const fetchContacts = async ({page = 1, category = 'All'}) => {
+  const fetchContacts = async ({page = 1, category = ''}) => {
     if (page === 1) {
       setLoading(true);
     } else {
       setIsLoadingMore(true);
     }
     try {
-      const params = {page, limit: pageSize};
-      if (category !== 'All') {
-        params.category = category;
-      }
-      const response = await fetchConatct(params);
-      const contactsData = response?.data?.message;
+      const params = {page, limit: pageSize, category: category};
+      const response = await fetchConatct(params).unwrap();
+
+      const contactsData = response?.message;
       if (contactsData && contactsData.length > 0) {
         if (page === 1) {
           setContacts(contactsData);
@@ -217,17 +211,13 @@ const ContactListComponent = () => {
           text2: 'Contact added successfully',
         });
         setIsCreateContact(false);
-        bottomSheetRef.current.dismiss();
+        bottomSheetRef.current?.dismiss();
       } else {
         setIsCreateContact(false);
         if (
-          response?.data?.message?.error ===
-          'Contact with this mobile number already exists.'
+          response?.data?.message?.error === 'mobile number already exists.'
         ) {
-          CommonToastMessage(
-            'error',
-            'Contact with this mobile number already exists.',
-          );
+          CommonToastMessage('error', 'mobile number already exists.');
           setNewContact({first_name: '', last_name: '', mobile: '', email: ''});
         } else {
           console.log('Failed to create contact');
@@ -264,9 +254,11 @@ const ContactListComponent = () => {
     return (
       <View
         style={[styles.avatarPlaceholder, {backgroundColor: backgroundColor}]}>
-        <RegularText style={[styles.avatarText, {color: textColor}]}>
-          {firstLetter}
-        </RegularText>
+        <TextComponent
+          text={firstLetter}
+          color={textColor}
+          size={textScale(15)}
+        />
       </View>
     );
   };
@@ -332,52 +324,38 @@ const ContactListComponent = () => {
         <TouchableOpacity
           style={[
             styles.contactItem,
-            isSelected
-              ? styles.selectedContactBackground
-              : {
-                  backgroundColor: isDarkMode ? colors.white : colors.black,
-                },
+            isSelected && styles.selectedContactBackground,
           ]}
           onPress={handlePress}
           onLongPress={handleLongPress}
           activeOpacity={0.7}>
           {renderAvatar(item)}
           <View style={[styles.contactInfo]}>
-            <RegularText
-              style={[
-                styles.contactName,
-                {color: isDarkMode ? colors.black : colors.white},
-              ]}>
-              {item?.full_name}
-            </RegularText>
+            <TextComponent
+              text={item?.full_name}
+              color={isDarkMode ? Colors.dark.black : Colors.light.white}
+              size={textScale(15)}
+              font={fontNames.ROBOTO_FONT_FAMILY_MEDIUM}
+            />
             {item?.company_name && (
-              <RegularText
-                style={[
-                  styles.companyName,
-                  {color: isDarkMode ? colors.black : colors.white},
-                ]}>
-                {item?.company_name}
-              </RegularText>
+              <TextComponent
+                text={item?.company_name}
+                color={isDarkMode ? Colors.dark.black : Colors.light.white}
+                size={textScale(13)}
+                font={fontNames.ROBOTO_FONT_FAMILY_MEDIUM}
+              />
             )}
             {item?.custom_category && (
-              <RegularText
-                style={[
-                  styles.customCategory,
-                  {color: isDarkMode ? colors.black : colors.white},
-                ]}>
-                {item?.custom_category}
-              </RegularText>
+              <TextComponent
+                text={item?.custom_category}
+                color={isDarkMode ? Colors.dark.black : Colors.light.white}
+                font={fontNames.ROBOTO_FONT_FAMILY_LIGHT}
+                size={textScale(12)}
+              />
             )}
           </View>
         </TouchableOpacity>
-        <View
-          style={[
-            styles.divider,
-            {
-              backgroundColor: isDarkMode ? colors.grey300 : colors.grey600,
-            },
-          ]}
-        />
+        <Divider />
       </>
     );
   };
@@ -446,7 +424,14 @@ const ContactListComponent = () => {
           styles.categoryItem,
           selectedCategory === item && styles.activeFilter,
         ]}>
-        <RegularText style={[styles.filterText]}>{item}</RegularText>
+        <TextComponent
+          text={item}
+          color={ selectedCategory === item
+            ? Colors.default.white
+            : Colors.default.black}
+          style={{padding: spacing.PADDING_10}}
+          textAlign={'center'}
+        />
       </TouchableOpacity>
     );
   };
@@ -454,22 +439,26 @@ const ContactListComponent = () => {
     <View
       style={[
         styles.headerContainer,
-        {backgroundColor: isDarkMode ? colors.white : '#151414'},
+        {backgroundColor: isDarkMode ? colors.white : '#212020'},
       ]}>
-      <RegularText
-        style={[
-          styles.filterTitle,
-          {color: isDarkMode ? colors.black : colors.white},
-        ]}>
-        Filter by Category
-      </RegularText>
+      <TextComponent
+        text={'Filter by Category'}
+        color={isDarkMode ? Colors.dark.black : Colors.light.white}
+        size={textScale(18)}
+        font={fontNames.ROBOTO_FONT_FAMILY_MEDIUM}
+      />
     </View>
   );
 
   const handleRightIconPress = index => {
     const actions = {
       0: () => navigate(NavigationString.searchContact),
-      1: () => filterFormCategoryBottomSheet.current.present(),
+      1: () => {
+        filterFormCategoryBottomSheet.current.present();
+        fetchCategories();
+      },
+      2: () => toggleBottomSheet(),
+      3: () => fetchContacts({page, category: selectedCategory}),
     };
 
     const action = actions[index];
@@ -500,63 +489,56 @@ const ContactListComponent = () => {
           onLeftIconPress={() => openDrawer()}
           leftIcon={SvgIcon.MenuIcon}
           showRightIcons={true}
-          rightIcons={[SvgIcon.Search, SvgIcon.Filter]}
+          rightIcons={[
+            SvgIcon.Search,
+            SvgIcon.Filter,
+            SvgIcon.AddICon,
+            SvgIcon.ReloadIcon,
+          ]}
           onRightIconPress={handleRightIconPress}
         />
       )}
 
-      <View style={{marginHorizontal: spacing.MARGIN_10}}>
-        <View
-          style={{
-            alignItems: 'center',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-          }}>
-          <RegularText
-            onPress={() => handleCategoryChange('All')}
-            style={[
-              styles.filterText,
-              {color: isDarkMode ? colors.black : colors.white},
-              selectedCategory === 'All',
-            ]}>
-            Reset All
-          </RegularText>
-          <View style={{flexDirection: 'row', alignItems: 'center'}}>
-            <TouchableOpacity
-              onPress={toggleBottomSheet}
-              style={styles.addContactBtnContainer}>
-              <SvgIcon.AddICon
-                width={spacing.WIDTH_30}
-                height={spacing.HEIGHT_30}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => fetchContacts({page, category: selectedCategory})}
-              style={[
-                styles.addContactBtnContainer,
-                {marginLeft: spacing.MARGIN_6},
-              ]}>
-              <SvgIcon.ReloadIcon
-                width={spacing.WIDTH_30}
-                height={spacing.HEIGHT_30}
-              />
-            </TouchableOpacity>
+      {!isToolBarVisible && (
+        <View style={{marginHorizontal: spacing.MARGIN_10}}>
+          <View
+            style={{
+              alignItems: 'center',
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+            }}>
+            <TextComponent
+              text={'Reset All'}
+              color={
+                selectedCategory
+                  ? Colors.default.primaryColor
+                  : isDarkMode
+                  ? Colors.default.black
+                  : Colors.light.white
+              }
+              style={{
+                padding: spacing.PADDING_10,
+                borderRadius: spacing.RADIUS_10,
+              }}
+              onPress={() => handleCategoryChange('')}
+            />
+
+            <View />
           </View>
         </View>
-      </View>
+      )}
 
       <FlatList
         data={filteredContacts}
         keyExtractor={item => item?.mobile_no?.toString()}
         renderItem={renderContactItem}
         ListEmptyComponent={() => (
-          <RegularText
-            style={[
-              styles.noDataText,
-              {color: isDarkMode ? colors.black : colors.white},
-            ]}>
-            No contacts found.
-          </RegularText>
+          <TextComponent
+            text={'No contacts found.'}
+            color={isDarkMode ? Colors.dark.black : Colors.light.white}
+            textAlign={'center'}
+            style={{marginTop: spacing.MARGIN_10}}
+          />
         )}
         contentContainerStyle={styles.flatListContainer}
         onEndReached={searchQuery === '' ? handleLoadMore : null}
@@ -572,7 +554,9 @@ const ContactListComponent = () => {
       />
 
       {/* BottomSheet for adding a new contact */}
-      <CustomBottomSheet ref={bottomSheetRef} snapPoints={['90%']}>
+      <CustomBottomSheet
+        ref={bottomSheetRef}
+        snapPoints={['99%']}>
         <View style={styles.bottomSheetContent}>
           <TextComponent
             text={'Add New Contact'}
@@ -611,6 +595,7 @@ const ContactListComponent = () => {
             inputStyles={{
               color: isDarkMode ? Colors.dark.black : Colors.light.white,
             }}
+            type={'numeric'}
           />
           <CustomInput
             placeholder="Email"
@@ -678,7 +663,7 @@ const styles = StyleSheet.create({
     fontSize: textScale(14),
   },
   activeFilter: {
-    backgroundColor: colors.grey600,
+    backgroundColor: colors.green,
   },
   flatListContainer: {
     paddingBottom: spacing.PADDING_20,
@@ -688,7 +673,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: spacing.PADDING_6,
     paddingHorizontal: spacing.PADDING_16,
-    backgroundColor: '#fff',
   },
   avatar: {
     width: spacing.HEIGHT_40,

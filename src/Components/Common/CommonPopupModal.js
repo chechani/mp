@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Modal, StyleSheet, Text, TouchableOpacity, View, Platform} from 'react-native';
+import {Modal, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import Animated, {
   runOnJS,
   useAnimatedStyle,
@@ -8,8 +8,9 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import THEME_COLOR from '../../Utils/Constant';
-import {useTheme} from '../hooks';
 import colors from '../../Utils/colors';
+import Colors from '../../theme/colors';
+import {useTheme} from '../hooks';
 
 const CommonPopupModal = ({
   isVisible,
@@ -19,31 +20,39 @@ const CommonPopupModal = ({
   onCancel,
 }) => {
   const {theme} = useTheme();
+  const isDarkMode = theme === THEME_COLOR;
   const [modalVisible, setModalVisible] = useState(isVisible);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  // Shared values for animations
   const opacity = useSharedValue(0);
   const scale = useSharedValue(0.8);
 
-  const isLightTheme = theme === THEME_COLOR;
-  const textColor = isLightTheme ? colors.grey900 : colors.grey200;
-  const modalBackground = isLightTheme ? colors.white : colors.grey900;
-
   useEffect(() => {
     if (isVisible) {
-      setTimeout(() => setModalVisible(true), 50); // Delay to prevent render glitches
+      setModalVisible(true);
+      setIsProcessing(false); // Reset when modal opens
       opacity.value = withTiming(1, {duration: 200});
       scale.value = withSpring(1);
     } else {
       opacity.value = withTiming(0, {duration: 200}, finished => {
-        if (finished) runOnJS(setModalVisible)(false);
+        if (finished) {
+          runOnJS(setModalVisible)(false);
+        }
       });
       scale.value = withTiming(0.8);
     }
   }, [isVisible]);
 
-  // Animated styles
+  const handlePress = async onPress => {
+    if (isProcessing) return;
+    setIsProcessing(true);
+    if (typeof onPress === 'function') {
+      await onPress();
+    }
+  };
+
   const animatedOverlayStyle = useAnimatedStyle(() => ({
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     opacity: opacity.value,
   }));
 
@@ -57,29 +66,34 @@ const CommonPopupModal = ({
       transparent
       visible={modalVisible}
       animationType="none"
-      onRequestClose={onCancel}
-      accessibilityViewIsModal
-      accessibilityLabel="Popup Modal">
+      onRequestClose={onCancel}>
       <Animated.View style={[styles.overlay, animatedOverlayStyle]}>
         <Animated.View
           style={[
             styles.modalContainer,
             animatedModalStyle,
-            {backgroundColor: modalBackground},
+            {
+              backgroundColor: isDarkMode ? colors.white : colors.grey900,
+            },
           ]}>
           <Text
-            style={[styles.messageText, messageText, {color: textColor}]}
-            accessibilityRole="text">
+            style={[
+              styles.messageText,
+              messageText,
+              {color: isDarkMode ? Colors.dark.black : Colors.light.white},
+            ]}>
             {message}
           </Text>
           <View style={styles.buttonContainer}>
             {buttons.map((button, index) => (
               <TouchableOpacity
                 key={index}
-                style={[styles.button, {backgroundColor: button.color || '#28a745'}]}
-                onPress={button.onPress}
-                accessibilityRole="button"
-                accessibilityLabel={button.text}>
+                style={[
+                  styles.button,
+                  {backgroundColor: button.color || '#28a745'},
+                ]}
+                disabled={isProcessing}
+                onPress={() => handlePress(button.onPress)}>
                 <Text style={styles.buttonText}>{button.text}</Text>
               </TouchableOpacity>
             ))}
@@ -90,22 +104,19 @@ const CommonPopupModal = ({
   );
 };
 
-export default CommonPopupModal;
-
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
   },
   modalContainer: {
     width: '80%',
+    backgroundColor: 'white',
     borderRadius: 15,
     padding: 25,
     alignItems: 'center',
-    elevation: Platform.OS === 'android' ? 10 : 0,
-    backgroundColor: 'white', // Default background
+    elevation: 10,
   },
   messageText: {
     fontSize: 18,
@@ -133,3 +144,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
+export default CommonPopupModal;

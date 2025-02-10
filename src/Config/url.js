@@ -1,6 +1,5 @@
-import {useAppSelector} from '../Components/hooks';
 import {
-  Auth_docType,
+  DATE_ALERTS,
   MLA_docType,
   whatsapp_broadCast_docType,
   whatsapp_chat_docType,
@@ -10,143 +9,8 @@ import {
   whatsapp_chat_wa_task_management_docType,
 } from '../Config/docType';
 
-export const setLocalHttpsInDomain = 'https://';
 
-export const useApiURLs = () => {
-  const selectedDomain = useAppSelector(
-    state => state.domains?.selectedDomain?.domain,
-  );
-
-  const getApiURL = endpoint =>
-    `${selectedDomain}${whatsapp_chat_docType}${endpoint}`;
-  const getApiAuthURL = endpoint =>
-    `${selectedDomain}${Auth_docType}${endpoint}`;
-  const getApiURLMobile = endpoint =>
-    `${selectedDomain}${whatsapp_chat_mobile_docType}${endpoint}`;
-  const getApiURLTaskManagement = endpoint =>
-    `${selectedDomain}${whatsapp_chat_wa_task_management_docType}${endpoint}`;
-  const getApiURLSmartFlow = endpoint =>
-    `${selectedDomain}${whatsapp_chat_smarty_flow_docType1}${endpoint}`;
-  const getApiURLTASK = endpoint =>
-    `${selectedDomain}${whatsapp_chat_task_docType}${endpoint}`;
-
-  const getApiBroadCastUrl = endpoint =>
-    `${selectedDomain}${whatsapp_broadCast_docType}${endpoint}`;
-
-  return {
-    getApiURL,
-    getApiAuthURL,
-    getApiURLMobile,
-    getApiURLTaskManagement,
-    getApiURLSmartFlow,
-    getApiURLTASK,
-    getApiBroadCastUrl,
-    USER_LOGIN: getApiAuthURL('app_login'),
-    GET_WHATSAPP_MESSAGE: getApiURL('get_whatsapp_message_with_pagination'),
-    GET_CHAT_WITH_WHATSAPP_NUMBER: getApiURL('get_chat_with_whatsapp_number'),
-    SEND_OUTGONIG_TEXT_MESSAGE: getApiURL('send_outgoing_text_message'),
-    SEND_OUTGONIG_MEDIA: getApiURL('send_outgoing_media_message'),
-    GET_WHATSAPP_TEMPLATES: getApiURL('get_whatsapp_templates'),
-    GET_UPLOADED_MEDIA: getApiURL('get_uploaded_media'),
-    SEND_TEMPLATE: getApiURL('send_template'),
-    SEND_TEMPLATE_TO_MULTIPLE_NUMBERS: getApiURL(
-      'send_template_to_multiple_numbers',
-    ),
-    GET_WHATSAPP_MESSAGE_LIST_KEYWORD_MESSAGE: getApiURL(
-      'list_whatsapp_keyword_messages',
-    ),
-    GET_WHATSAPP_MESSAGE_LIST_KEYWORD_FLOW: getApiURL('list_whatsapp_flows'),
-    GET_WHATSAPP_MESSAGE_LIST_INTERACTIVE_MESSGAE: getApiURL(
-      'list_whatsapp_interactive_messages',
-    ),
-    GET_WHATSAPP_MESSAGE_LIST_OPTION_MESSAGE: getApiURL(
-      'list_whatsapp_option_messages',
-    ),
-    SEND_WHATSAPP_KEYWORD_MESSAGE: getApiURL('send_keyword_message'),
-    MARK_ALL_MESSGAE_AS_READ: getApiURL('mark_all_message_read'),
-    SEARCH_MESSAGE: getApiURL('search_whatsapp_message'),
-    DELETE_CHAT: getApiURL('delete_chats'),
-    DELETE_CONTACT: getApiURL('delete_contacts'),
-    DELETE_ALL_CHAT: getApiURL('delete_all_chats'),
-
-    // mobile
-    GET_WHATSAPP_FLOW_DATA: getApiURLMobile('get_whatsapp_flow_data'),
-    GET_WHATSAPP_CONTACTS: getApiURLMobile('get_contacts'),
-    GET_WHATSAPP_CONTACT_CATEGORY: getApiURLMobile('get_contact_category'),
-    GET_WHATSAPP_CONTACT_DETAILS: getApiURLMobile('get_contact_details'),
-    CREATE_WHATSAPP_CONTACT: getApiURLMobile('create_contact'),
-    SEARCH_CONTACT: getApiURLMobile('search_contact'),
-
-    // task management
-    GET_TODAY_TASK: getApiURLTaskManagement('get_todays_tasks'),
-    GET_YESTERDAY_TASK: getApiURLTaskManagement('get_yesterdays_tasks'),
-    GET_THIS_WEEKS_TASK: getApiURLTaskManagement('get_this_weeks_tasks'),
-    GET_LAST_WEEKS_TASK: getApiURLTaskManagement('get_last_weeks_tasks'),
-    GET_THIS_MONTHS_TASK: getApiURLTaskManagement('get_this_months_tasks'),
-    GET_LAST_MONTHS_TASK: getApiURLTaskManagement('get_last_months_tasks'),
-    GET_THIS_YEARS_TASK: getApiURLTaskManagement('get_this_years_tasks'),
-    GET_ALL_TIME_TASK: getApiURLTaskManagement('get_all_tasks'),
-
-    // smart flow
-    GET_FLOW_COMPLETE_JSON: getApiURLSmartFlow('flow_response_json'),
-    GET_FLOW_IN_COMPLETE_JSON: getApiURLSmartFlow('flow_incomplete'),
-
-    // task
-    GET_TASK_CATEGORY: getApiURLTASK('get_category'),
-    GET_TASK_FREQUENCY: getApiURLTASK('get_frequency'),
-    GET_TASK_HOUR: getApiURLTASK('get_start_hour'),
-    GET_TASK_MINUTES: getApiURLTASK('get_start_minutes'),
-    GET_TASK_EXPECTED_TIME: getApiURLTASK('get_expected_time_options'),
-    GET_TASK_PRIORITY: getApiURLTASK('get_priority'),
-    GET_TASK_IMPORTANCE: getApiURLTASK('get_importance'),
-    GET_TASK_SELECT_TEAM_MEMBER: getApiURLTASK('get_user'),
-    GET_TASK_MONTH: getApiURLTASK('get_month_options'),
-    GET_TASK_DAY: getApiURLTASK('get_day_options'),
-    GET_TASK_DATE_OF_MONTH: getApiURLTASK('get_date_options'),
-    CREATE_REPEAT_TASK: getApiURLTASK('create_repeat_task'),
-    CREATE_TASK: getApiURLTASK('create_task'),
-    UPDATE_TASK_STATUS: getApiURLTASK('update_task_status'),
-    GET_PENDING_TASK_ASSIGNED_BY_ME: getApiURLTASK(
-      'get_pending_task_assigned_by_me',
-    ),
-    GET_PENDING_TASK_ASSIGNED_TO_ME: getApiURLTASK(
-      'get_pending_task_assigned_to_me',
-    ),
-    GET_OVERDUE_TASK_ASSIGNED_BY_ME: getApiURLTASK(
-      'get_overdue_task_assigned_by_me',
-    ),
-    GET_OVERDUE_TASK_ASSIGNED_TO_ME: getApiURLTASK(
-      'get_overdue_task_assigned_to_me',
-    ),
-    GET_COMPLETED_TASK_ASSIGNED_BY_ME: getApiURLTASK(
-      'get_completed_task_assigned_by_me',
-    ),
-    GET_COMPLETED_TASK_ASSIGNED_TO_ME: getApiURLTASK(
-      'get_completed_task_assigned_to_me',
-    ),
-    GET_TASK_COMMENT: getApiURLTASK('get_task_comments'),
-    GET_TASK_STATUS: getApiURLTASK('get_task_status'),
-    CHANGE_TASK_STATUS: getApiURLTASK('change_task_status'),
-    ATTACH_FILE_TO_TASK: getApiURLTASK('attach_file_to_task'),
-    GET_FILE_ATTACHMENT_TO_TASK: getApiURLTASK('get_files_attached_to_task'),
-    SEND_COMMENTS_TO_TASK: getApiURLTASK('add_comments_to_task'),
-
-    // broadCast
-    GET_BROADCAST_GROUP: getApiBroadCastUrl('get_broadcast_groups'),
-    GET_BROADCAST_GROUP_DETAILS: getApiBroadCastUrl(
-      'get_broadcast_group_detail',
-    ),
-    CREATE_NEW_GROUP: getApiBroadCastUrl('create_new_group'),
-    ADD_MEMBER_IN_GROUP: getApiBroadCastUrl('add_contact_to_broadcast_group'),
-    GET_CRITERIA: getApiBroadCastUrl('get_criteria'),
-    GET_OPERATOR: getApiBroadCastUrl('get_operator'),
-    GET_LOGICAL_OPERATOR: getApiBroadCastUrl('get_logical_operator'),
-    GET_SENT_BROADCASTED_MESSAGE: getApiBroadCastUrl(
-      'get_sent_broadcasted_messages',
-    ),
-  };
-};
-
+//whatsapp chat
 export const GET_WHATSAPP_MESSAGE = `${whatsapp_chat_docType}get_whatsapp_message_with_pagination`;
 export const GET_CHAT_WITH_WHATSAPP_NUMBER = `${whatsapp_chat_docType}get_chat_with_whatsapp_number`;
 export const SEND_OUTGOING_TEXT_MESSAGE = `${whatsapp_chat_docType}send_outgoing_text_message`;
@@ -165,6 +29,9 @@ export const SEARCH_MESSAGE = `${whatsapp_chat_docType}search_whatsapp_message`;
 export const DELETE_CHAT = `${whatsapp_chat_docType}delete_chats`;
 export const DELETE_CONTACT = `${whatsapp_chat_docType}delete_contacts`;
 export const DELETE_ALL_CHAT = `${whatsapp_chat_docType}delete_all_chats`;
+export const ADD_ACTION_TO_WA_MESSAGE = `${whatsapp_chat_docType}add_action_to_wa_message`;
+export const GET_NEXT_ACTIONS = `${whatsapp_chat_docType}get_next_actions`;
+export const CREATE_NEW_ACTION = `${whatsapp_chat_docType}create_new_next_action`;
 
 // Mobile APIs
 export const GET_WHATSAPP_FLOW_DATA = `${whatsapp_chat_mobile_docType}get_whatsapp_flow_data`;
@@ -229,6 +96,7 @@ export const GET_BROADCAST_MESSAGE_STATUS = `${whatsapp_broadCast_docType}get_br
 export const GET_CONTACTS_BY_BROADCAST_STATUS = `${whatsapp_broadCast_docType}get_contacts_by_broadcast_status`;
 export const CREATE_NEW_BROADCAST_MESSAGE = `${whatsapp_broadCast_docType}create_new_broadcast`;
 export const GET_BROADCAST_MESSAGE_TEMPLATE = `${whatsapp_broadCast_docType}get_whatsapp_templates`;
+export const UPDATE_BROADCAST_GROUP_MEMEBER = `${whatsapp_broadCast_docType}update_group`;
 
 // project APIs
 export const Update_PROJECT_Details = `${MLA_docType}update_project_details`;
@@ -267,3 +135,19 @@ export const GET_FEEDBACK_PROFESSION= `${MLA_docType}get_profession`;
 export const GET_FEEDBACK_STATUS= `${MLA_docType}get_status`;
 export const GET_FEEDBACK_TICKETS_FILTERED= `${MLA_docType}get_feedback_tickets_filtered`;
 export const UPDATE_FEEDBACK_TICKETS= `${MLA_docType}update_ticket`;
+
+
+//date alerts
+export const GET_ALL_DATE_ALERTS = `${DATE_ALERTS}get_all_date_alerts`;
+export const GET_DOCTYPE = `${DATE_ALERTS}get_doctype_for_date_alert`;
+export const GET_TRIIGER_TIME = `${DATE_ALERTS}get_trigger_time`;
+export const GET_TIME_UNIT = `${DATE_ALERTS}get_time_unit`;
+export const GET_REPETITION_FREQUENCY = `${DATE_ALERTS}get_repetition_frequency`;
+export const GET_DATE_FIELD = `${DATE_ALERTS}get_date_field`;
+export const GET_PHONE_FIELDS = `${DATE_ALERTS}get_phone_fields`;
+export const CREATE_NEW_DATE_ALERT = `${DATE_ALERTS}create_new_date_alert`;
+export const GET_SINGLE_DATE_ALERTS = `${DATE_ALERTS}get_single_date_alerts`;
+export const GET_DOC_FEILDS_FOR_VARIABLE = `${DATE_ALERTS}get_doc_fields_for_variable`;
+export const SUMBIT_ALERT_MESSAGE = `${DATE_ALERTS}submit_alert_message`;
+export const Update_DATE_ALERT = `${DATE_ALERTS}update_date_alert`;
+

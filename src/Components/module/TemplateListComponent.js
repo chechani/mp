@@ -1,15 +1,11 @@
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {
-  ActivityIndicator,
   Alert,
   FlatList,
-  RefreshControl,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
-import {useLazyGetAllContactQuery} from '../../api/store/slice/contactSlice';
 import {useLazySearchConatctQuery} from '../../api/store/slice/searchSlice';
 import {
   useGetAllTempleteQuery,
@@ -17,7 +13,7 @@ import {
   useUploadeMediaMutation,
 } from '../../api/store/slice/templeteSlice';
 import * as SvgIcon from '../../assets';
-import {boxShadowLess} from '../../styles/Mixins';
+import {Divider} from '../../styles/commonStyle';
 import {textScale} from '../../styles/responsiveStyles';
 import {spacing} from '../../styles/spacing';
 import {fontNames} from '../../styles/typography';
@@ -32,25 +28,28 @@ import {
 } from '../../Utils/helperFunctions';
 import AnimatedComponentToggle from '../Common/AnimatedComponentToggale';
 import AnimatedModal from '../Common/AnimatedModal';
-import BottomComp from '../Common/BottonComp';
 import CommoneHeader from '../Common/CommoneHeader';
 import CommonPopupModal from '../Common/CommonPopupModal';
 import CustomBottomSheetFlatList from '../Common/CustomBottomSheetFlatList';
+import CustomButton from '../Common/CustomButton';
+import CustomInput from '../Common/CustomInput';
+import DynamicSearch from '../Common/DynamicSearch';
 import Loader from '../Common/Loader';
-import RegularText from '../Common/RegularText';
+import TextComponent from '../Common/TextComponent';
 import {useTheme} from '../hooks';
 
 const TemaplateItemColum = () => {
+  const UploadedtoMeta = 'Uploaded to Meta';
+  const UploadNow = 'Upload Now';
   const secondBottomSheetRef = useRef(null);
   const templateCategoryBottomSheetRef = useRef(null);
+  const dynamicSearchRef = useRef(null);
   const {theme} = useTheme();
-
   const isDarkMode = theme === THEME_COLOR;
-
-  const [mediaModalVisible, setMediaModalVisible] = useState(false);
   const [uploadedHeaderSamples, setUploadedHeaderSamples] = useState([]);
   const [templateData, setTemplateData] = useState([]);
   const [filteredTemplates, setFilteredTemplates] = useState([]);
+
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [templateState, setTemplateState] = useState({
     template: '',
@@ -59,6 +58,7 @@ const TemaplateItemColum = () => {
     selectedMedia: null,
     uploadedMediaId: '',
     selectedUploadedSampleTitle: '',
+    isMediaTypeShowMoadl: false,
     headerNames: {},
   });
   const [uiState, setUiState] = useState({
@@ -70,22 +70,12 @@ const TemaplateItemColum = () => {
     subscribeModalVisible: false,
   });
 
-  const [contacts, setContacts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [hasMoreData, setHasMoreData] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [searchText, setSearchText] = useState('');
-  const [selectedContacts, setSelectedContacts] = useState([]); 
-  const pageSize = 50;
+  const [selectedContacts, setSelectedContacts] = useState([]);
 
-  const [featchConatct, {isLoading: isLoadingFeatchConatct}] =
-    useLazyGetAllContactQuery();
   const {data: templeteData, isLoading: isTempleteLoading} =
     useGetAllTempleteQuery();
-  const [searchConatct] = useLazySearchConatctQuery();
+  const [triggerSearchContact] = useLazySearchConatctQuery();
   const [uploadMidea] = useUploadeMediaMutation();
   const [sendTemplateToMultiplateNumber] =
     useSendTemplateToMultipleNumberMutation();
@@ -93,83 +83,39 @@ const TemaplateItemColum = () => {
   useEffect(() => {
     if (templeteData?.data) {
       setTemplateData(templeteData.data);
-      const categories = templeteData.data
-        .map(item => item.template_category)
-        .filter(template_category => template_category);
+
+      // Extract unique categories
+      const categories = Array.from(
+        new Set(
+          templeteData.data
+            .map(item => item.template_category)
+            .filter(template_category => template_category),
+        ),
+      );
 
       setFilteredTemplates(categories);
     }
   }, [templeteData]);
-  // Fetch contacts on component mount or whenever search text changes
-  useEffect(() => {
-    setPage(1);
-    setHasMoreData(true);
-    if (searchText.trim() === '') {
-      fetchContacts({page: 1});
-    } else {
-      searchContacts({page: 1, searchText});
-    }
-  }, [searchText]);
-  // Fetch contacts from the API (listing all contacts)
-  const fetchContacts = async ({page = 1}) => {
-    if (page === 1) {
-      setLoading(true);
-    } else {
-      setIsLoadingMore(true);
-    }
-    try {
-      const params = {
-        page,
-        limit: pageSize,
-      };
-      const response = await featchConatct(params);
-      const contactsData = response?.data?.message || [];
 
-      if (contactsData?.length > 0) {
-        setContacts(prevContacts =>
-          page === 1 ? contactsData : [...prevContacts, ...contactsData],
-        );
-        setHasMoreData(contactsData.length >= pageSize);
-      } else {
-        setContacts(page === 1 ? [] : [...contacts]);
-        setHasMoreData(false);
-      }
-    } catch (error) {
-      console.error('Error fetching contacts:', error);
-    } finally {
-      setLoading(false);
-      setIsLoadingMore(false);
-      setRefreshing(false);
-    }
-  };
-  // Search contacts from the API
-  const searchContacts = async ({page = 1, searchText}) => {
-    if (page === 1) {
-      setLoading(true);
-    } else {
-      setIsLoadingMore(true);
-    }
-    try {
-      const response = await searchConatct({search_query: searchText.trim()});
-      const contactsData = response?.data?.data || [];
+  const handleFetchSearchResults = useCallback(
+    async (text, abortSignal) => {
+      if (abortSignal?.aborted) return [];
 
-      if (contactsData.length > 0) {
-        setContacts(prevContacts =>
-          page === 1 ? contactsData : [...prevContacts, ...contactsData],
-        );
-        setHasMoreData(contactsData.length >= pageSize);
-      } else {
-        setContacts(page === 1 ? [] : [...contacts]);
-        setHasMoreData(false);
+      try {
+        const {data} = await triggerSearchContact({
+          search_query: text,
+          page: 1,
+          limit: 30,
+        }).unwrap();
+        return data || [];
+      } catch (err) {
+        console.error('Error fetching contacts:', err);
+        return [];
       }
-    } catch (error) {
-      console.error('Error searching contacts:', error);
-    } finally {
-      setLoading(false);
-      setIsLoadingMore(false);
-      setRefreshing(false);
-    }
-  };
+    },
+    [triggerSearchContact],
+  );
+
   const renderAvatar = contact => {
     const {backgroundColor, textColor} = getColorForParticipant(
       contact.mobile_no.toString(),
@@ -178,9 +124,11 @@ const TemaplateItemColum = () => {
     return (
       <View
         style={[styles.avatarPlaceholder, {backgroundColor: backgroundColor}]}>
-        <RegularText style={[styles.avatarText, {color: textColor}]}>
-          {firstLetter}
-        </RegularText>
+        <TextComponent
+          text={firstLetter}
+          color={textColor}
+          size={textScale(15)}
+        />
       </View>
     );
   };
@@ -209,34 +157,30 @@ const TemaplateItemColum = () => {
 
   const renderContactItem = ({item}) => {
     const isSelected = selectedContacts.includes(item.mobile_no);
+    const backgroundColor = isSelected
+      ? colors.green200
+      : isDarkMode
+      ? Colors.white
+      : '#151414';
     return (
       <TouchableOpacity
-        style={[
-          styles.contactItem,
-          isSelected
-            ? {backgroundColor: colors.green200}
-            : {
-                backgroundColor: isDarkMode ? colors.white : colors.black,
-              },
-        ]}
+        style={[styles.contactItem, {backgroundColor}]}
         activeOpacity={0.7}
         onPress={() => handleSelectContact(item.mobile_no)}>
         {renderAvatar(item)}
-        <View>
-          <RegularText
-            style={[
-              styles.contactName,
-              {color: isDarkMode ? colors.black : colors.white},
-            ]}>
-            {item?.full_name}
-          </RegularText>
-          <RegularText
-            style={[
-              styles.contactMobile,
-              {color: isDarkMode ? colors.black : colors.white},
-            ]}>
-            {item?.mobile_no}
-          </RegularText>
+        <View style={styles.contactInfo}>
+          <TextComponent
+            text={item?.full_name}
+            color={isDarkMode ? Colors.dark.black : Colors.light.white}
+            size={textScale(15)}
+            font={fontNames.ROBOTO_FONT_FAMILY_MEDIUM}
+          />
+
+          <TextComponent
+            text={item?.mobile_no}
+            color={isDarkMode ? Colors.dark.black : Colors.light.white}
+            size={textScale(13)}
+          />
         </View>
         {isSelected && (
           <SvgIcon.CheckIcon
@@ -248,29 +192,7 @@ const TemaplateItemColum = () => {
       </TouchableOpacity>
     );
   };
-  const handleLoadMore = () => {
-    if (!isLoadingMore && hasMoreData) {
-      setPage(prevPage => prevPage + 1);
-      if (searchText.trim() === '') {
-        fetchContacts({page: page + 1});
-      } else {
-        searchContacts({searchText});
-      }
-    }
-  };
-  const onRefresh = () => {
-    setRefreshing(true);
-    setPage(1);
-    setHasMoreData(true);
-    if (searchText.trim() === '') {
-      fetchContacts({page: 1});
-    } else {
-      searchContacts({searchText});
-    }
-  };
-  const handleSearch = text => {
-    setSearchText(text);
-  };
+
   const handleHeaderNameChange = (templateId, value) => {
     setTemplateState(prev => ({
       ...prev,
@@ -311,11 +233,13 @@ const TemaplateItemColum = () => {
     }));
     secondBottomSheetRef.current?.dismiss();
   };
+
   const handleCategorySelection = category => {
+    setSelectedCategory(category);
     if (category === 'All') {
       setTemplateData(templeteData?.data);
     } else {
-      const filtered = templateData.filter(
+      const filtered = templeteData?.data?.filter(
         template => template.template_category === category,
       );
       setTemplateData(filtered);
@@ -339,7 +263,6 @@ const TemaplateItemColum = () => {
       }));
       setSelectedContacts([]);
       setIsModalVisible(false);
-      handleSearch('');
       return {
         ...prevUiState,
         activeTemplateId: isCurrentlyActive ? null : item.name,
@@ -428,7 +351,6 @@ const TemaplateItemColum = () => {
           subscribeModalVisible: true,
         }));
         setIsModalVisible(false);
-        handleSearch('');
       }
     } catch (error) {
       console.error('Error during upload:', error);
@@ -440,57 +362,37 @@ const TemaplateItemColum = () => {
         activeTemplateId: null,
       }));
       setIsModalVisible(false);
-      handleSearch('');
     }
   };
   const renderHeaderType = item => {
     if (!['VIDEO', 'IMAGE'].includes(item?.header_type)) return null;
-
     return (
-      <>
-        <RegularText
-          style={[
-            styles.headerTypeTitle,
-            {color: isDarkMode ? colors.black : colors.white},
-          ]}>
-          Header Type
-        </RegularText>
-        <BottomComp
-          text={item?.header_type}
-          style={styles.headerTypeButton}
-          textStyle={styles.headerTypeButtonText}
-        />
-      </>
+      <CustomInput
+        label="Header Type"
+        placeholder="Header Type"
+        value={item?.header_type}
+        editable={false}
+        inputStyles={{
+          color: isDarkMode ? Colors.dark.black : Colors.light.white,
+        }}
+      />
     );
   };
   const renderHeaderNameInput = item => {
     if (!['VIDEO', 'IMAGE'].includes(item?.header_type)) return null;
-
     return (
-      <>
-        <RegularText
-          style={[
-            styles.headerNameTitle,
-            {color: isDarkMode ? colors.black : colors.white},
-          ]}>
-          Header Name
-        </RegularText>
-        <TextInput
-          style={[
-            styles.headerNameInput,
-            {
-              borderColor: isDarkMode ? colors.grey600 : colors.grey400,
-              color: isDarkMode ? colors.black : colors.white,
-            },
-          ]}
-          placeholder="Enter Header Name"
-          placeholderTextColor={isDarkMode ? colors.grey400 : colors.grey600}
-          value={templateState.headerNames[templateState.template] || ''}
-          onChangeText={value =>
-            handleHeaderNameChange(templateState.template, value)
-          }
-        />
-      </>
+      <CustomInput
+        label="Header Name"
+        placeholder="Header Name"
+        required={true}
+        value={templateState.headerNames[templateState.template] || ''}
+        onChange={value =>
+          handleHeaderNameChange(templateState.template, value)
+        }
+        inputStyles={{
+          color: isDarkMode ? Colors.dark.black : Colors.light.white,
+        }}
+      />
     );
   };
   const renderMediaTypeSection = item => {
@@ -498,42 +400,48 @@ const TemaplateItemColum = () => {
 
     return (
       <>
-        <RegularText
-          style={[
-            styles.mediaTypeText,
-            {color: isDarkMode ? colors.black : colors.white},
-          ]}>
-          Media Type
-        </RegularText>
-        <BottomComp
-          text={templateState.mediaType || 'Select Media Type'}
-          style={styles.bottomCompStyle}
-          textStyle={styles.bottomCompTextStyle}
-          rightImg={true}
-          source={SvgIcon.DownArrow}
-          onPress={() => setMediaModalVisible(prev => !prev)}
+        <CustomInput
+          required={true}
+          value={templateState.mediaType || 'Select Media Type'}
+          onPressTextInput={() => {
+            setTemplateState(pre => ({
+              ...pre,
+              isMediaTypeShowMoadl: !pre.isMediaTypeShowMoadl,
+            }));
+          }}
+          editable={false}
+          inputStyles={{
+            color: isDarkMode ? Colors.dark.black : Colors.light.white,
+          }}
+          label="Media Type"
         />
-
-        <AnimatedModal
-          isVisible={mediaModalVisible}
-          close={() => setMediaModalVisible(false)}
-          animationType="bottom-to-top"
-          bottom={spacing.HEIGHT_105}
-          left={spacing.WIDTH_10}
-          backDropColor="rgba(255,255,255, 0.3)">
-          {['Uploaded at Meta', 'Upload Now'].map(option => (
+        {templateState.isMediaTypeShowMoadl &&
+          [UploadedtoMeta, UploadNow].map(option => (
             <TouchableOpacity
               key={option}
               onPress={() => {
-                setTemplateState(prev => ({...prev, mediaType: option}));
-                setMediaModalVisible(false);
+                setTemplateState(prev => ({
+                  ...prev,
+                  mediaType: option,
+                  isMediaTypeShowMoadl: false,
+                }));
+              }}
+              style={{
+                paddingVertical: spacing.PADDING_8,
+                backgroundColor: Colors.default.accent,
+
+                borderRadius: spacing.RADIUS_6,
+                marginVertical: spacing.MARGIN_6,
               }}>
-              <RegularText style={styles.uploadedtoggleText}>
-                {option}
-              </RegularText>
+              <TextComponent
+                text={option}
+                color={Colors.light.white}
+                textAlign={'center'}
+                size={textScale(16)}
+                font={fontNames.ROBOTO_FONT_FAMILY_MEDIUM}
+              />
             </TouchableOpacity>
           ))}
-        </AnimatedModal>
       </>
     );
   };
@@ -545,55 +453,60 @@ const TemaplateItemColum = () => {
       return null;
 
     return (
-      <>
-        <RegularText style={styles.uploadedHeaderSampleTitle}>
-          {templateState.mediaType === 'Uploaded at Meta'
+      <CustomInput
+        required={true}
+        value={
+          templateState.mediaType === UploadedtoMeta
+            ? templateState.selectedUploadedSampleTitle ||
+              'Select Uploaded Sample'
+            : templateState.selectedMedia?.name || 'Upload File'
+        }
+        onPressTextInput={
+          templateState.mediaType === UploadedtoMeta
+            ? handleUploadHeaderSample
+            : handleUploadHeaderSampleLocally
+        }
+        editable={false}
+        inputStyles={{
+          color: isDarkMode ? Colors.dark.black : Colors.light.white,
+        }}
+        label={
+          templateState.mediaType === UploadedtoMeta
             ? 'Uploaded Header Sample'
-            : 'Header Sample'}
-        </RegularText>
-        <BottomComp
-          text={
-            templateState.mediaType === 'Uploaded at Meta'
-              ? templateState.selectedUploadedSampleTitle ||
-                'Select Uploaded Sample'
-              : templateState.selectedMedia?.name || 'Upload File'
-          }
-          style={
-            templateState.mediaType === 'Uploaded at Meta'
-              ? styles.uploadedSampleButton
-              : styles.uploadNowButton
-          }
-          textStyle={
-            templateState.mediaType === 'Uploaded at Meta'
-              ? styles.uploadedSampleButtonText
-              : styles.uploadNowButtonText
-          }
-          rightImg={templateState.mediaType === 'Uploaded at Meta'}
-          source={
-            templateState.mediaType === 'Uploaded at Meta'
-              ? SvgIcon.DownArrow
-              : null
-          }
-          onPress={
-            templateState.mediaType === 'Uploaded at Meta'
-              ? handleUploadHeaderSample
-              : handleUploadHeaderSampleLocally
-          }
-        />
-      </>
+            : 'Header Sample'
+        }
+      />
     );
   };
   const renderUploadedSampleItem = ({item}) => (
-    <TouchableOpacity
-      style={styles.uploadedSampleItem}
-      onPress={() => handleUploadedSampleSelect(item)}>
-      <RegularText style={styles.uploadedSampleItemText}>
-        {item?.title}
-      </RegularText>
-    </TouchableOpacity>
+    <>
+      <TouchableOpacity
+        style={styles.uploadedSampleItem}
+        onPress={() => handleUploadedSampleSelect(item)}>
+        <TextComponent
+          text={item?.title}
+          color={isDarkMode ? Colors.dark.black : Colors.light.white}
+        />
+      </TouchableOpacity>
+      <Divider />
+    </>
   );
   const renderUploadedSampleHeader = () => (
-    <RegularText style={styles.filterTitle}>Uploaded Header Sample</RegularText>
+    <TextComponent
+      text={'Uploaded Header Sample'}
+      style={{alignSelf: 'center', marginBottom: spacing.MARGIN_8}}
+      size={textScale(18)}
+      color={isDarkMode ? Colors.dark.black : Colors.light.white}
+    />
+  );
+  const renderUploadedSampleListEmpty = () => (
+    <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+      <TextComponent
+        text={'Item Not Found'}
+        size={textScale(20)}
+        color={isDarkMode ? Colors.dark.black : Colors.light.white}
+      />
+    </View>
   );
   const renderTemplateCategoryItem = ({item}) => {
     return (
@@ -603,18 +516,29 @@ const TemaplateItemColum = () => {
           selectedCategory === item && styles.selectedTemplateCategory,
         ]}
         onPress={() => handleCategorySelection(item)}>
-        <RegularText style={styles.categoryTemplateText}>{item}</RegularText>
+        <TextComponent
+          text={item}
+          style={{textTransform: 'capitalize'}}
+          size={textScale(15)}
+          font={fontNames.ROBOTO_FONT_FAMILY_MEDIUM}
+          color={
+            selectedCategory === item
+              ? Colors.default.white
+              : Colors.default.black
+          }
+          textAlign={'center'}
+        />
       </TouchableOpacity>
     );
   };
   const renderTemplateCategoryHeader = () => (
-    <RegularText
-      style={[
-        styles.filterTitle,
-        {color: isDarkMode ? colors.black : colors.white},
-      ]}>
-      Select Category
-    </RegularText>
+    <TextComponent
+      text={'Select Category'}
+      color={isDarkMode ? Colors.dark.black : Colors.light.white}
+      style={{alignSelf: 'center', marginBottom: spacing.MARGIN_8}}
+      size={textScale(15)}
+      font={fontNames.ROBOTO_FONT_FAMILY_MEDIUM}
+    />
   );
 
   const renderFilterTempletesItem = ({item}) => {
@@ -632,9 +556,11 @@ const TemaplateItemColum = () => {
           onPress={() => handleSelectTemplateData(item)}
           descrption={item?.template_category}>
           <View style={styles.templateContentContainer}>
-            <RegularText style={styles.templateText}>
-              {item?.template}
-            </RegularText>
+            <TextComponent
+              text={item?.template}
+              size={textScale(15)}
+              color={Colors.default.black}
+            />
           </View>
 
           <View style={styles.templateDetailsContainer}>
@@ -642,15 +568,12 @@ const TemaplateItemColum = () => {
             {renderHeaderNameInput(item)}
             {renderMediaTypeSection(item)}
             {renderUploadedSampleSection(item)}
+            <CustomButton
+              title={'Send to Contacts'}
+              onPress={() => setIsModalVisible(true)}
+              disabled={isDisableTemplateSubmit}
+            />
           </View>
-
-          <BottomComp
-            text="Send to Contacts"
-            style={styles.selectContactsButton}
-            textStyle={styles.selectContactsButtonText}
-            onPress={() => setIsModalVisible(true)}
-            disabled={isDisableTemplateSubmit}
-          />
         </AnimatedComponentToggle>
       </TouchableOpacity>
     );
@@ -671,28 +594,27 @@ const TemaplateItemColum = () => {
 
   return (
     <>
-      <View>
-        <CommoneHeader
-          title="Template"
-          showLeftIcon={true}
-          leftIcon={SvgIcon.MenuIcon}
-          onLeftIconPress={() => openDrawer()}
-          showRightIcons={true}
-          rightIcons={[SvgIcon.Filter, SvgIcon.ReloadIcon]}
-          onRightIconPress={handleRightIconPress}
-        />
+      <CommoneHeader
+        title="Template"
+        showLeftIcon={true}
+        leftIcon={SvgIcon.MenuIcon}
+        onLeftIconPress={() => openDrawer()}
+        showRightIcons={true}
+        rightIcons={[SvgIcon.Filter, SvgIcon.ReloadIcon]}
+        onRightIconPress={handleRightIconPress}
+      />
 
-        {isTempleteLoading ? (
-          <Loader color={Colors.default.primaryText} />
-        ) : (
-          <FlatList
-            data={templateData}
-            renderItem={renderFilterTempletesItem}
-            keyExtractor={item => item?.name.toString()}
-            // estimatedItemSize={100}
-          />
-        )}
-      </View>
+      {isTempleteLoading ? (
+        <Loader />
+      ) : (
+        <FlatList
+          data={templateData}
+          renderItem={renderFilterTempletesItem}
+          keyExtractor={item => item?.name.toString()}
+          contentContainerStyle={{paddingBottom: spacing.PADDING_120}}
+        />
+      )}
+
       <CustomBottomSheetFlatList
         ref={secondBottomSheetRef}
         snapPoints={['40%']}
@@ -700,6 +622,7 @@ const TemaplateItemColum = () => {
         keyExtractor={item => item?.media_id.toString()}
         renderItem={renderUploadedSampleItem}
         ListHeaderComponent={renderUploadedSampleHeader}
+        ListEmptyComponent={renderUploadedSampleListEmpty}
       />
 
       {/* BottomSheet for WhatsApp Template Categories */}
@@ -738,87 +661,28 @@ const TemaplateItemColum = () => {
           backgroundColor: isDarkMode ? colors.white : colors.black,
           height: '100%',
         }}>
-        {/* Custom Header with Search Bar */}
-
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            paddingHorizontal: spacing.PADDING_20,
-          }}>
-          {/* Left Icon - Close Modal */}
-          <TouchableOpacity
-            onPress={() => {
-              setIsModalVisible(false);
-              setSelectedContacts([]);
-              setSearchText('');
-            }}
-            style={{marginRight: 10}}>
-            <SvgIcon.BackIcon
-              width={spacing.WIDTH_24}
-              height={spacing.WIDTH_24}
-              color={isDarkMode ? colors.grey800 : colors.white}
-            />
-          </TouchableOpacity>
-
-          {/* Search Bar */}
-          <TextInput
-            placeholder="Search contacts by Name or Number"
-            placeholderTextColor={colors.grey800}
-            value={searchText}
-            onChangeText={text => handleSearch(text)}
-            style={{
-              flex: 1,
-              backgroundColor: '#f0f0f0',
-              borderRadius: 8,
-              paddingHorizontal: 10,
-              height: 40,
-              color: '#000',
-            }}
-          />
-        </View>
-
-        {/* Contacts List */}
-        {isLoadingFeatchConatct ? (
-          <Loader color={Colors.default.white} />
-        ) : (
-          <FlatList
-            data={contacts}
-            keyExtractor={(item, index) => index.toString()}
-            renderItem={renderContactItem}
-            ListEmptyComponent={() => (
-              <RegularText
-                style={[
-                  styles.noDataText,
-                  {color: isDarkMode ? colors.black : colors.white},
-                ]}>
-                No contacts found.
-              </RegularText>
-            )}
-            contentContainerStyle={styles.flatListContainer}
-            onEndReached={handleLoadMore}
-            onEndReachedThreshold={0.5}
-            ListFooterComponent={
-              isLoadingMore && (
-                <ActivityIndicator size="large" color={colors.green} />
-              )
-            }
-            refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-            }
-            showsHorizontalScrollIndicator={false}
+        <DynamicSearch
+          ref={dynamicSearchRef}
+          data={[]}
+          searchKeys={['full_name', 'mobile_no']}
+          useRemoteSearch
+          fetchSearchResults={handleFetchSearchResults}
+          placeholder="Search contacts..."
+          debounceTime={400}
+          minCharacters={1}
+          maxResults={50}
+          isgoBackArrowShow
+          renderCustomItem={renderContactItem}
+          goBackArrowPress={() => setIsModalVisible(false)}
+        />
+        {selectedContacts.length > 0 && (
+          <CustomButton
+            title={`Proceed with ${selectedContacts.length} selected contacts`}
+            onPress={handleSubmitTemplate}
+            isLoading={uiState.isUploading}
           />
         )}
       </AnimatedModal>
-      {selectedContacts.length > 0 && (
-        <BottomComp
-          text="Send Template"
-          style={styles.sendTemplateButton}
-          textStyle={styles.sendTemplateButtonText}
-          onPress={handleSubmitTemplate}
-          isLoading={uiState.isUploading}
-        />
-      )}
     </>
   );
 };
@@ -900,10 +764,13 @@ const styles = StyleSheet.create({
   contactItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: spacing.PADDING_10,
-    backgroundColor: '#fff',
-    ...boxShadowLess(),
-    paddingHorizontal: spacing.PADDING_20,
+    padding: spacing.PADDING_12,
+    borderRadius: spacing.RADIUS_8,
+    marginVertical: spacing.MARGIN_4,
+  },
+  contactInfo: {
+    flex: 1,
+    marginLeft: spacing.MARGIN_10,
   },
   avatarPlaceholder: {
     width: spacing.HEIGHT_40,
@@ -911,7 +778,6 @@ const styles = StyleSheet.create({
     borderRadius: spacing.HEIGHT_40 / 2,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: spacing.MARGIN_10,
   },
   noDataText: {
     textAlign: 'center',
@@ -1037,6 +903,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.grey200,
   },
   selectedTemplateCategory: {
-    backgroundColor: colors.green200,
+    backgroundColor: colors.green,
   },
 });

@@ -159,12 +159,15 @@ export const getColorForParticipant = participantId => {
   return participantColors[participantId];
 };
 
-export const debounce = (func, delay) => {
-  let timeoutId;
+export const debounce = (func, wait) => {
+  let timeout;
+
   return function (...args) {
     const context = this;
-    if (timeoutId) clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => func.apply(context, args), delay);
+    clearTimeout(timeout);  
+    timeout = setTimeout(() => {
+      func.apply(context, args);
+    }, wait);
   };
 };
 
@@ -254,6 +257,15 @@ export const clearStack = (routeName, params = {}) => {
 
 export const push = (routeName, params = {}) => {
   NavigationService.push(routeName, params);
+};
+
+export const forceNavigate = (navigation, routeName) => {
+  navigation.dispatch(
+    CommonActions.reset({
+      index: 0,
+      routes: [{ name: routeName }],
+    }),
+  );
 };
 
 export const isPhoneNumber = message => {
@@ -400,8 +412,8 @@ export function convertDateFormat(dateStr) {
 }
 
 export const truncateText = (text, charLimit) => {
-  if (text.length > charLimit) {
-    return text.slice(0, charLimit) + '...';
+  if (text?.length > charLimit) {
+    return text?.slice(0, charLimit) + '...';
   }
   return text;
 };
@@ -453,3 +465,84 @@ export const toastConfig = {
     />
   ),
 };
+import colors from './colors';
+import * as SvgIcon from '../assets';
+
+export const MESSAGE_STATUS = {
+  read: {
+    type: 'svg',
+    component: SvgIcon.DoubleCheckIcon,
+    color: colors.blue800,
+  },
+  failed: {
+    type: 'svg',
+    component: SvgIcon.Wrong,
+    color: colors.redA700,
+  },
+  delivered: {
+    type: 'svg',
+    component: SvgIcon.DoubleCheckIcon,
+    color: colors.green900,
+  },
+  sent: {
+    type: 'svg',
+    component: SvgIcon.CheckIcon,
+    color: colors.black,
+  },
+};
+
+export const getDateLabel = dateString => {
+  const messageDate = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    // Reset hours to compare just the dates
+    const messageDateDay = new Date(
+      messageDate.getFullYear(),
+      messageDate.getMonth(),
+      messageDate.getDate(),
+    );
+    const todayDay = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+    );
+    const yesterdayDay = new Date(
+      yesterday.getFullYear(),
+      yesterday.getMonth(),
+      yesterday.getDate(),
+    );
+
+    if (messageDateDay.getTime() === todayDay.getTime()) {
+      return 'Today';
+    } else if (messageDateDay.getTime() === yesterdayDay.getTime()) {
+      return 'Yesterday';
+    } else {
+      return messageDate.toLocaleDateString();
+    }
+};
+
+
+export const formatDateTime = (date, mode = 'date', locale = 'en-US') => {
+  if (!date) return ''; // Return empty if no date provided
+
+  if (mode === 'date') {
+    const year = date.getFullYear(); // Get full year (YYYY)
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Ensure two digits (MM)
+    const day = String(date.getDate()).padStart(2, '0'); // Ensure two digits (DD)
+    return `${year}-${month}-${day}`; // Format as YYYY-MM-DD
+  }
+
+  if (mode === 'time') {
+    return date.toLocaleTimeString(locale, {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false, // 24-hour format
+    });
+  }
+
+  return `${formatDateTime(date, 'date')} ${formatDateTime(date, 'time')}`; // Combine date and time
+};
+

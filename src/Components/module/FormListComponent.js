@@ -1,34 +1,35 @@
-import React, { useRef, useState } from 'react';
-import { FlatList, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { useGetAllFromDatQuery } from '../../api/store/slice/formSlice';
+import React, {useRef, useState} from 'react';
+import {FlatList, StyleSheet, TouchableOpacity, View} from 'react-native';
+import {useGetAllFromDataQuery} from '../../api/store/slice/formSlice';
 import * as SvgIcon from '../../assets';
 import NavigationString from '../../Navigations//NavigationString';
-import { boxShadow } from '../../styles/Mixins';
-import { textScale } from '../../styles/responsiveStyles';
-import { spacing } from '../../styles/spacing';
-import { fontNames } from '../../styles/typography';
+import {boxShadow} from '../../styles/Mixins';
+import {textScale} from '../../styles/responsiveStyles';
+import {spacing} from '../../styles/spacing';
+import {fontNames} from '../../styles/typography';
+import Colors from '../../theme/colors';
 import colors from '../../Utils/colors';
 import THEME_COLOR from '../../Utils/Constant';
-import { navigate, openDrawer, truncateText } from '../../Utils/helperFunctions';
-import BottonComp from '../Common/BottonComp';
+import {navigate, openDrawer, truncateText} from '../../Utils/helperFunctions';
 import CommoneHeader from '../Common/CommoneHeader';
 import CustomBottomSheet from '../Common/CustomBottomSheet';
 import CustomBottomSheetFlatList from '../Common/CustomBottomSheetFlatList';
+import CustomButton from '../Common/CustomButton';
 import LoadingScreen from '../Common/Loader';
-import RegularText from '../Common/RegularText';
-import { useTheme } from '../hooks';
+import TextComponent from '../Common/TextComponent';
+import {useTheme} from '../hooks';
 
 const FormListComponent = () => {
   const {theme} = useTheme();
-  const isDarkMode = theme === THEME_COLOR
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const isDarkMode = theme === THEME_COLOR;
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [formName, setFormName] = useState('');
   const bottomSheetRef = useRef(null);
   const filterFormCategoryBottomSheet = useRef(null);
-  const {data, isLoading} = useGetAllFromDatQuery();
-  
+  const {data, isLoading, refetch} = useGetAllFromDataQuery();
+
   const filteredFlows =
-    selectedCategory === 'All'
+    selectedCategory === ''
       ? data?.message?.data
       : data?.message?.data.filter(flow => flow.category === selectedCategory);
 
@@ -36,54 +37,39 @@ const FormListComponent = () => {
     return (
       <>
         <TouchableOpacity
-          style={[
-            styles.card,
-            {
-              backgroundColor:
-                isDarkMode ? colors.white : colors.black,
-            },
-          ]}
+          style={[styles.card]}
           onPress={() => {
             bottomSheetRef.current?.present(), setFormName(item?.name);
           }}>
           {item?.name && (
-            <RegularText
-              style={[
-                styles.cardTitle,
-                {color: isDarkMode ? colors.black : colors.white},
-              ]}>{`${truncateText(item?.name, 50).replace(
-              /_/g,
-              ' ',
-            )}`}</RegularText>
+            <TextComponent
+              text={`${truncateText(item?.name, 50).replace(/_/g, ' ')}`}
+              color={isDarkMode ? Colors.dark.black : Colors.light.white}
+              font={fontNames.ROBOTO_FONT_FAMILY_MEDIUM}
+            />
           )}
           {item?.category && (
-            <RegularText
-              style={[
-                styles.categoryText,
-                {color: isDarkMode ? colors.black : colors.grey300},
-              ]}>
-              {item?.category}
-            </RegularText>
+            <TextComponent
+              text={item?.category}
+              color={isDarkMode ? Colors.dark.black : Colors.light.white}
+              size={textScale(13)}
+              font={fontNames.ROBOTO_FONT_FAMILY_MEDIUM}
+            />
           )}
           {item?.flow_description && (
-            <RegularText
-              style={[
-                styles.description,
-                {
-                  color:
-                    isDarkMode ? colors.grey800 : colors.grey500,
-                },
-              ]}>
-              {truncateText(item?.flow_description, 30)}
-            </RegularText>
+            <TextComponent
+              text={truncateText(item?.flow_description, 30)}
+              color={isDarkMode ? Colors.dark.black : Colors.light.white}
+              font={fontNames.ROBOTO_FONT_FAMILY_MEDIUM}
+              style={{opacity: 0.6}}
+            />
           )}
         </TouchableOpacity>
         <View
           style={[
             styles.divider,
             {
-              backgroundColor:
-                isDarkMode ? colors.grey300 : colors.grey600,
+              backgroundColor: isDarkMode ? colors.grey300 : colors.grey600,
             },
           ]}
         />
@@ -102,37 +88,50 @@ const FormListComponent = () => {
         styles.filterOption,
         selectedCategory === item && styles.selectedFilterOption,
       ]}>
-      <RegularText
-        style={[
-          styles.filterText,
-          selectedCategory === item && {color: colors.black},
-        ]}>
-        {item}
-      </RegularText>
+      <TextComponent
+        text={item}
+        color={
+          selectedCategory === item
+            ? Colors.default.white
+            : Colors.default.black
+        }
+        style={{padding: spacing.PADDING_10}}
+        textAlign={'center'}
+      />
     </TouchableOpacity>
   );
   const filterFormCategoryListHeaderComponent = () => (
-    <RegularText
-      style={[
-        styles.filterTitle,
-        {color: isDarkMode ? colors.black : colors.white},
-      ]}>
-      Filter by Category
-    </RegularText>
+    <TextComponent
+      text={'Filter by Category'}
+      color={isDarkMode ? Colors.dark.black : Colors.light.white}
+      style={{alignSelf: 'center'}}
+      size={textScale(18)}
+      font={fontNames.ROBOTO_FONT_FAMILY_MEDIUM}
+    />
   );
   const filterFormCategoryListEmptyComponent = () => (
     <View style={{alignItems: 'center', justifyContent: 'center', flex: 1}}>
-      <RegularText
-        style={{
-          fontSize: textScale(16),
-          fontFamily: fontNames.ROBOTO_FONT_FAMILY_BOLD,
-          color: isDarkMode ? colors.black : colors.white,
-        }}>
-        No Data Present
-      </RegularText>
+      <TextComponent
+        text={'No Data Present'}
+        color={isDarkMode ? Colors.dark.black : Colors.light.white}
+        size={textScale(16)}
+        font={fontNames.ROBOTO_FONT_FAMILY_BOLD}
+      />
     </View>
   );
+  const handleRightIconPress = index => {
+    const actions = {
+      0: () => filterFormCategoryBottomSheet.current.present(),
+      1: () => refetch(),
+    };
 
+    const action = actions[index];
+    if (action) {
+      action();
+    } else {
+      console.log(index);
+    }
+  };
   return (
     <>
       <CommoneHeader
@@ -140,51 +139,30 @@ const FormListComponent = () => {
         showLeftIcon={true}
         leftIcon={SvgIcon.MenuIcon}
         onLeftIconPress={() => {
-          openDrawer(), setSelectedCategory('All');
+          openDrawer(), setSelectedCategory('');
         }}
         showRightIcons={true}
-        rightIcons={[SvgIcon.Filter]}
-        onRightIconPress={() => filterFormCategoryBottomSheet.current.present()}
+        rightIcons={[SvgIcon.Filter, SvgIcon.ReloadIcon]}
+        onRightIconPress={handleRightIconPress}
       />
 
       {isLoading ? (
-        <LoadingScreen color={colors.green} />
+        <LoadingScreen />
       ) : (
-        <View
-          style={[
-            styles.container,
-            {
-              backgroundColor:
-                isDarkMode ? colors.white : colors.black,
-            },
-          ]}>
-          <View
-            style={{
-              marginHorizontal: spacing.MARGIN_16,
-              alignItems: 'center',
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-            }}>
-            <RegularText
-              onPress={() => setSelectedCategory('All')}
-              style={[
-                styles.filterText,
-                selectedCategory === 'All' && styles.activeFilter,
-                {color: isDarkMode ? colors.black : colors.white},
-              ]}>
-              Reset All
-            </RegularText>
-            <TouchableOpacity
-              onPress={() => fetchData()}
-              style={[
-                styles.refreshtBtnContainer,
-                {marginLeft: spacing.MARGIN_6},
-              ]}>
-              <SvgIcon.ReloadIcon
-                width={spacing.WIDTH_30}
-                height={spacing.HEIGHT_30}
-              />
-            </TouchableOpacity>
+        <View style={[styles.container]}>
+          <View style={{margin: spacing.MARGIN_16}}>
+            <TextComponent
+              text={'Reset All'}
+              color={
+                selectedCategory
+                  ? Colors.default.primaryColor
+                  : isDarkMode
+                  ? Colors.default.black
+                  : Colors.light.white
+              }
+              font={fontNames.ROBOTO_FONT_FAMILY_MEDIUM}
+              onPress={() => setSelectedCategory('')}
+            />
           </View>
 
           <FlatList
@@ -193,40 +171,41 @@ const FormListComponent = () => {
             renderItem={renderFlowItem}
             contentContainerStyle={styles.flatListContainer}
             ListEmptyComponent={() => (
-              <RegularText
-                style={[
-                  styles.noDataText,
-                  {color: isDarkMode ? colors.black : colors.white},
-                ]}>
-                No flows found for the selected category.
-              </RegularText>
+              <TextComponent
+                text={'No flows found for the selected category.'}
+                color={isDarkMode ? Colors.dark.black : Colors.light.white}
+                textAlign={'center'}
+                style={{marginTop: spacing.MARGIN_20}}
+              />
             )}
           />
         </View>
       )}
-      <CustomBottomSheet ref={bottomSheetRef} snapPoints={['25%']}>
-        <BottonComp
-          text="Completed"
-          style={styles.formCompletionCheckBtn}
-          textStyle={styles.formCompletionCheckBtnTextStyle}
-          onPress={() => {
-            navigate(NavigationString.FormResponseCompleteScreen, {
-              Flow_name: formName,
-            }),
+      <CustomBottomSheet ref={bottomSheetRef} snapPoints={['30%']}>
+        <View
+          style={{
+            marginHorizontal: spacing.MARGIN_12,
+          }}>
+          <CustomButton
+            title={'Completed'}
+            onPress={() => {
+              navigate(NavigationString.FormResponseCompleteScreen, {
+                Flow_name: formName,
+              }),
+                bottomSheetRef.current?.dismiss();
+            }}
+          />
+          <CustomButton
+            title={'Incompleted'}
+            onPress={() => {
+              navigate(NavigationString.FormResponseInCompleteScreen, {
+                Flow_name: formName,
+              });
               bottomSheetRef.current?.dismiss();
-          }}
-        />
-        <BottonComp
-          text="In Completed"
-          style={styles.formCompletionCheckBtn}
-          textStyle={styles.formCompletionCheckBtnTextStyle}
-          onPress={() => {
-            navigate(NavigationString.FormResponseInCompleteScreen, {
-              Flow_name: formName,
-            });
-            bottomSheetRef.current?.dismiss();
-          }}
-        />
+            }}
+            buttonStyle={{marginVertical: spacing.MARGIN_12}}
+          />
+        </View>
       </CustomBottomSheet>
 
       <CustomBottomSheetFlatList
@@ -245,7 +224,6 @@ const FormListComponent = () => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#f9f9f9',
     flex: 1,
   },
   loaderContainer: {
@@ -262,6 +240,7 @@ const styles = StyleSheet.create({
   activeFilter: {
     fontWeight: 'bold',
     color: colors.black,
+    padding: spacing.PADDING_10,
   },
   dropdown: {
     marginVertical: spacing.MARGIN_10,
@@ -290,7 +269,6 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.PADDING_20,
   },
   card: {
-    backgroundColor: colors.white,
     padding: spacing.PADDING_14,
   },
   cardTitle: {
@@ -346,7 +324,7 @@ const styles = StyleSheet.create({
     borderRadius: spacing.RADIUS_8,
   },
   selectedFilterOption: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.green,
   },
   filterOptionText: {
     fontSize: textScale(14),

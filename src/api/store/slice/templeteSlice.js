@@ -2,6 +2,7 @@ import {createApi} from '@reduxjs/toolkit/query/react';
 import {
   GET_UPLOADED_MEDIA,
   GET_WHATSAPP_TEMPLATES,
+  SEND_TEMPLATE,
   SEND_TEMPLATE_TO_MULTIPLE_NUMBERS,
 } from '../../../Config/url';
 import {customBaseQuery} from '../utils';
@@ -28,30 +29,18 @@ export const TempleteApiSlices = createApi({
     }),
     // Send multiple number to templete
     SendTemplateToMultipleNumber: builder.mutation({
-      query: ({
-        media_url,
-        media_type,
-        header_type,
-        template,
-        mobile_numbers,
-        components,
-        filename,
-        filedata,
-        media_name,
-      }) => ({
+      query: (payload) => ({
         url: `${SEND_TEMPLATE_TO_MULTIPLE_NUMBERS}`,
         method: 'POST',
-        body: {
-          media_url,
-          media_type,
-          header_type,
-          template,
-          mobile_numbers,
-          components,
-          filename,
-          filedata,
-          media_name,
-        },
+        body: payload,
+      }),
+    }),
+    // Send multiple number to templete
+    SendTemplate: builder.mutation({
+      query: payload => ({
+        url: `${SEND_TEMPLATE}`,
+        method: 'POST',
+        body: payload,
       }),
     }),
   }),
@@ -61,4 +50,5 @@ export const {
   useGetAllTempleteQuery,
   useUploadeMediaMutation,
   useSendTemplateToMultipleNumberMutation,
+  useSendTemplateMutation,
 } = TempleteApiSlices;

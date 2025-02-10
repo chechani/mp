@@ -1,5 +1,5 @@
-import {Keyboard, StyleSheet, TouchableWithoutFeedback} from 'react-native';
 import React from 'react';
+import {Keyboard, StyleSheet, TouchableWithoutFeedback} from 'react-native';
 import Animated, {interpolate, useAnimatedStyle} from 'react-native-reanimated';
 
 const BackDrop = ({

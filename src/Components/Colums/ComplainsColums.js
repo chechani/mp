@@ -1,12 +1,11 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Dimensions,
   Linking,
   Modal,
   StyleSheet,
-  TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import {
@@ -15,9 +14,9 @@ import {
 } from '../../api/store/slice/complainsSlice';
 import * as SvgIcon from '../../assets';
 import NavigationString from '../../Navigations/NavigationString';
-import {textScale} from '../../styles/responsiveStyles';
-import {spacing} from '../../styles/spacing';
-import {fontNames} from '../../styles/typography';
+import { textScale } from '../../styles/responsiveStyles';
+import { spacing } from '../../styles/spacing';
+import { fontNames } from '../../styles/typography';
 import colors from '../../Utils/colors';
 import THEME_COLOR from '../../Utils/Constant';
 import {
@@ -29,8 +28,8 @@ import AnimatedComponentToggle from '../Common/AnimatedComponentToggale';
 import CustomButton from '../Common/CustomButton';
 import ImageViewer from '../Common/ImageViewer';
 import RegularText from '../Common/RegularText';
-import {useAppSelector, useTheme} from '../hooks';
 import TextComponent from '../Common/TextComponent';
+import { useAppSelector, useTheme } from '../hooks';
 
 const {width} = Dimensions.get('window');
 const isSmallScreen = width < 360;
@@ -56,7 +55,7 @@ const customOrder = ['custom_mobile', 'village', 'creation'];
 const formatKey = key =>
   key.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
 
-const ComplainsColumns = ({item, fetchData}) => {
+const ComplainsColumns = ({item}) => {
   const selectedDomain = useAppSelector(
     state => state.domains?.selectedDomain?.domain,
   );
@@ -113,8 +112,6 @@ const ComplainsColumns = ({item, fetchData}) => {
           type: 'warning',
         });
       }
-      setModalVisible(false);
-      fetchData(1);
     } catch (error) {
       console.error('Failed to update status:', error);
       Toast.show({
@@ -124,6 +121,7 @@ const ComplainsColumns = ({item, fetchData}) => {
       });
     } finally {
       setCurrentUpdatingStatus(null);
+      setModalVisible(false);
     }
   };
 

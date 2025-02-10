@@ -1,15 +1,8 @@
 import React from 'react';
-import {
-  ActivityIndicator,
-  StyleSheet,
-  TouchableOpacity,
-} from 'react-native';
-import {
-  moderateScale,
-  textScale,
-} from '../../styles/responsiveStyles';
-import { spacing } from '../../styles/spacing';
-import { fontNames } from '../../styles/typography';
+import {ActivityIndicator, StyleSheet, TouchableOpacity} from 'react-native';
+import {moderateScale, textScale} from '../../styles/responsiveStyles';
+import {spacing} from '../../styles/spacing';
+import {fontNames} from '../../styles/typography';
 import colors from '../../Utils/colors';
 import RegularText from './RegularText';
 
@@ -27,7 +20,7 @@ const ButtonComp = ({
   disabled = false,
 }) => {
   // Extract width and height from the IconStyle prop
-  const { width = spacing.WIDTH_24, height = spacing.HEIGHT_24 } = IconStyle;
+  const {width = spacing.WIDTH_24, height = spacing.HEIGHT_24} = IconStyle;
 
   // Left and Right components for conditional rendering
   const LeftComponent = leftImg && LeftSource ? LeftSource : null;
@@ -37,8 +30,7 @@ const ButtonComp = ({
     <TouchableOpacity
       style={[styles.container, style, disabled ? styles.disabled : null]}
       onPress={!disabled ? onPress : null}
-      activeOpacity={disabled ? 1 : 0.8}
-    >
+      activeOpacity={disabled ? 1 : 0.8}>
       {LeftComponent && (
         <LeftComponent
           width={width}
@@ -53,9 +45,8 @@ const ButtonComp = ({
           style={[
             styles.textStyle,
             textStyle,
-            disabled ? { color: colors.grey600 } : null,
-          ]}
-        >
+            disabled ? {color: colors.grey600} : null,
+          ]}>
           {text}
         </RegularText>
       )}
